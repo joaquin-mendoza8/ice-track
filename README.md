@@ -8,7 +8,7 @@
 
 - **_DevOps_** - Git, Docker, K8s?, GitHub Actions
 
-- **_Project Management_** - Jira, Confluence, GitHub
+- **_Project Management_** - Asana, GitHub
 
 
 
