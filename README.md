@@ -2,7 +2,7 @@
 
 - Clone the repo onto your machine
   ```
-  git clone ...
+  git clone <REPO_CONNECTION_URL>
   ```
 
 - Create a virtual environment for dependencies
