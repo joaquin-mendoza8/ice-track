@@ -14,9 +14,9 @@
   cp .env.template .env
   ```
 - Run the Flask application
-```
-python run.py
-```
+  ```
+  python run.py
+  ```
 
 # Tools for Development
 
