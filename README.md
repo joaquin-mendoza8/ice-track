@@ -9,6 +9,10 @@
   ```
   python -m venv venv
   ```
+- Install dependencies in virtual env
+  ```
+  ./scripts/deps.sh
+  ```
 - Create the environment variables (fill in missing variables)
   ```
   cp .env.template .env
