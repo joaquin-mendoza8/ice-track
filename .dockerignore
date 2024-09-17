@@ -1,0 +1,11 @@
+tests/
+*venv*/
+logs/
+instance/
+README.md
+.env
+.template.env
+*.pdf
+
+
+
