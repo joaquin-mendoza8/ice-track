@@ -1,3 +1,27 @@
+# Quickstart
+
+- Clone the repo onto your machine
+  ```
+  git clone <REPO_CONNECTION_URL>
+  ```
+
+- Create a virtual environment for dependencies
+  ```
+  python -m venv venv
+  ```
+- Install dependencies in virtual env
+  ```
+  ./scripts/deps.sh
+  ```
+- Create the environment variables (fill in missing variables)
+  ```
+  cp .env.template .env
+  ```
+- Run the Flask application
+  ```
+  python run.py
+  ```
+
 # Tools for Development
 
 - **_Back-end_** - Flask

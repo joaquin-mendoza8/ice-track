@@ -1,5 +1,9 @@
-/venv
-/logs
+venv/
+logs/
 .env
 .template.env
 instance/
+*.pyc
+__pycache__/
+.Python/
+.pytest_cache/
