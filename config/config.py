@@ -3,7 +3,11 @@
 
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
+from dotenv import load_dotenv
 import os
+
+# load environment variables
+load_dotenv(override=True)
 
 # create db and session objects
 if 'db' not in globals():
