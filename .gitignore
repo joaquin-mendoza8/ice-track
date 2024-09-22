@@ -7,3 +7,4 @@ instance/
 __pycache__/
 .Python/
 .pytest_cache/
+*.log
