@@ -2,12 +2,16 @@
 
 - Clone the repo onto your machine
   ```
-  git clone <REPO_CONNECTION_URL>
+  git clone https://github.com/joaquin-mendoza8/ice-track.git
   ```
 
-- Create a virtual environment for dependencies
+- Enter the project folder
   ```
-  python -m venv venv
+  cd ice-track
+  ```
+- Create & activate a virtual environment for dependencies
+  ```
+  python -m venv venv && source venv/bin/activate
   ```
 - Install dependencies in virtual env
   ```
