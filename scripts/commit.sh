@@ -11,6 +11,9 @@ else
     echo -e "\nChanges found...\n"
 fi
 
+# Run an update to requirements.txt
+pip freeze > requirements.txt
+
 # Add all changes to the staging area
 git add .
 

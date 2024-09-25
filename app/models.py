@@ -20,3 +20,16 @@ class User(db.Model, UserMixin):
     # get the user id (for flask-login)
     def get_id(self):
         return self.id
+
+
+# Ice Cream data model
+class Product(db.Model):
+
+    id=db.Column(db.Integer, primary_key=True, autoincrement=True)
+    flavor=db.Column(db.String(150), nullable=False)
+    price=db.Column(db.Float, nullable=False)
+    quantity=db.Column(db.Integer, nullable=False)
+
+    # print the product
+    def __repr__(self):
+        return f'<Product {self.flavor}>'
