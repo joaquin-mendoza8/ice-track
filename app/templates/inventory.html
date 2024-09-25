@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Inventory{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/inventory.css') }}" type="text/css">
+{% endblock %}
+
+{% block content %}
+    <h1>Inventory</h1>
+
+    <div class="form-container">
+        <form action="/inventory_update" method="post">
+            <table>
+                <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                </tr>
+                {% for item in items %}
+                    <tr>
+                        <td>{{ item.name }}</td>
+                        <td><input type="number" name="{{ item.id }}" value="{{ item.quantity }}"></td>
+                    </tr>
+                {% endfor %}
+            </table>
+            <input type="submit" value="Update">
+        </form>
+    </div>
+
+    <div class="">
+        <h1>Products</h1>
+        <table>
+            <tr>
+                <th>Flavor</th>
+                <th>Price</th>
+                <th>Quantity</th>
+            </tr>
+            {% if products %}
+                {% for product in products %}
+                    <tr>
+                        <td>{{ product.flavor }}</td>
+                        <td>{{ product.price }}</td>
+                        <td>{{ product.quantity }}</td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                No products
+            {% endif %}
+        </table>
+    </div>
+{% endblock %}

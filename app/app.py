@@ -4,6 +4,7 @@ from flask_migrate import Migrate
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 from config.config import Config, db, session as flask_session
 from app.endpoints.auth import auth
+from app.endpoints.inventory import inventory
 from app.models import User
 
 # create the flask app
@@ -18,6 +19,7 @@ migrate = Migrate(app, db)
 # connect blueprints
 # app.register_blueprint(<BLUEPRINT_NAME>)
 app.register_blueprint(auth)
+app.register_blueprint(inventory)
 
 # create the database tables
 with app.app_context():
