@@ -1,0 +1,25 @@
+<!-- Static navbar component (left-aligned) -->
+
+<!-- Offcanvas sidebar component -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasSidebar" aria-labelledby="offcanvasSidebarLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasSidebarLabel">Menu</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <ul class="nav flex-column flex-grow-1 noscroll">
+            <li class="nav-item pb-md-2 pb-lg-3">
+                <a class="sidebar-nav-link nav-link active" aria-current="page" href="{{ url_for('inventory.inventory_home') }}">Inventory</a>
+            </li>
+            <li class="nav-item pb-md-2 pb-lg-3">
+                <a class="sidebar-nav-link nav-link" href="#">Orders</a>
+            </li>
+            <li class="nav-item pb-md-2 pb-lg-3">
+                <a class="sidebar-nav-link nav-link" href="#">Shipments</a>
+            </li>
+            <li class="nav-item pb-md-2 pb-lg-3">
+                <a class="sidebar-nav-link nav-link" href="#">Trouble Tickets</a>
+            </li>
+        </ul>
+    </div>
+</div>
