@@ -1,0 +1,56 @@
+<!-- POP-UP MODAL FOR TRANSACTIONS -->
+<div class="modal fade" id="productModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+
+        <!-- Content box for modal -->
+        <div class="modal-content">
+
+            <!-- Header for the modal -->
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Product Details</h5>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Product content will be inserted dynamically here -->
+                <div class="product-edit-container">
+
+                    <!-- Product ID -->
+                    <p>Product ID: <span id="product-id-display"></span></p>
+
+                    <!-- Form of modifiable inputs (preset to current product attributes)-->
+                    <form method="POST" action="/inventory_update">
+                        <input type="hidden" name="product-id" class="product-id" id="product-id">
+                        <div class="form-group">
+                            <label for="product-flavor">Flavor</label>
+                            <input type="text"
+                                   class="form-control product-flavor-input"
+                                   id="product-flavor"
+                                   name="product-flavor">
+                        </div>
+                        <div class="form-group">
+                            <label for="product-price">Price</label>
+                            <input type="number" step="0.01"
+                                   class="form-control product-price-input"
+                                   id="product-price"
+                                   name="product-price"
+                                   min="0" pattern="^\d+(\.\d{1,2})?$">
+                        </div>
+                        <div class="form-group">
+                            <label for="product-quantity">Quantity</label>
+                            <input type="number"
+                                   class="form-control product-quantity-input"
+                                   id="product-quantity"
+                                   name="product-quantity">
+                        </div>
+                    </div>
+
+                    <!-- Button to submit form -->
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+
+            <!-- Button to close the modal -->
+            <div class="modal-footer">
+                <button type="button" class="btn" data-dismiss="modal" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

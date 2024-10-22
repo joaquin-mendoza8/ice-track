@@ -3,3 +3,22 @@ footer {
     bottom: 0;
     width: 100%;
 }
+
+/* sticky header */
+.sticky-navbar-header {
+    color: #FFF;
+}
+
+/* sidebar nav links */
+.nav-link,
+.sidebar-nav-link,
+.sidebar-nav-link:hover {
+    text-decoration: none !important;
+    list-style: none !important;
+    color: #000 !important;
+}
+
+.sidebar-nav-link:hover {
+    background-color: #f8f9fa !important;
+    border-radius: 10px;
+}
