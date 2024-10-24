@@ -121,3 +121,16 @@ def inventory_add_product():
 
     # redirect to the inventory page
     return redirect(url_for('inventory.inventory_home'))
+    
+@inventory.route('/orders', methods=['GET'])
+def shipping():
+        return render_template('orders.html')
+    
+@inventory.route('/shipments', methods=['GET'])
+def shipping():
+        return render_template('shipments.html')
+    
+
+@inventory.route('/tickets', methods=['GET'])
+def shipping():
+        return render_template('tickets.html')
