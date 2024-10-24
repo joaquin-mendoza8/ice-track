@@ -67,3 +67,16 @@ def inventory_update_product():
                     return redirect(url_for('inventory.inventory_home'))
     
         return redirect(url_for('inventory.inventory_home'))
+    
+@inventory.route('/orders', methods=['GET'])
+def shipping():
+        return render_template('orders.html')
+    
+@inventory.route('/shipments', methods=['GET'])
+def shipping():
+        return render_template('shipments.html')
+    
+
+@inventory.route('/tickets', methods=['GET'])
+def shipping():
+        return render_template('tickets.html')
