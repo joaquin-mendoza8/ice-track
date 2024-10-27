@@ -17,8 +17,6 @@ def inventory_home():
 
     products_dict = parse_product_data(products)
 
-    print(products_dict)
-
     # dictionary of items to pass to the template
     jinja_vars = {
         'items': [
@@ -39,8 +37,6 @@ def inventory_update_product():
     
         # check if the form was submitted
         if request.method == 'POST':
-    
-            print(request.form)
 
             # extract form data
             product_id = request.form['product-id']
@@ -67,3 +63,30 @@ def inventory_update_product():
                     return redirect(url_for('inventory.inventory_home'))
     
         return redirect(url_for('inventory.inventory_home'))
+
+@inventory.route('/inventory_delete', methods=['GET', 'POST'])
+def inventory_delete_product():
+    
+    # check if the request is a POST request
+    if request.method == 'POST':
+
+        # extract the product id from the form
+        product_id = request.form['product-id-delete']
+
+        # find the product in the database
+        product = Product.query.get(product_id)
+
+        # if product exists, delete it
+        if product:
+            db.session.delete(product)
+            db.session.commit()
+
+            # TODO: log the deletion
+            print(f'Deleted product: {product}')
+        else:
+
+            # TODO: log the error / handle the error
+            print(f"Product not found: {product}")
+
+    # redirect to the inventory page
+    return redirect(url_for('inventory.inventory_home'))

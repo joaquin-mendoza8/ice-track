@@ -21,3 +21,7 @@
     padding: 0.5rem 0.8rem;
     cursor: pointer;
 }
+
+.delete-btn {
+    margin-top: 1rem;
+}
