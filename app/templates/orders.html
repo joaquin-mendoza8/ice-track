@@ -4,12 +4,12 @@
 {% block title %}Orders{% endblock %}
 
 {% block head %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/inventory.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/orders.css') }}" type="text/css">
 {% endblock %}
 
 {% block content %}
 
-    {% include 'modals/product_modal.html' %}
+    {% include 'modals/orders_modal.html' %}
 
     <!-- Main content container -->
     <div class="container-md">
@@ -25,11 +25,17 @@
             </div>
 
             <!-- Key Metrics Cards -->
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 gap-4">
-                {{ macros.metrics_card('Metric 1', 'text 1') }}
-                {{ macros.metrics_card('Metric 2', 'text 2') }}
-                {{ macros.metrics_card('Metric 3', 'text 3') }}
-            </div>
+            <ul class="metric-box-list">
+                <li class="metric-box">
+                    {{ macros.metrics_card('Metric 1', 'text 1') }}
+                </li>
+                <li class="metric-box">
+                    {{ macros.metrics_card('Metric 2', 'text 2') }}
+                </li>
+                <li class="metric-box">
+                    {{ macros.metrics_card('Metric 3', 'text 3') }}
+                </li>
+            </ul>
 
             <!-- Inventory Update Fields -->
             <!-- <div class="form-container">
@@ -57,7 +63,7 @@
             <div class="mt-5">
                 <!-- inline container for title and modal button -->
                 <div class="d-flex justify-content-between">
-                    <h1>Products</h1>
+                    <h1>Order History</h1>
                     <button type="button" class="btn modal-btn" data-bs-toggle="modal" data-bs-target="#exampleModal">+ New</button>
                 </div>
                 <table class="table table-hover table-borderless">
