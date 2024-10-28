@@ -13,6 +13,8 @@ class User(db.Model, UserMixin):
     is_active=db.Column(db.Boolean, default=True)   # automatically set to True for new users
     last_login=db.Column(db.DateTime, nullable=True, default=func.now())    # automatically set to current time for new users
 
+    #TODO: Add customer status column
+    
     # print the user
     def __repr__(self):
         return f'<User {self.username}>'

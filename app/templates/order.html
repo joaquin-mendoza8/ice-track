@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as macros %}
+
+{% block title %}Order Entry{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/order.css') }}" type="text/css">
+{% endblock %}
+
+{% block content %}
+     <!-- Main content container -->
+     <div class="container-md">
+
+        <!-- Offcanvas sidebar -->
+        {% include 'navbar.html' %}
+        <main class="ms-sm-auto px-md-4 pt-md-3">
+            <div class="align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1>Order Entry</h1>
+            </div>
+        </main>
+
+     </div>
+
+{% endblock %}
