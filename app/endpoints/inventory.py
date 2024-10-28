@@ -79,3 +79,30 @@ def shipments():
 @inventory.route('/tickets', methods=['GET'])
 def tickets():
         return render_template('tickets.html')
+    
+@inventory.route('/inventory_add', methods=['GET', 'POST'])
+def inventory_add_product():
+
+    # check if the request is a POST request
+    if request.method == 'POST':
+
+        # extract the product data from the form
+        product_flavor = request.form['product-flavor']
+        product_price = request.form['product-price']
+        product_quantity = request.form['product-quantity']
+
+        # ensure all fields are filled
+        if (product_flavor and product_price and product_quantity):
+
+            # create a new product object
+            new_product = Product(flavor=product_flavor, price=product_price, quantity=product_quantity)
+
+            # add the new product to the database
+            db.session.add(new_product)
+            db.session.commit()
+
+            # log the addition
+            print(f'Added product: {new_product}')
+
+    # redirect to the inventory page
+    return redirect(url_for('inventory.inventory_home'))
