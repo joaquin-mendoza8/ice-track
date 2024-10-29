@@ -160,3 +160,38 @@ def inventory_add_product():
 
     # redirect to the inventory page
     return redirect(url_for('inventory.inventory_home'))
+
+@inventory.route('/add_order', methods=['GET', 'POST'])
+def add_order():
+    if request.method == 'POST':
+        # Extract the form data from the modal form
+        flavor = request.form.get('flavor')
+        size = request.form.get('size')
+        quantity = request.form.get('product-quantity')
+        cost = request.form.get('cost')
+        shipping_date = request.form.get('shipping-date')
+        shipping_cost = request.form.get('shipping-cost')
+
+        # Ensure all required fields are filled
+        if flavor and size and quantity and cost and shipping_date and shipping_cost:
+            # Create a new product object
+            new_product = Product(
+                flavor=flavor,
+                size=size,
+                quantity=quantity,
+                cost=cost,
+                shipping_date=shipping_date,
+                shipping_cost=shipping_cost
+            )
+
+            # Add the new product to the database
+            db.session.add(new_product)
+            db.session.commit()
+
+            # Log the addition
+            print(f'Added product: {new_product}')
+
+            # Redirect or render as needed
+            return redirect(url_for('inventory.orders'))
+
+    return render_template('orders.html')  # or the appropriate template
