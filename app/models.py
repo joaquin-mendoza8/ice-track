@@ -41,31 +41,43 @@ class Product(db.Model):
     # print the product
     def __repr__(self):
         return f'<Product {self.flavor}>'
-'''    
-class Order(db.Model):
-    
-    id=db.Column(db.Integer, primary_key=True, autoincrement=True)
-    flavor=db.Column(db.String(150), nullable=False)
-    size=db.Column(db.String(150), nullable=False)
-    quantity=db.Column(db.Integer, nullable=False)
-    cost=db.Column(db.Integer, nullable=False)
-    shipping_type=db.Column(db.String(250), nullable=False)
-    shipping_date=db.Column(db.Date, nullable=False)
-    shipping_cost=db.Column(db.Integer, nullable=False)
-    
-    def __repr__(self):
-        return f'<Customer {self.name}>'
-'''
 
-'''
-class Customer(db.Model):
-    
-    id=db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name=db.Column(db.String(150), nullable=False)
-    status=db.Column(db.String(150), nullable=False)
-    shipping_address=db.Column(db.String(250), nullable=False)
-    billing_address=db.Column(db.String(250), nullable=False)
-    
-    def __repr__(self):
-        return f'<Customer {self.name}>'
-'''   
+
+# Order Entry data model
+class Order(db.Model):
+
+    id = db.Column(db.Integer, primary_key= True)
+    customer_name = db.Column(db.String(150), nullable=False)
+    customer_status = db.Column(db.String(50), nullable=False)
+    shipping_address = db.Column(db.String(150), nullable=False)
+    shipping_type = db.Column(db.String(100), nullable=False)
+    shipping_cost = db.Column(db.Float, nullable=False)
+    billing_address = db.Column(db.String(150), nullable=False)
+    total_cost = db.Column(db.Float, nullable=False)
+
+    def __init__(self, customer_name, customer_status, shipping_address, 
+                 shipping_type, shipping_cost, billing_address, total_cost):
+        self.customer_name = customer_name
+        self.customer_status = customer_status
+        self.shipping_address = shipping_address
+        self.shipping_type = shipping_type
+        self.shipping_cost = shipping_cost
+        self.billing_address = billing_address
+        self.total_cost = total_cost
+
+class OrderItem(db.Model):
+
+    id = db.Column(db.Integer, primary_key= True)
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    ship_date = db.Column(db.Date, nullable=False)
+
+    product = db.relationship('Product', backref='order_items')
+
+    def __init__(self, order_id, product_id, quantity, ship_date):
+        self.order_id = order_id
+        self.product_id = product_id
+        self.quantity = quantity
+        self.ship_date = ship_date
+        
