@@ -29,6 +29,12 @@ class Product(db.Model):
     flavor=db.Column(db.String(150), nullable=False)
     price=db.Column(db.Float, nullable=False)
     quantity=db.Column(db.Integer, nullable=False)
+    status=db.Column(db.String(150), nullable=False, default='planned') # status of the product (planned or actual inventory)
+    created_at=db.Column(db.DateTime, nullable=False, default=func.now()) # when the product was created
+    deleted_at=db.Column(db.DateTime, nullable=True, default=None) # when the product was deleted
+    disposition=db.Column(db.String(150), nullable=True)  # disposition of a removed product (shipped, defective, spoiled, etc.)
+    # unit_size=db.Column(db.String(150), nullable=False) # TODO: figure out how to implement this
+    # order_id=db.Column(db.Integer, db.ForeignKey('order.id'), nullable=True) # TODO: implement after orders are implemented
 
     # print the product
     def __repr__(self):
