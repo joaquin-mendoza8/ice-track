@@ -46,6 +46,7 @@ class Product(db.Model):
 # Order Entry data model
 class Order(db.Model):
 
+    # defining data attributes in order
     id = db.Column(db.Integer, primary_key= True)
     customer_name = db.Column(db.String(150), nullable=False)
     customer_status = db.Column(db.String(50), nullable=False)
@@ -55,6 +56,9 @@ class Order(db.Model):
     billing_address = db.Column(db.String(150), nullable=False)
     total_cost = db.Column(db.Float, nullable=False)
 
+    # sets a one to many relationship with Order(one) and OrderItem(many)
+    orders_items = db.relationship('OrderItem', backref='order')
+    # initializing each attribute
     def __init__(self, customer_name, customer_status, shipping_address, 
                  shipping_type, shipping_cost, billing_address, total_cost):
         self.customer_name = customer_name
@@ -65,16 +69,21 @@ class Order(db.Model):
         self.billing_address = billing_address
         self.total_cost = total_cost
 
+# Order item data models (products inside of an order)
 class OrderItem(db.Model):
-
+    #defining product data attributes
     id = db.Column(db.Integer, primary_key= True)
-    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=False)
-    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     ship_date = db.Column(db.Date, nullable=False)
 
+    # sets a one to many relationship with OrderItem(one) and product(many) 
     product = db.relationship('Product', backref='order_items')
+    # sets a many to one relationship with OrderItem(many) and order(one)
+    order = db.relationship('Order', backref='order_items')
 
+    # initializing attributes
     def __init__(self, order_id, product_id, quantity, ship_date):
         self.order_id = order_id
         self.product_id = product_id
