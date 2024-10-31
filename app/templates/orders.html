@@ -67,26 +67,36 @@
                     <button type="button" class="btn modal-btn" data-bs-toggle="modal" data-bs-target="#exampleModal">+ New</button>
                 </div>
                 <table class="table table-hover table-borderless">
+                    <!-- List of order items-->
                     {% if orders %}
-                    <thead>
-                        {% for key in orders[0].keys() %}
-                            {% if key not in ['id'] %}
-                                <th scope="col">{{ key.capitalize() }}</th>
-                            {% endif %}
-                        {% endfor %}
-                    </thead>
                     <tbody>
                         {% for order in orders %}
                             {% set outer_index = loop.index - 1 %}
-                            <tr onclick="openModal({{ order }}, {{ order['id'] }})" id="row-{{ outer_index }}">
-                                <td>{{ order.flavor }}</td>
-                                <td>{{ order.container_size }}</td>
-                                <td>{{ order.quantity }}</td>
-                                <td>{{ order.cost }}</td>
-                                <td>{{ order.shipping_type }}</td>
-                                <td>{{ order.shipping_date }}</td>
-                                <td>{{ order.shipping_cost }}</td>
+                            <tr>
+                                <th colspan="4">Order #{{ order.id }}</th>
                             </tr>
+                            <tr onclick="openModal({{ order }}, {{ order['id'] }})" id="row-{{ outer_index }}">
+                                <td>{{ order.customer_name }}</td>
+                                <td>{{ order.shipping_address }}</td>
+                                <td>Total: ${{ order.total_cost }}</td>
+                            </tr>
+
+                            {% if order.order_items %}
+                                {% for item in order.order_items %}
+                                    <tr>
+                                        <th colspan="4">Order Items for Order# {{ order.id }}</th>
+                                    </tr>
+                                    <tr class="order-item-row">
+                                        <td>Product ID: {{ item.product_id }}</td>
+                                        <td>Quantity: {{ item.quantity }}</td>
+                                        <td>Shipping Date: {{ item.shipping_date }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr class="order-item-row">
+                                    <td>No items for this order</td>
+                                </tr>
+                            {% endif %}
                         {% endfor %}
                     </tbody>
                     {% else %}

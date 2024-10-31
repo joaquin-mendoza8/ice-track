@@ -11,6 +11,17 @@
                 <div class="columns">
                     <div class="column">
                         <h3>Order Info</h3>
+                        <!-- Customer Name-->
+                        <div class="mb-3">
+                            <label for="customer-name" class="form-label">Customer Name</label>
+                            <select class="form-control" id="customer-name" name="customer-name" required>
+                                <option value="">Select a customer</option>
+                                {% for customer in customers %}
+                                    <option value="{{ customer.id }}">{{ customer.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
                         <!-- Flavor -->
                         <div class="mb-3">
                             <label for="flavor" class="form-label">Flavor</label>

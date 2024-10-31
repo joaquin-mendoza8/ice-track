@@ -40,7 +40,6 @@ def inventory_update_product():
     
     # check if the form was submitted
     if request.method == 'POST':
-
         # extract form data
         product_id = request.form['product-id']
         product_flavor = request.form['product-flavor']
@@ -49,7 +48,6 @@ def inventory_update_product():
 
         # ensure all fields are filled
         if (product_id and product_flavor and product_price and product_quantity):
-                
             # find the product in the database
             product = Product.query.get(product_id)
 

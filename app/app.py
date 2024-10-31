@@ -10,6 +10,7 @@ from app.endpoints.orders import orders
 from app.endpoints.shipments import shipments
 from app.endpoints.tickets import tickets
 from app.models import User, Order, Customer, Product
+from sqlalchemy import text
 
 # create the flask app
 app = Flask(__name__)

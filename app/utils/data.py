@@ -9,21 +9,19 @@ def parse_product_data(products):
         for product in products
     ]
     
-def parse_orders_data(orders):
+# TODO: Add more fields from Order when neccesary
+def parse_order_data(orders):
     return [
         {   "id": order.id,
-            "flavor": order.flavor,
-            "size": order.size,
-            "quantity": order.quantity,
-            "cost": order.cost,
-            "shipping_type": order.shipping_type,
-            "shipping_date": order.shipping_date.strftime('%Y-%m-%d'),
-            "shipping_cost": order.shipping_cost
+            "customer_name": order.customer_name,
+            "shipping_address": order.shipping_address,
+            "total_cost": order.total_cost,
+            "order_items": order.order_items
         }
         for order in orders
     ]
 
-def parse_customers_data(customers):
+def parse_customer_data(customers):
     return [
         {
             "id": customer.id,
