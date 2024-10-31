@@ -12,13 +12,13 @@
                 <a class="sidebar-nav-link nav-link active" aria-current="page" href="{{ url_for('inventory.inventory_home') }}">Inventory</a>
             </li>
             <li class="nav-item pb-md-2 pb-lg-3">
-                <a class="sidebar-nav-link nav-link" href="#">Orders</a>
+                <a class="sidebar-nav-link nav-link" href="{{ url_for('orders.orders_home') }}">Orders</a>
             </li>
             <li class="nav-item pb-md-2 pb-lg-3">
-                <a class="sidebar-nav-link nav-link" href="#">Shipments</a>
+                <a class="sidebar-nav-link nav-link" href="{{ url_for('shipments.shipments_home') }}">Shipments</a>
             </li>
             <li class="nav-item pb-md-2 pb-lg-3">
-                <a class="sidebar-nav-link nav-link" href="#">Trouble Tickets</a>
+                <a class="sidebar-nav-link nav-link" href="{{ url_for('tickets.tickets_home') }}">Trouble Tickets</a>
             </li>
         </ul>
     </div>

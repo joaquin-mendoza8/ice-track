@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as macros %}
+
+{% block title %}Shipments{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/shipments.css') }}" type="text/css">
+{% endblock %}
+
+{% block content %}
+
+    {% include 'modals/product_modal.html' %}
+
+    <!-- Main content container -->
+    <div class="container-md">
+
+        <!-- Offcanvas sidebar -->
+        {% include 'navbar.html' %}
+
+        <!-- Main content -->
+        <main class="ms-sm-auto px-md-4 pt-md-3">
+            <div class="align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <!-- Banner header -->
+                <h1>Shipments</h1>
+            </div>
+
+            <!-- Inventory Add Modal -->
+            {% include 'modals/add_modal.html' %}
+
+            <!-- Inventory Table -->
+            <div class="mt-5">
+                <!-- inline container for title and modal button -->
+                <div class="d-flex justify-content-between">
+                    <h1>Shipment History</h1>
+                    <!-- <button type="button" class="btn modal-btn" data-bs-toggle="modal" data-bs-target="#exampleModal">+ New</button> -->
+                </div>
+
+            <!-- TODO: Change logic below to handle tickets
+                <table class="table table-hover table-borderless">
+                    {% if products %}
+                    <thead>
+                        {% for key in products[0].keys() %}
+                            {% if key not in ['id'] %}
+                                <th scope="col">{{ key.capitalize() }}</th>
+                            {% endif %}
+                        {% endfor %}
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                            {% set outer_index = loop.index - 1 %}
+                            <tr onclick="openModal({{ product }}, {{ product['id'] }})" id="row-{{ outer_index }}">
+                                <td>{{ product.flavor }}</td>
+                                <td>{{ product.price }}</td>
+                                <td>{{ product.quantity }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    {% else %}
+                        No products found.
+                    {% endif %}
+                </table>
+            -->
+            </div>
+        </main>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script type="module" src="{{ url_for('static', filename='js/shipments.js') }}"></script>
+{% endblock %}

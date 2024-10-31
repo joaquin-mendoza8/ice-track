@@ -6,7 +6,10 @@ from config.config import Config, db, session as flask_session
 from app.utils.filters import *
 from app.endpoints.auth import auth
 from app.endpoints.inventory import inventory
-from app.models import User
+from app.endpoints.orders import orders
+from app.endpoints.shipments import shipments
+from app.endpoints.tickets import tickets
+from app.models import User, Order, Customer, Product
 
 # create the flask app
 app = Flask(__name__)
@@ -27,6 +30,9 @@ for name, func in filters.items():
 # app.register_blueprint(<BLUEPRINT_NAME>)
 app.register_blueprint(auth)
 app.register_blueprint(inventory)
+app.register_blueprint(orders)
+app.register_blueprint(shipments)
+app.register_blueprint(tickets)
 
 # create the database tables
 with app.app_context():
@@ -46,12 +52,13 @@ def load_user(user_id):
 @app.route('/')
 @login_required
 def home():
-
     # if user is not logged in, redirect to login
     if not current_user.is_authenticated:
         return redirect(url_for('auth.login'))
 
     return render_template('home.html')
+
+
 
 
 
