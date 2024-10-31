@@ -189,21 +189,31 @@ def inventory_delete_product():
     # redirect to the inventory page
     return redirect(url_for('inventory.inventory_home'))
 
+@inventory.route('/inventory_add', methods=['GET', 'POST'])
+def inventory_add_product():
 
-# inventory customer add endpoint
-@inventory.route('/inventory_customer_add', methods=['GET', 'POST'])
-@login_required
-def inventory_add_customer():
+    # check if the request is a POST request
+    if request.method == 'POST':
 
-    # TODO: implement customer add functionality
-    # if request.method == 'POST':
+        # extract the product data from the form
+        product_flavor = request.form['product-flavor']
+        product_price = request.form['product-price']
+        product_quantity = request.form['product-quantity']
+        product_status = request.form['product-status']
 
-        # # extract the customer data from the form
-        # customer_name = request.form.get('customer-name')
-        # customer_email = request.form.get('customer-email')
-        # customer_phone = request.form.get('customer-phone')
-        # customer_address = request.form.get('customer-address')
-        # customer_status = request.form.get('customer-status')
+        # ensure all fields are filled
+        if (product_flavor and product_price and product_quantity):
+
+            # create a new product object
+            new_product = Product(flavor=product_flavor, price=product_price, quantity=product_quantity, 
+                                  status=product_status)
+
+            # add the new product to the database
+            db.session.add(new_product)
+            db.session.commit()
+
+            # log the addition
+            print(f'Added product: {new_product}')
 
     # redirect to the inventory page
     return redirect(url_for('inventory.inventory_home'))
