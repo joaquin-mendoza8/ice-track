@@ -43,3 +43,4 @@ function closeModal() {
 
     console.log("Modal closed");
 }
+
