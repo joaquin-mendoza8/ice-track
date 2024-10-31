@@ -1,12 +1,15 @@
 function openModal(product_content, productId) {
 
-    // set transaction id to hidden input field
+    console.log(product_content);
+
+    // set transaction id to hidden input fields
     const hiddenInput = document.getElementById('product-id');
+    const hiddenInput2 = document.getElementById('product-id-delete');
 
     if (hiddenInput) {
         hiddenInput.value = parseInt(productId);
+        hiddenInput2.value = parseInt(productId);
     }
-    // const transactionNameInput = document.getElementById('product_flavor');
 
     // set product id display value
     const productIdDisplay = document.getElementById('product-id-display');
@@ -20,6 +23,7 @@ function openModal(product_content, productId) {
 
     // set flavor, price, and quantity inputs
     productAttributes.forEach(attribute => {
+
         const inputField = document.getElementById(`product-${attribute}`);
 
         if (inputField.id === 'product-id') {

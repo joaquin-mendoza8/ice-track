@@ -17,39 +17,55 @@
                     <p>Product ID: <span id="product-id-display"></span></p>
 
                     <!-- Form of modifiable inputs (preset to current product attributes)-->
-                    <form method="POST" action="/inventory_update">
+                    <form id="updateForm" method="POST" action="/inventory_update">
                         <input type="hidden" name="product-id" class="product-id" id="product-id">
                         <div class="form-group">
                             <label for="product-flavor">Flavor</label>
                             <input type="text"
                                    class="form-control product-flavor-input"
                                    id="product-flavor"
-                                   name="product-flavor">
+                                   name="product-flavor" required>
                         </div>
                         <div class="form-group">
-                            <label for="product-price">Price</label>
+                            <label for="product-price">Price ($ USD)</label>
                             <input type="number" step="0.01"
                                    class="form-control product-price-input"
                                    id="product-price"
                                    name="product-price"
-                                   min="0" pattern="^\d+(\.\d{1,2})?$">
+                                   min="0" pattern="^\d+(\.\d{1,2})?$" required>
                         </div>
                         <div class="form-group">
                             <label for="product-quantity">Quantity</label>
                             <input type="number"
                                    class="form-control product-quantity-input"
                                    id="product-quantity"
-                                   name="product-quantity">
+                                   name="product-quantity" required>
                         </div>
-                    </div>
-
-                    <!-- Button to submit form -->
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
             </div>
 
-            <!-- Button to close the modal -->
-            <div class="modal-footer">
-                <button type="button" class="btn" data-dismiss="modal" onclick="closeModal()">Close</button>
+            <!-- Modal Footer Buttons -->
+            <div class="modal-footer d-flex justify-content-between align-items-center">
+
+                <!-- Form to trigger server call without needing JS -->
+                <form id="deleteForm" method="POST" action="/inventory_delete" class="d-flex align-items-center">
+                    
+                    <!-- Hidden input holding product id for server call -->
+                    <input type="hidden" name="product-id-delete" id="product-id-delete">
+                    
+                    <!-- Button to delete product from inventory -->
+                    <button type="button" class="btn btn-danger">Delete</button>
+                </form>
+
+                <!-- Push buttons to right side of footer -->
+                <div class="ml-auto">
+                    <!-- Button to close modal -->
+                    <button type="button" class="btn" data-dismiss="modal" onclick="closeModal()">Close</button>
+
+                    <!-- Button to submit form -->
+                    <button type="button" class="btn btn-primary" onclick="document.querySelector('#updateForm').submit();">Save Changes</button>
+                </div>
             </div>
         </div>
     </div>
