@@ -33,3 +33,31 @@ class Product(db.Model):
     # print the product
     def __repr__(self):
         return f'<Product {self.flavor}>'
+'''    
+class Order(db.Model):
+    
+    id=db.Column(db.Integer, primary_key=True, autoincrement=True)
+    flavor=db.Column(db.String(150), nullable=False)
+    size=db.Column(db.String(150), nullable=False)
+    quantity=db.Column(db.Integer, nullable=False)
+    cost=db.Column(db.Integer, nullable=False)
+    shipping_type=db.Column(db.String(250), nullable=False)
+    shipping_date=db.Column(db.Date, nullable=False)
+    shipping_cost=db.Column(db.Integer, nullable=False)
+    
+    def __repr__(self):
+        return f'<Customer {self.name}>'
+'''
+
+'''
+class Customer(db.Model):
+    
+    id=db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name=db.Column(db.String(150), nullable=False)
+    status=db.Column(db.String(150), nullable=False)
+    shipping_address=db.Column(db.String(250), nullable=False)
+    billing_address=db.Column(db.String(250), nullable=False)
+    
+    def __repr__(self):
+        return f'<Customer {self.name}>'
+'''   

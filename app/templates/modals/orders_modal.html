@@ -2,51 +2,15 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
         <div class="modal-header">
-            <h5 class="modal-title">Add Item</h5>
+            <h5 class="modal-title">Add Order</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-
             <!-- Form to allow user to add a new inventory item -->
             <form action="{{ url_for('inventory.add_order') }}" method="POST" id="addInventoryForm">
-                <div class="modal-body">
-
-                        <!-- Customer Name -->
-                        <div class="mb-3">
-                            <label for="customer-name" class="form-label">Customer Name</label>
-                            <input type="text"
-                                   class="form-control"
-                                   id="customer-name"
-                                   name="customer-name" required>
-                        </div>
-
-                        <!-- Shipping Address -->
-                        <div class="mb-3">
-                            <label for="shipping-address" class="form-label">Shipping Address</label>
-                            <input type="text"
-                                   class="form-control"
-                                   id="shipping-address"
-                                   name="shipping-address" required>
-                        </div>
-
-                        <!-- Billing Address -->
-                        <div class="mb-3">
-                            <label for="billing-address" class="form-label">Billing Address</label>
-                            <input type="text"
-                                   class="form-control"
-                                   id="billing-address"
-                                   name="billing-address" required>
-                        </div>
-
-                        <!-- Item -->
-                        <div class="mb-3">
-                            <label for="item" class="form-label">Item</label>
-                            <input type="text"
-                                   class="form-control"
-                                   id="item"
-                                   name="item" required>
-                        </div>
-
+                <div class="columns">
+                    <div class="column">
+                        <h3>Order Info</h3>
                         <!-- Flavor -->
                         <div class="mb-3">
                             <label for="flavor" class="form-label">Flavor</label>
@@ -83,7 +47,18 @@
                                    name="cost" 
                                    min="0" pattern="^\d+(\.\d{1,2})?$" required>
                         </div>
-
+                    </div>
+                    
+                    <div class="column">
+                        <h3>Shipping</h3>
+                        <!-- Shipping Type -->
+                        <div class="mb-3">
+                            <label for="shipping-type" class="form-label">Shipping Type</label>
+                            <select class="form-control" id="shipping-type" name="shipping-type" required>
+                                <option value="standard">Standard</option>
+                                <option value="express">Express</option>
+                            </select>
+                        </div>
                         <!-- Estimated Shipping Date -->
                         <div class="mb-3">
                             <label for="shipping-date" class="form-label">Shipping Date</label>
@@ -104,12 +79,12 @@
                                    name="shipping-cost" 
                                    min="0" pattern="^\d+(\.\d{1,2})?$" required>
                         </div>
+                    </div>
                 </div>
-
 
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Add Item</button>
+                    <button type="submit" class="btn btn-primary">Add Order</button>
                 </div>
             </form>
         </div>

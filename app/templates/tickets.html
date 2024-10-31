@@ -24,32 +24,6 @@
                 <h1>Customer Support</h1>
             </div>
 
-            <!-- Key Metrics Cards -->
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 gap-4">
-                {{ macros.metrics_card('Metric 1', 'text 1') }}
-                {{ macros.metrics_card('Metric 2', 'text 2') }}
-                {{ macros.metrics_card('Metric 3', 'text 3') }}
-            </div>
-
-            <!-- Inventory Update Fields -->
-            <!-- <div class="form-container">
-                <form action="/inventory_update" method="post">
-                    <table>
-                        <tr>
-                            <th>Item</th>
-                            <th>Quantity</th>
-                        </tr>
-                        {% for item in items %}
-                            <tr>
-                                <td>{{ item.name }}</td>
-                                <td><input type="number" name="{{ item.id }}" value="{{ item.quantity }}"></td>
-                            </tr>
-                        {% endfor %}
-                    </table>
-                    <input type="submit" value="Update">
-                </form>
-            </div> -->
-
             <!-- Inventory Add Modal -->
             {% include 'modals/add_modal.html' %}
 

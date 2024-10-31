@@ -21,3 +21,23 @@
     padding: 0.5rem 0.8rem;
     cursor: pointer;
 }
+
+.modal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.5);
+    height: 100vh;
+    width: 100vw;
+  }
+
+  .columns {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
