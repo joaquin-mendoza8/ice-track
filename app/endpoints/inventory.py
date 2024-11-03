@@ -68,13 +68,17 @@ def inventory_add_product():
     if request.method == 'POST':
 
         # extract the product data from the form
-        product_flavor = request.form['product-flavor']
-        product_price = request.form['product-price']
-        product_quantity = request.form['product-quantity']
-        product_status = request.form['product-status']
+        product_flavor = request.form.get('product-flavor')
+        product_price = request.form.get('product-price')
+        product_quantity = request.form.get('product-quantity')
+        product_status = request.form.get('product-status')
 
         # ensure all fields are filled
-        if (product_flavor and product_price and product_quantity):
+        if (product_flavor and product_price and product_quantity and product_status):
+
+            # convert the price and quantity to float and int
+            product_price = float(product_price)
+            product_quantity = int(product_quantity)
 
             # create a new product object
             new_product = Product(flavor=product_flavor, price=product_price, quantity=product_quantity, status=product_status)
@@ -109,35 +113,6 @@ def inventory_delete_product():
 
             # TODO: log the error / handle the error
             print(f"Product not found: {product}")
-
-    # redirect to the inventory page
-    return redirect(url_for('inventory.inventory_home'))
-
-@inventory.route('/inventory_add', methods=['GET', 'POST'])
-def inventory_add_product():
-
-    # check if the request is a POST request
-    if request.method == 'POST':
-
-        # extract the product data from the form
-        product_flavor = request.form['product-flavor']
-        product_price = request.form['product-price']
-        product_quantity = request.form['product-quantity']
-        product_status = request.form['product-status']
-
-        # ensure all fields are filled
-        if (product_flavor and product_price and product_quantity):
-
-            # create a new product object
-            new_product = Product(flavor=product_flavor, price=product_price, quantity=product_quantity, 
-                                  status=product_status)
-
-            # add the new product to the database
-            db.session.add(new_product)
-            db.session.commit()
-
-            # log the addition
-            print(f'Added product: {new_product}')
 
     # redirect to the inventory page
     return redirect(url_for('inventory.inventory_home'))

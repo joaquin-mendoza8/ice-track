@@ -39,7 +39,7 @@
                 <!-- inline container for title and modal button -->
                 <div class="d-flex justify-content-between">
                     <h1>Products</h1>
-                    <button type="button" class="btn modal-btn" data-bs-toggle="modal" data-bs-target="#exampleModal">+ New</button>
+                    <button type="button" class="btn modal-btn" data-bs-toggle="modal" data-bs-target="#addModal">+ New</button>
                 </div>
 
                 <!-- Dropdown for 'Filter By' functionality -->
@@ -91,5 +91,5 @@
 {% endblock %}
 
 {% block scripts %}
-    <script type="module" src="{{ url_for('static', filename='js/inventory.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/inventory.js') }}"></script>
 {% endblock %}
