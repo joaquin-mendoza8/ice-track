@@ -28,12 +28,12 @@ def test_inventory_home(client):
 
 # test the inventory add endpoint (POST request)
 def test_inventory_add(client):
-    response = client.post('/inventory_add', data=dict(
-        product_flavor='test',
-        product_price=1.00,
-        product_quantity=10,
-        product_status='planned'
-    ), follow_redirects=True)
+    response = client.post('/inventory_add', data={
+        "product-flavor": 'test',
+        "product-price": 1.00,
+        "product-quantity": 10,
+        "product-status": 'planned'
+    }, follow_redirects=True)
 
     # check if the product was added
     assert response.status_code == 200
@@ -45,14 +45,17 @@ def test_inventory_update(client):
     with app.app_context():
         product_id = Product.query.filter_by(flavor='test').first().id
 
+    # check if the product was added
+    assert product_id is not None
+
     # update the product using test client
-    response = client.post('/inventory_update', data=dict(
-        product_id=product_id,
-        product_flavor='test',
-        product_price=1.10,
-        product_quantity=1,
-        product_status='actual'
-    ), follow_redirects=True)
+    response = client.post('/inventory_update', data={
+        "product-id": product_id,
+        "product-flavor": 'test',
+        "product-price": 1.10,
+        "product-quantity": 1,
+        "product-status":'actual'
+    }, follow_redirects=True)
 
     # check if the product was updated
     assert response.status_code == 200
@@ -64,10 +67,13 @@ def test_inventory_delete(client):
     with app.app_context():
         product_id = Product.query.filter_by(flavor='test').first().id
 
+    # check if the product was added
+    assert product_id is not None
+
     # delete the product using test client
-    response = client.post('/inventory_delete', data=dict(
-        product_id_delete=product_id
-    ), follow_redirects=True)
+    response = client.post('/inventory_delete', data={
+        "product-id-delete": product_id
+    }, follow_redirects=True)
 
     # check if the product was deleted
     assert response.status_code == 200
