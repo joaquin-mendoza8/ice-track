@@ -29,7 +29,10 @@ class Config:
     # db connection configuration (conditionally set based on environment)
     DATABASE_URL_DEV = os.environ.get('DATABASE_URL_DEV')
     DATABASE_URL_PROD = os.environ.get('DATABASE_URL_PROD')
-    SQLALCHEMY_DATABASE_URI = DATABASE_URL_DEV if os.environ.get('RUN_DEV') == "True" else DATABASE_URL_PROD
+    if (os.environ.get('CI_ENV') or os.environ.get('RUN_DEV') == "True"):
+        SQLALCHEMY_DATABASE_URI = DATABASE_URL_DEV
+    else:
+        SQLALCHEMY_DATABASE_URI = DATABASE_URL_PROD
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # CSRF protection
