@@ -167,6 +167,9 @@ def inventory_delete_product():
 
         # check if the product exists
         if product:
+            product.deleted_at = datetime.now()
+            product.user_id_delete = associated_user
+            db.session.commit()
 
             # check if the product is not already deleted and the user exists
             if (product.deleted_at is None and associated_user is not None):
@@ -200,13 +203,14 @@ def inventory_add_product():
         product_price = request.form['product-price']
         product_quantity = request.form['product-quantity']
         product_status = request.form['product-status']
+        associated_user = request.form['user-id']
 
-        # ensure all fields are filled
+        # ensure all fields are filled "add container_size", "add product status"
         if (product_flavor and product_price and product_quantity):
 
             # create a new product object
             new_product = Product(flavor=product_flavor, price=product_price, quantity=product_quantity, 
-                                  status=product_status)
+                                  status=product_status, user_id_add=associated_user)
 
             # add the new product to the database
             db.session.add(new_product)

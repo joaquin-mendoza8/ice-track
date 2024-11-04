@@ -36,7 +36,8 @@ class Product(db.Model):
 
     # composite primary key (id, container_size) to reflect unique product per container size
     id=db.Column(db.Integer, primary_key=True, autoincrement=True)
-    container_size=db.Column(db.String(50))
+    container_size=db.Column(db.String(50), primary_key=True) # a composite primary key for container sizes (small, medium, large)
+    
     flavor=db.Column(db.String(150), nullable=False)
     price=db.Column(db.Float, nullable=False)
     quantity=db.Column(db.Integer, nullable=False)
