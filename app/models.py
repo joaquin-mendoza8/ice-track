@@ -27,7 +27,10 @@ class User(db.Model, UserMixin):
 # Ice Cream data model
 class Product(db.Model):
 
+    # composite primary key (id, container_size) to reflect unique product per container size
     id=db.Column(db.Integer, primary_key=True, autoincrement=True)
+    container_size=db.Column(db.String(50), primary_key=True) # a composite primary key for container sizes (small, medium, large)
+    
     flavor=db.Column(db.String(150), nullable=False)
     price=db.Column(db.Float, nullable=False)
     quantity=db.Column(db.Integer, nullable=False)
@@ -35,7 +38,12 @@ class Product(db.Model):
     created_at=db.Column(db.DateTime, nullable=False, default=func.now()) # when the product was created
     deleted_at=db.Column(db.DateTime, nullable=True, default=None) # when the product was deleted
     disposition=db.Column(db.String(150), nullable=True)  # disposition of a removed product (shipped, defective, spoiled, etc.)
-    # unit_size=db.Column(db.String(150), nullable=False) # TODO: figure out how to implement this
+    
+    # create a link to User model to associate add/deletes to a user.
+    user_id_add=db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) # user who added the product
+    user_id_delete=db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True) # user who deleted the product
+    
+    
     # order_id=db.Column(db.Integer, db.ForeignKey('order.id'), nullable=True) # TODO: implement after orders are implemented
 
     # print the product
