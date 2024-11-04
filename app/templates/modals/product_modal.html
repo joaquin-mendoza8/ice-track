@@ -24,39 +24,48 @@
                             <input type="text"
                                    class="form-control product-flavor-input"
                                    id="product-flavor"
-                                   name="product-flavor">
+                                   name="product-flavor" required>
                         </div>
                         <div class="form-group">
-                            <label for="product-price">Price</label>
+                            <label for="product-price">Price ($ USD)</label>
                             <input type="number" step="0.01"
                                    class="form-control product-price-input"
                                    id="product-price"
                                    name="product-price"
-                                   min="0" pattern="^\d+(\.\d{1,2})?$">
+                                   min="0" pattern="^\d+(\.\d{1,2})?$" required>
                         </div>
                         <div class="form-group">
                             <label for="product-quantity">Quantity</label>
                             <input type="number"
                                    class="form-control product-quantity-input"
                                    id="product-quantity"
-                                   name="product-quantity">
+                                   name="product-quantity" required>
                         </div>
-                    </form>
-
-                    <form id="deleteForm" method="POST" action="/inventory_delete">
-                        <input type="hidden" name="product-id-delete" id="product-id-delete">
-                        <!-- Button to delete product from inventory -->
-                        <button type="submit" class="btn btn-danger delete-btn" href="/inventory_delete">Delete Product</button>
                     </form>
                 </div>
             </div>
 
             <!-- Modal Footer Buttons -->
-            <div class="modal-footer">
-                <button type="button" class="btn" data-dismiss="modal" onclick="closeModal()">Close</button>
+            <div class="modal-footer d-flex justify-content-between align-items-center">
 
-                <!-- Button to submit form -->
-                <button type="button" class="btn btn-primary" onclick="document.querySelector('#updateForm').submit();">Save Changes</button>
+                <!-- Form to trigger server call without needing JS -->
+                <form id="deleteForm" method="POST" action="/inventory_delete" class="d-flex align-items-center">
+                    
+                    <!-- Hidden input holding product id for server call -->
+                    <input type="hidden" name="product-id-delete" id="product-id-delete">
+                    
+                    <!-- Button to delete product from inventory -->
+                    <button type="button" class="btn btn-danger">Delete</button>
+                </form>
+
+                <!-- Push buttons to right side of footer -->
+                <div class="ml-auto">
+                    <!-- Button to close modal -->
+                    <button type="button" class="btn" data-dismiss="modal" onclick="closeModal()">Close</button>
+
+                    <!-- Button to submit form -->
+                    <button type="button" class="btn btn-primary" onclick="document.querySelector('#updateForm').submit();">Save Changes</button>
+                </div>
             </div>
         </div>
     </div>

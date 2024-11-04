@@ -22,6 +22,8 @@
     cursor: pointer;
 }
 
-.delete-btn {
-    margin-top: 1rem;
-}
+/* #deleteForm {
+    display: flex;
+    align-items: start;
+    justify-content: left;
+} */
