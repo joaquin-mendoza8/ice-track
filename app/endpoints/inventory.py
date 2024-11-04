@@ -74,13 +74,15 @@ def inventory_delete_product():
 
         # extract the product id from the form
         product_id = request.form['product-id-delete']
+        associated_user = request.form['user-id']
 
         # find the product in the database
         product = Product.query.get(product_id)
 
         # if product exists, delete it
         if product:
-            db.session.delete(product)
+            product.deleted_at = datetime.now()
+            product.user_id_delete = associated_user
             db.session.commit()
 
             # TODO: log the deletion
@@ -104,13 +106,14 @@ def inventory_add_product():
         product_price = request.form['product-price']
         product_quantity = request.form['product-quantity']
         product_status = request.form['product-status']
+        associated_user = request.form['user-id']
 
-        # ensure all fields are filled
+        # ensure all fields are filled "add container_size", "add product status"
         if (product_flavor and product_price and product_quantity):
 
             # create a new product object
             new_product = Product(flavor=product_flavor, price=product_price, quantity=product_quantity, 
-                                  status=product_status)
+                                  status=product_status, user_id_add=associated_user)
 
             # add the new product to the database
             db.session.add(new_product)
