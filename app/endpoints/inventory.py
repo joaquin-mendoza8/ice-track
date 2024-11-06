@@ -76,6 +76,7 @@ def inventory_add_product():
         product_price = request.form.get('product-price')
         product_quantity = request.form.get('product-quantity')
         product_status = request.form.get('product-status')
+        associated_user = request.form.get('user-id')
 
         # ensure all fields are filled
         if (product_flavor and product_price and product_quantity and product_status):
@@ -85,7 +86,8 @@ def inventory_add_product():
             product_quantity = int(product_quantity)
 
             # create a new product object
-            new_product = Product(flavor=product_flavor, price=product_price, quantity=product_quantity, status=product_status)
+            new_product = Product(flavor=product_flavor, price=product_price, quantity=product_quantity, 
+                                  status=product_status)
 
             # add the new product to the database
             db.session.add(new_product)
@@ -142,21 +144,6 @@ def inventory_add_customer():
         # customer_phone = request.form.get('customer-phone')
         # customer_address = request.form.get('customer-address')
         # customer_status = request.form.get('customer-status')
-        associated_user = request.form['user-id']
-
-        # ensure all fields are filled
-        if (product_flavor and product_price and product_quantity):
-
-            # create a new product object
-            new_product = Product(flavor=product_flavor, price=product_price, quantity=product_quantity, 
-                                  status=product_status)
-
-            # add the new product to the database
-            db.session.add(new_product)
-            db.session.commit()
-
-            # log the addition
-            print(f'Added product: {new_product}')
 
     # redirect to the inventory page
     return redirect(url_for('inventory.inventory_home'))
