@@ -6,7 +6,9 @@ from config.config import Config, db, session as flask_session
 from app.utils.filters import *
 from app.endpoints.auth import auth
 from app.endpoints.inventory import inventory
-from app.endpoints.order import order
+from app.endpoints.order import orders
+from app.endpoints.shipments import shipments
+from app.endpoints.tickets import tickets
 from app.models import User
 
 # create the flask app
@@ -28,7 +30,9 @@ for name, func in filters.items():
 # app.register_blueprint(<BLUEPRINT_NAME>)
 app.register_blueprint(auth)
 app.register_blueprint(inventory)
-app.register_blueprint(order)
+app.register_blueprint(orders)
+app.register_blueprint(shipments)
+app.register_blueprint(tickets)
 
 # create the database tables
 with app.app_context():

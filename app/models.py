@@ -65,7 +65,7 @@ class Order(db.Model):
     total_cost = db.Column(db.Float, nullable=False)
 
     # sets a one to many relationship with Order(one) and OrderItem(many)
-    orders_items = db.relationship('OrderItem', backref='order')
+    order_items = db.relationship('OrderItem', backref='parent_order', lazy=True)
     # initializing each attribute
     def __init__(self, customer_name, customer_status, shipping_address, 
                  shipping_type, shipping_cost, billing_address, total_cost):
@@ -87,9 +87,9 @@ class OrderItem(db.Model):
     ship_date = db.Column(db.Date, nullable=False)
 
     # sets a one to many relationship with OrderItem(one) and product(many) 
-    product = db.relationship('Product', backref='order_items')
+    # product = db.relationship('Product', backref='order_item')
     # sets a many to one relationship with OrderItem(many) and order(one)
-    order = db.relationship('Order', backref='order_items')
+    # order = db.relationship('Order', backref='order_item')
 
     # initializing attributes
     def __init__(self, order_id, product_id, quantity, ship_date):
@@ -97,4 +97,13 @@ class OrderItem(db.Model):
         self.product_id = product_id
         self.quantity = quantity
         self.ship_date = ship_date
+
+class Customer(db.Model):
+    
+    id=db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name=db.Column(db.String(150), nullable=False)
+    status=db.Column(db.String(150), nullable=False)
+    shipping_address=db.Column(db.String(250), nullable=False)
+    billing_address=db.Column(db.String(250), nullable=False)
+    
         

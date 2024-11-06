@@ -1,8 +1,6 @@
 from flask import Blueprint, request, redirect, url_for, render_template
 from app.utils.data import *
-from app.models import Product
-#from app.models import Order
-#from app.models import Customer
+from app.models import Product, User
 from config.config import db
 from datetime import datetime
 
@@ -36,6 +34,7 @@ def inventory_home():
     return render_template('inventory.html', **jinja_vars)
 
 
+# inventory update endpoint
 @inventory.route('/inventory_update', methods=['GET', 'POST'])
 def inventory_update_product():
     
@@ -66,6 +65,8 @@ def inventory_update_product():
     # redirect to the inventory page
     return redirect(url_for('inventory.inventory_home'))
 
+
+# inventory add endpoint
 @inventory.route('/inventory_add', methods=['GET', 'POST'])
 def inventory_add_product():
     if request.method == 'POST':
@@ -95,6 +96,9 @@ def inventory_add_product():
             
     return redirect(url_for('inventory.inventory_home'))
 
+
+
+# inventory delete endpoint
 @inventory.route('/inventory_delete', methods=['GET', 'POST'])
 def inventory_delete_product():
     
@@ -124,25 +128,28 @@ def inventory_delete_product():
     # redirect to the inventory page
     return redirect(url_for('inventory.inventory_home'))
 
-@inventory.route('/inventory_add', methods=['GET', 'POST'])
-def inventory_add_product():
 
-    # check if the request is a POST request
-    if request.method == 'POST':
+# inventory customer add endpoint
+@inventory.route('/inventory_customer_add', methods=['GET', 'POST'])
+def inventory_add_customer():
 
-        # extract the product data from the form
-        product_flavor = request.form['product-flavor']
-        product_price = request.form['product-price']
-        product_quantity = request.form['product-quantity']
-        product_status = request.form['product-status']
+    # TODO: implement customer add functionality
+    # if request.method == 'POST':
+
+        # # extract the customer data from the form
+        # customer_name = request.form.get('customer-name')
+        # customer_email = request.form.get('customer-email')
+        # customer_phone = request.form.get('customer-phone')
+        # customer_address = request.form.get('customer-address')
+        # customer_status = request.form.get('customer-status')
         associated_user = request.form['user-id']
 
-        # ensure all fields are filled "add container_size", "add product status"
+        # ensure all fields are filled
         if (product_flavor and product_price and product_quantity):
 
             # create a new product object
             new_product = Product(flavor=product_flavor, price=product_price, quantity=product_quantity, 
-                                  status=product_status, user_id_add=associated_user)
+                                  status=product_status)
 
             # add the new product to the database
             db.session.add(new_product)
