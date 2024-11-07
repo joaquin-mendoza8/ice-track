@@ -89,7 +89,7 @@ def test_inventory_delete(client):
 
 # a dummy test that deletes all "test" products from the database
 # mark as "skip" to avoid running this test
-@pytest.mark.skip
+# @pytest.mark.skip
 def test_delete_test_products():
 
     # get the product id from the database

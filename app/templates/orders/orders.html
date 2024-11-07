@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% import 'macros.html' as macros %}
+{% import 'components/macros.html' as macros %}
 
 {% block title %}Orders{% endblock %}
 
@@ -9,14 +9,14 @@
 
 {% block content %}
 
-    {% include 'modals/customers_add_modal.html' %}
-    {% include 'modals/orders_add_modal.html' %}
+    {% include 'customers/modals/customers_add_modal.html' %}
+    {% include 'orders/modals/orders_add_modal.html' %}
 
     <!-- Main content container -->
     <div class="container-md">
 
         <!-- Offcanvas sidebar -->
-        {% include 'navbar.html' %}
+        {% include 'components/navbar.html' %}
 
         <!-- Main content -->
         <main class="ms-sm-auto px-md-4 pt-md-3">
@@ -56,8 +56,6 @@
                     {% endif %}
                 </table>
             </div>
-
-            
 
             <!-- Orders Table -->
             <div class="mt-5">

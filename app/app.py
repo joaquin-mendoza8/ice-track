@@ -57,7 +57,7 @@ def home():
     if not current_user.is_authenticated:
         return redirect(url_for('auth.login'))
 
-    return render_template('home.html')
+    return render_template('inventory/inventory.html')
 
 
 

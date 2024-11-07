@@ -32,9 +32,48 @@ def orders_home():
         'customers': customers_dict
     }
 
-    return render_template('orders.html', **jinja_vars)
+    return render_template('orders/orders.html', **jinja_vars)
 
-# inventory add endpoint
+# orders update endpoint
+@orders.route('/orders_update', methods=['GET', 'POST'])
+def orders_update_order():
+     
+    # check if POST request was made
+    if request.method == 'POST':
+         
+        # extract form data
+        order_id = request.form.get('order-id')
+        customer_name = request.form.get('customer-name')
+        customer_status = request.form.get('customer-status')
+        shipping_address = request.form.get('shipping-address')
+        shipping_type = request.form.get('shipping-type')
+        shipping_cost = request.form.get('shipping-cost')
+        billing_address = request.form.get('billing-address')
+        total_cost = request.form.get('total-cost')
+
+        # ensure all fields are filled
+        if all([ order_id, customer_name, customer_status, shipping_address, 
+                shipping_type, shipping_cost, billing_address, total_cost ]):
+            
+            # fetch the order from the database
+            order = Order.query.get(order_id)
+            
+            # update the order object
+            order.customer_name = customer_name
+            order.customer_status = customer_status
+            order.shipping_address = shipping_address
+            order.shipping_type = shipping_type
+            order.shipping_cost = shipping_cost
+            order.billing_address = billing_address
+            order.total_cost = total_cost
+
+            # commit the changes to the database
+            db.session.commit()
+
+            # redirect back to the order form
+            return redirect(url_for('orders.orders_home'))
+
+# orders add endpoint
 @orders.route('/orders_add', methods=['GET', 'POST'])
 def orders_add_order():
     
@@ -51,10 +90,8 @@ def orders_add_order():
         total_cost = request.form.get('total-cost')
 
         # ensure all fields are filled
-        if (
-            customer_name and customer_status and shipping_address and
-            shipping_type and shipping_cost and billing_address and total_cost
-        ):
+        if all([ customer_name, customer_status, shipping_address,
+                shipping_type, shipping_cost, billing_address, total_cost ]):
                     
                 # initialize the order object
                 new_order = Order(
@@ -74,7 +111,7 @@ def orders_add_order():
                 # redirect back to the order form
                 return redirect(url_for('orders.orders_home'))
 
-    return render_template('orders.html')
+    return render_template('orders/orders.html')
 
 # get available sizes for a flavor endpoint
 @orders.route('/orders/get_sizes', methods=['GET'])
@@ -95,63 +132,10 @@ def orders_get_sizes():
     # extract unique sizes from the products
     sizes = set([product.container_size for product in products])
 
+    # convert the sizes to a list (reverse alphabetical order)
+    sizes = sorted(list(sizes), reverse=True)
+
     # return the sizes as a JSON response
     return jsonify({"sizes": list(sizes)})
-
-'''
-def create_order():
-    # retrieve the order detail from order entry form
-    customer_name = request.form['customer-name']
-    customer_status = request.form['customer-status']
-    shipping_address = request.form['shipping-address']
-    shipping_type = request.form['shipping-type']
-    shipping_cost = float(request.form['shipping-cost'])
-    billing_address = request.form['billing-address']
-    total_cost = shipping_cost
-
-    # read lines from the form, specifically flavor, size, and quantity
-    line_items = request.form.getlist('line-items')
-    for item in line_items:
-        flavor = item['flavor']
-        size = item['size']
-        quantity = item['quantity']
-
-        # query database for the flavor
-        product = Product.query.filter_by(flavor=flavor).first()
-        if product is None: # checks if flavor exists
-            return f"The flavor {flavor} does not exist.", 404
-        
-        if product.size != size: # checks if the container size exists
-            return f"This size {size} for flavor {flavor} does not exist.", 404
-        
-        if product.quantity < quantity: # checks if flavor is in stock
-            return f"Quantity requested exceeds available invenotry for {flavor}. In stock: {product.quantity}", 400
-        
-        # calculate total cost of order
-        line_item_cost = product.size * quantity
-        total_cost += line_item_cost
-
-        # create an order item, update new stock, add order item to order
-        order_item = OrderItem(order=new_order, product=product, quantity = quantity)
-        product.quantity -= quantity
-        new_order.order_items.append(order_item)
-
-    #initialize Order object from extracted details above
-    new_order = Order(
-        customer_name=customer_name,
-        customer_status=customer_status,
-        shipping_address=shipping_address,
-        shipping_type=shipping_type,
-        shipping_cost=shipping_cost,
-        billing_address=billing_address,
-        total_cost=total_cost
-    )
-
-    # updates database and goes back to order form
-    db.session.add(new_order)
-    db.session.commit()
-    return redirect(url_for('order.order_home'))
-'''
-
     
     

@@ -59,9 +59,15 @@ class Order(db.Model):
 
     # defining data attributes in order
     id = db.Column(db.Integer, primary_key= True)
-    customer_name = db.Column(db.String(150), nullable=False)
-    customer_status = db.Column(db.String(50), nullable=False)
-    shipping_address = db.Column(db.String(150), nullable=False)
+
+    # foreign keys to User model
+    customer_first_name = db.ForeignKey('user.first_name')
+    customer_last_name = db.ForeignKey('user.last_name')
+    customer_status = db.ForeignKey('user.status')
+    shipping_address = db.ForeignKey('user.shipping_address')
+    billing_address = db.ForeignKey('user.billing_address')
+
+    # order data attributes
     shipping_type = db.Column(db.String(100), nullable=False)
     shipping_cost = db.Column(db.Float, nullable=False)
     billing_address = db.Column(db.String(150), nullable=False)
@@ -70,17 +76,10 @@ class Order(db.Model):
     # sets a one to many relationship with Order(one) and OrderItem(many)
     order_items = db.relationship('OrderItem', backref='parent_order', lazy=True)
 
-    # initializing each attribute
-    def __init__(self, customer_name, customer_status, shipping_address, 
-                 shipping_type, shipping_cost, billing_address, total_cost):
-        self.customer_name = customer_name
-        self.customer_status = customer_status
-        self.shipping_address = shipping_address
-        self.shipping_type = shipping_type
-        self.shipping_cost = shipping_cost
-        self.billing_address = billing_address
-        self.total_cost = total_cost
-
+    # print the order
+    def __repr__(self):
+        return f'<Order {self.id}>'
+            
 # Order item data models (products inside of an order)
 class OrderItem(db.Model):
     #defining product data attributes

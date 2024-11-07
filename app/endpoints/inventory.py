@@ -7,6 +7,8 @@ from datetime import datetime
 # create the inventory management blueprint
 inventory = Blueprint('inventory', __name__)
 
+# template paths
+
 # ROUTES
 
 # inventory home endpoint
@@ -31,7 +33,7 @@ def inventory_home():
         'products': products_dict
     }
 
-    return render_template('inventory.html', **jinja_vars)
+    return render_template('inventory/inventory.html', **jinja_vars)
 
 
 # inventory update endpoint
@@ -47,9 +49,11 @@ def inventory_update_product():
         product_container_size = request.form.get('product-container-size')
         product_price = request.form.get('product-price')
         product_quantity = request.form.get('product-quantity')
+        product_status = request.form.get('product-status')
 
         # ensure all fields are filled
-        if all([product_id, product_flavor, product_container_size, product_price, product_quantity]):
+        if all([product_id, product_flavor, product_container_size,
+                product_price, product_quantity, product_status]):
                 
             # find the product in the database
             product = Product.query.get(product_id)
@@ -60,9 +64,20 @@ def inventory_update_product():
                 product.container_size = product_container_size
                 product.price = product_price
                 product.quantity = product_quantity
+                product.status = product_status
 
                 # commit the changes
                 db.session.commit()
+
+            else:
+
+                # TODO: log the error / handle the error
+                print(f"Product not found: {product}")
+
+        else:
+
+            # TODO: log the error / handle the error
+            print(f"Missing fields: {product_id, product_flavor, product_container_size, product_price, product_quantity, product_status}")
 
     # redirect to the inventory page
     return redirect(url_for('inventory.inventory_home'))

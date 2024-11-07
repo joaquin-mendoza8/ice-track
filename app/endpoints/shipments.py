@@ -9,4 +9,4 @@ shipments = Blueprint('shipments', __name__)
 # shipments home endpoint
 @shipments.route('/shipments', methods=['GET'])
 def shipments_home():
-    return render_template('shipments.html')
+    return render_template('shipments/shipments.html')

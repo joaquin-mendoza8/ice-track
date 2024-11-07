@@ -31,10 +31,10 @@ def login():
             # redirect to home
             return redirect(url_for(next_page)) if next_page else redirect(url_for('home'))
         else:
-            return render_template('login.html', msg="Invalid credentials provided.")
+            return render_template('auth/login.html', msg="Invalid credentials provided.")
         
     else:
-        return render_template('login.html')
+        return render_template('auth/login.html')
     
 
 # create the logout endpoint
@@ -64,7 +64,7 @@ def register():
 
         # check if passwords match
         if password != confirm_password:
-            return render_template('register.html', msg="Passwords do not match.")
+            return render_template('auth/register.html', msg="Passwords do not match.")
 
         # check if user exists
         user = User.query.filter_by(username=username).first()
@@ -90,11 +90,11 @@ def register():
             else:
 
                 # missing fields
-                return render_template('register.html', msg="All fields are required.")
+                return render_template('auth/register.html', msg="All fields are required.")
         else:
 
             # user already exists (return error)
-            return render_template('register.html', msg="User already exists.")
+            return render_template('auth/register.html', msg="User already exists.")
         
     else:
-        return render_template('register.html')
+        return render_template('auth/register.html')

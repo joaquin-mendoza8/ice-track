@@ -9,4 +9,4 @@ tickets = Blueprint('tickets', __name__)
 # tickets home endpoint
 @tickets.route('/tickets', methods=['GET'])
 def tickets_home():
-    return render_template('tickets.html')
+    return render_template('tickets/tickets.html')
