@@ -22,3 +22,13 @@ def parse_order_data(orders):
          "total_cost": order.total_cost}
         for order in orders
     ]
+
+def parse_customer_data(customers):
+    """Converts a SQLAlchemy list of objects to a dictionary."""
+    
+    return [
+        {"id": customer.id, "name": f"{customer.first_name} {customer.last_name}",
+         "status": customer.status, "shipping_address": customer.shipping_address,
+         "billing_address": customer.billing_address,}
+        for customer in customers
+    ]

@@ -16,16 +16,20 @@ def orders_home():
     # fetch all products from the database
     products = Product.query.all()
 
-    # parse the product/order data into a dictionary
-    products_dict = parse_product_data(products)
-    orders_dict = parse_order_data(orders)
+    # fetch all customers from the database (non-admin users)
+    customers = User.query.filter_by(is_admin=False).all()
 
+    # parse the product, order, and customers data into lists of dictionaries
+    # products_dict = parse_product_data(products)
+    orders_dict = parse_order_data(orders)
+    customers_dict = parse_customer_data(customers)
 
     # dictionary of items to pass to the template
     jinja_vars = {
         # 'products': products_dict,
         'unique_flavors': list(set([product.flavor for product in products])),
-        'orders': orders_dict
+        'orders': orders_dict,
+        'customers': customers_dict
     }
 
     return render_template('orders.html', **jinja_vars)

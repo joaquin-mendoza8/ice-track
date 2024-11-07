@@ -70,7 +70,6 @@ def test_inventory_delete(client):
     with app.app_context():
         product = Product.query.filter_by(flavor='test').first()
         product_id = product.id
-        container_size = product.container_size
 
     # check if the product was added
     assert product_id is not None
@@ -81,12 +80,16 @@ def test_inventory_delete(client):
         "user-id": 999
     }, follow_redirects=True)
 
+    # reload the product
+    with app.app_context():
+        product = Product.query.get(product_id)
+
     # check if the product was deleted
     assert response.status_code == 200 and product.deleted_at is not None
 
 # a dummy test that deletes all "test" products from the database
 # mark as "skip" to avoid running this test
-# @pytest.mark.skip
+@pytest.mark.skip
 def test_delete_test_products():
 
     # get the product id from the database

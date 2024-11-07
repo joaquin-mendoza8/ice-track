@@ -36,18 +36,18 @@
                     <thead>
                         {% for key in customers[0].keys() %}
                             {% if key not in ['id'] %}
-                                <th scope="col">{{ key.capitalize() }}</th>
+                                <th scope="col">{{ key | attribute }}</th>
                             {% endif %}
                         {% endfor %}
                     </thead>
                     <tbody>
                         {% for customer in customers %}
                             {% set outer_index = loop.index - 1 %}
-                            <tr onclick="openModal({{ product }}, {{ product['id'] }})" id="row-{{ outer_index }}">
+                            <tr onclick="openModal({{ customer }}, {{ customer['id'] }})" id="row-{{ outer_index }}">
                                 <td>{{ customer.name }}</td>
                                 <td>{{ customer.status }}</td>
-                                <td>{{ customer.shipping_address }}</td>
-                                <td>{{ customer.billing_address }}</td>
+                                <td>{{ customer.shipping_address | address }}</td>
+                                <td>{{ customer.billing_address | address }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>
