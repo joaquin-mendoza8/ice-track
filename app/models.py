@@ -10,10 +10,15 @@ class User(db.Model, UserMixin):
     id=db.Column(db.Integer, primary_key=True)
     username=db.Column(db.String(150), unique=True, nullable=False)
     password=db.Column(db.String(150), nullable=False)
-    is_active=db.Column(db.Boolean, default=True)   # automatically set to True for new users
     last_login=db.Column(db.DateTime, nullable=True, default=func.now())    # automatically set to current time for new users
+    is_admin=db.Column(db.Boolean, default=False)   # automatically set to False for new users
 
-    #TODO: Add customer status column
+    # customer-related fields
+    first_name=db.Column(db.String(150), nullable=False) # customer first name
+    last_name=db.Column(db.String(150), nullable=False) # customer last name
+    status=db.Column(db.String(150), nullable=False) # preferred, ok, shaky
+    shipping_address=db.Column(db.String(250), nullable=False)
+    billing_address=db.Column(db.String(250), nullable=False)
     
     # print the user
     def __repr__(self):
@@ -23,14 +28,12 @@ class User(db.Model, UserMixin):
     def get_id(self):
         return self.id
 
-
 # Ice Cream data model
 class Product(db.Model):
 
     # composite primary key (id, container_size) to reflect unique product per container size
     id=db.Column(db.Integer, primary_key=True, autoincrement=True)
-    container_size=db.Column(db.String(50), primary_key=True) # a composite primary key for container sizes (small, medium, large)
-    
+    container_size=db.Column(db.String(50))
     flavor=db.Column(db.String(150), nullable=False)
     price=db.Column(db.Float, nullable=False)
     quantity=db.Column(db.Integer, nullable=False)
@@ -66,6 +69,7 @@ class Order(db.Model):
 
     # sets a one to many relationship with Order(one) and OrderItem(many)
     order_items = db.relationship('OrderItem', backref='parent_order', lazy=True)
+
     # initializing each attribute
     def __init__(self, customer_name, customer_status, shipping_address, 
                  shipping_type, shipping_cost, billing_address, total_cost):
@@ -97,13 +101,5 @@ class OrderItem(db.Model):
         self.product_id = product_id
         self.quantity = quantity
         self.ship_date = ship_date
-
-class Customer(db.Model):
-    
-    id=db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name=db.Column(db.String(150), nullable=False)
-    status=db.Column(db.String(150), nullable=False)
-    shipping_address=db.Column(db.String(250), nullable=False)
-    billing_address=db.Column(db.String(250), nullable=False)
     
         

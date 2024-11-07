@@ -17,8 +17,11 @@
                         <div class="mb-3">
                             <label for="flavor" class="form-label">Product</label>
                             <select class="form-control" id="flavor" name="flavor" required>
-                                {% for product in products %}
-                                    <option value="{{ product.id }}">{{ product.flavor }}</option>
+                                <!-- default disabled option -->
+                                <option value="" disabled selected>Select product</option>
+                                
+                                {% for flavor in unique_flavors %}
+                                    <option value="">{{ flavor }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -28,7 +31,7 @@
                             <label for="size" class="form-label">Size</label>
                             <select class="form-control" id="size" name="size" required>
                                 <!-- default disabled option -->
-                                <option value="" disabled selected>Select a size</option>
+                                <option value="" disabled selected>Select size</option>
                             </select>
                         </div>
 

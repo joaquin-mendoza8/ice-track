@@ -23,7 +23,8 @@ def orders_home():
 
     # dictionary of items to pass to the template
     jinja_vars = {
-        'products': products_dict,
+        # 'products': products_dict,
+        'unique_flavors': list(set([product.flavor for product in products])),
         'orders': orders_dict
     }
 
@@ -84,22 +85,14 @@ def orders_get_sizes():
     else:
         return jsonify([])
 
-    print("FLAVOR RECEIVED:", flavor)
-     
-    # # get the product id from the query string
-    # product_id = request.args.get('product-id')
-
-    # # get the flavor from the product
-    # flavor = Product.query.get(product_id).flavor
-
     # fetch all products from the database
     products = Product.query.filter_by(flavor=flavor).all()
 
     # extract unique sizes from the products
-    sizes = set([product.size for product in products])
+    sizes = set([product.container_size for product in products])
 
     # return the sizes as a JSON response
-    return jsonify(list(sizes))
+    return jsonify({"sizes": list(sizes)})
 
 '''
 def create_order():

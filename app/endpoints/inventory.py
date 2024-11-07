@@ -42,13 +42,14 @@ def inventory_update_product():
     if request.method == 'POST':
 
         # extract form data
-        product_id = request.form['product-id']
-        product_flavor = request.form['product-flavor']
-        product_price = request.form['product-price']
-        product_quantity = request.form['product-quantity']
+        product_id = request.form.get('product-id')
+        product_flavor = request.form.get('product-flavor')
+        product_container_size = request.form.get('product-container-size')
+        product_price = request.form.get('product-price')
+        product_quantity = request.form.get('product-quantity')
 
         # ensure all fields are filled
-        if (product_id and product_flavor and product_price and product_quantity):
+        if all([product_id, product_flavor, product_container_size, product_price, product_quantity]):
                 
             # find the product in the database
             product = Product.query.get(product_id)
@@ -56,6 +57,7 @@ def inventory_update_product():
             # if product exists, update it
             if product:
                 product.flavor = product_flavor
+                product.container_size = product_container_size
                 product.price = product_price
                 product.quantity = product_quantity
 
@@ -73,21 +75,25 @@ def inventory_add_product():
 
         # extract the product data from the form
         product_flavor = request.form.get('product-flavor')
+        product_container_size = request.form.get('product-container-size')
         product_price = request.form.get('product-price')
         product_quantity = request.form.get('product-quantity')
         product_status = request.form.get('product-status')
         associated_user = request.form.get('user-id')
 
         # ensure all fields are filled
-        if (product_flavor and product_price and product_quantity and product_status):
+        if all([product_flavor, product_container_size, product_price, 
+                product_quantity, product_status, associated_user
+        ]):
 
             # convert the price and quantity to float and int
             product_price = float(product_price)
             product_quantity = int(product_quantity)
 
             # create a new product object
-            new_product = Product(flavor=product_flavor, price=product_price, quantity=product_quantity, 
-                                  status=product_status)
+            new_product = Product(flavor=product_flavor, container_size=product_container_size, 
+                                  price=product_price, quantity=product_quantity, 
+                                  status=product_status, user_id_add=associated_user)
 
             # add the new product to the database
             db.session.add(new_product)
@@ -108,8 +114,8 @@ def inventory_delete_product():
     if request.method == 'POST':
 
         # extract the product id from the form
-        product_id = request.form['product-id-delete']
-        associated_user = request.form['user-id']
+        product_id = request.form.get('product-id-delete')
+        associated_user = request.form.get('user-id')
 
         # find the product in the database
         product = Product.query.get(product_id)

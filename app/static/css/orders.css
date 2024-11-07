@@ -31,13 +31,13 @@
     width: 100vw;
   }
 
-  .columns {
-    display: flex;
-    gap: 20px;
-  }
-  
-  .column {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
+.columns {
+  display: flex;
+  gap: 20px;
+}
+
+.column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}

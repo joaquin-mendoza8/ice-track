@@ -23,9 +23,12 @@ function openModal(product_content, productId) {
     productAttributes.forEach(attribute => {
         const inputField = document.getElementById(`product-${attribute}`);
 
-        if (inputField.id === 'product-id') {
-            inputField.value = parseInt(productId);
-        } else if (inputField) {
+        // if (inputField.id === 'product-id') {
+        //     inputField.value = parseInt(productId);
+        // } else if (inputField) {
+        //     inputField.value = product_content[attribute];
+        // }
+        if (inputField) {
             inputField.value = product_content[attribute];
         }
     });

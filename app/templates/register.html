@@ -12,12 +12,47 @@
     <h1 class="auth-title">Register</h1>
     
     <form class="auth-form" action="/register" method="POST">
+
+        <!-- first/last name inputs -->
+        <label class="form-label" for="first-name">First Name</label>
+        <input class="form-control" type="text" name="first-name" id="first-name" required>
+        <br>
+
+        <label class="form-label" for="last-name">Last Name</label>
+        <input class="form-control" type="text" name="last-name" id="last-name" required>
+        <br>
+
+        <!-- shipping address input -->
+        <label class="form-label" for="shipping-address">Shipping Address</label>
+        <input class="form-control" type="text" name="shipping-address" id="shipping-address" required>
+        <br>
+
+        <!-- checkbox to prefill billing to shipping -->
+        <input type="checkbox" id="billing-checkbox" name="billing-checkbox">
+        <label for="billing-checkbox">Billing address same as shipping address</label>
+        <br>
+
+        <!-- billing address input (prefillable) -->
+        <label class="form-label" for="billing-address">Billing Address</label>
+        <input class="form-control" type="text" name="billing-address" id="billing-address" required>
+        <br>
+
+        <!-- username input -->
         <label class="form-label" for="username">Username</label>
-        <input class="input" type="text" name="username" id="username" required>
+        <input class="form-control" type="text" name="username" id="username" required>
         <br>
+
+        <!-- password input -->
         <label class="form-label" for="password">Password</label>
-        <input class="input" type="password" name="password" id="password" required>
+        <input class="form-control" type="password" name="password" id="password" required>
         <br>
+
+        <!-- confirm password input -->
+        <label class="form-label" for="confirm-password">Confirm Password</label>
+        <input class="form-control" type="password" name="confirm-password" id="confirm-password" required>
+        <br>
+
+        <!-- submit button -->
         <button class="btn" type="submit">Register</button>
     </form>
     
@@ -28,4 +63,8 @@
     <p class="system-msg">{% if msg %} {{ msg }} {% endif %}</p>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
 {% endblock %}

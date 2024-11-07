@@ -51,19 +51,49 @@ def register():
 
     if request.method == 'POST':
 
-        # get username/pw from form
-        username = request.form['username']
-        password = request.form['password']
+        # extract form data
+        first_name = request.form.get('first-name')
+        last_name = request.form.get('last-name')
+        username = request.form.get('username')
+        password = request.form.get('password')
+        shipping_address = request.form.get('shipping-address')
+        billing_address = request.form.get('billing-address')
 
+        # confirm password
+        confirm_password = request.form.get('confirm-password')
+
+        # check if passwords match
+        if password != confirm_password:
+            return render_template('register.html', msg="Passwords do not match.")
+
+        # check if user exists
         user = User.query.filter_by(username=username).first()
 
         # if user does not exist, create user
         if not user:
-            new_user = User(username=username, password=generate_password_hash(password))
-            db.session.add(new_user)
-            db.session.commit()
-            return redirect(url_for('auth.login'))
+
+            # check if all fields are filled
+            if all([first_name, last_name, username, password, shipping_address, billing_address]):
+
+                # create the user object
+                new_user = User(username=username, password=generate_password_hash(password),
+                                first_name=first_name, last_name=last_name, status='preferred',
+                                shipping_address=shipping_address, billing_address=billing_address)
+                
+                # add user to the database
+                db.session.add(new_user)
+                db.session.commit()
+
+                # redirect to login
+                return redirect(url_for('auth.login'))
+            
+            else:
+
+                # missing fields
+                return render_template('register.html', msg="All fields are required.")
         else:
+
+            # user already exists (return error)
             return render_template('register.html', msg="User already exists.")
         
     else:
