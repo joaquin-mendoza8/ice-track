@@ -18,12 +18,6 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    env:
-      DATABASE_URL_DEV: ${{ secrets.DATABASE_URL_DEV }}
-      CI_ENV: true # indicates to config.py file that app is running in CI env
-      TEST_USER: ${{ secrets.TEST_USER }} # for pytest configuration
-      TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
-
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python 3.10
@@ -44,3 +38,9 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
+
+      env:
+        DATABASE_URL_DEV: ${{ secrets.DATABASE_URL_DEV }}
+        CI_ENV: true # indicates to config.py file that app is running in CI env
+        TEST_USER: ${{ secrets.TEST_USER }} # for pytest configuration
+        TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
