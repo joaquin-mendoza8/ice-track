@@ -1,14 +1,16 @@
 # MAIN ENTRY TO THE BACKEND
 # This file is the main entry point to the backend. It is responsible for creating the Flask app and running it.
 
-from flask import Flask, request, jsonify
-from config.config import db
-from app.app import app
+from config.config import *
+from app.app import create_app
 from dotenv import load_dotenv
 import subprocess
 import os
 
 if __name__ == '__main__':
+
+    # create the Flask app
+    app = create_app(DevelopmentConfig)
 
     # load env variables from .env file (dev only)
     load_dotenv(override=True)
@@ -28,6 +30,9 @@ if __name__ == '__main__':
 
     # if running on Cloud, run with Gunicorn
     else:
+
+        create_app(ProductionConfig)
+
         subprocess.run([
             "gunicorn", "-w", "2", "-b",
             f"0.0.0.0:{(os.environ.get('PORT'))}",
