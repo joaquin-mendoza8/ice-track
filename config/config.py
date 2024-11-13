@@ -1,11 +1,14 @@
 # CONFIGURATION FILE FOR FLASK APP
 # Contains configuation class for the Flask app, including database connection, session configuration, and secret key.
 
-from dotenv import load_dotenv
 import os
 
 # load environment variables
-load_dotenv(override=True)
+if os.path.exists('.env'):
+    from dotenv import load_dotenv
+    load_dotenv()
+else:
+    print("No .env file found, using CI environment variables.")
 
 class Config:
     """Base configuration."""
