@@ -15,6 +15,8 @@ from app.extensions import db
 if os.path.exists('.env'):
     from dotenv import load_dotenv
     load_dotenv()
+else:
+    print("No .env file found, using CI environment variables.")
 
 # 1. Create and configure the test app
 @pytest.fixture(scope="session")
