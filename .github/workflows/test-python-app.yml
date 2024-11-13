@@ -8,6 +8,7 @@ on:
     branches: [ "main", "stage", "integration" ]
   pull_request:
     branches: [ "main", "stage", "integration" ]
+  workflow_dispatch:  # This allows manual triggers
 
 permissions:
   contents: read
