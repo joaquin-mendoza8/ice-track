@@ -1,6 +1,6 @@
 # DATA MODELS FOR THE APPLICATION
 # Contains classes for the data models used in the application. Each class corresponds
-from config.config import db
+from app.extensions import db
 from sqlalchemy.sql import func
 from flask_login import UserMixin
 

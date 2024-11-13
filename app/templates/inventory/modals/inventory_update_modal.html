@@ -67,11 +67,12 @@
                 <!-- Form to trigger server call without needing JS -->
                 <form id="deleteForm" method="POST" action="/inventory_delete" class="d-flex align-items-center">
                     
-                    <!-- Hidden input holding product id for server call -->
+                    <!-- Hidden inputs -->
                     <input type="hidden" name="product-id-delete" id="product-id-delete">
+                    <input type="hidden" name="user-id-delete" id="user-id-delete" value="{{ current_user.id }}">
                     
                     <!-- Button to delete product from inventory -->
-                    <button type="button" class="btn btn-danger">Delete</button>
+                    <button type="button" class="btn btn-danger" onclick="document.querySelector('#deleteForm').submit();">Delete</button>
                 </form>
 
                 <!-- Push buttons to right side of footer -->

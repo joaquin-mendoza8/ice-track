@@ -1,7 +1,8 @@
 from flask import Blueprint, request, redirect, url_for, render_template
+from flask_login import login_required
 from app.utils.data import *
 from app.models import Product, User
-from config.config import db
+from app.extensions import db
 from datetime import datetime
 
 # create the inventory management blueprint
@@ -13,6 +14,7 @@ inventory = Blueprint('inventory', __name__)
 
 # inventory home endpoint
 @inventory.route('/inventory', methods=['GET'])
+@login_required
 def inventory_home():
 
     # check if filter key was passed
@@ -38,6 +40,7 @@ def inventory_home():
 
 # inventory update endpoint
 @inventory.route('/inventory_update', methods=['GET', 'POST'])
+@login_required
 def inventory_update_product():
     
     # check if the form was submitted
@@ -85,6 +88,7 @@ def inventory_update_product():
 
 # inventory add endpoint
 @inventory.route('/inventory_add', methods=['GET', 'POST'])
+@login_required
 def inventory_add_product():
     if request.method == 'POST':
 
@@ -121,8 +125,9 @@ def inventory_add_product():
 
 
 
-# inventory delete endpoint
+# inventory delete endpoint >> TODO: implement disposition!
 @inventory.route('/inventory_delete', methods=['GET', 'POST'])
+@login_required
 def inventory_delete_product():
     
     # check if the request is a POST request
@@ -130,19 +135,27 @@ def inventory_delete_product():
 
         # extract the product id from the form
         product_id = request.form.get('product-id-delete')
-        associated_user = request.form.get('user-id')
+        associated_user = request.form.get('user-id-delete')
 
         # find the product in the database
         product = Product.query.get(product_id)
 
-        # if product exists, delete it
+        # check if the product exists
         if product:
-            product.deleted_at = datetime.now()
-            product.user_id_delete = associated_user
-            db.session.commit()
 
-            # TODO: log the deletion
-            print(f'Deleted product: {product}')
+            # check if the product is not already deleted and the user exists
+            if (product.deleted_at is None and associated_user is not None):
+                product.deleted_at = datetime.now()
+                product.user_id_delete = associated_user
+                db.session.commit()
+
+                # TODO: log the deletion
+                print(f'Deleted product: {product}')
+
+            else:
+
+                # TODO: log the error / handle the error
+                print(f'Product already deleted or user not found: {product.deleted_at, associated_user}')
         else:
 
             # TODO: log the error / handle the error
@@ -154,6 +167,7 @@ def inventory_delete_product():
 
 # inventory customer add endpoint
 @inventory.route('/inventory_customer_add', methods=['GET', 'POST'])
+@login_required
 def inventory_add_customer():
 
     # TODO: implement customer add functionality

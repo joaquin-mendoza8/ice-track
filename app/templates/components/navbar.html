@@ -20,6 +20,19 @@
             <li class="nav-item pb-md-2 pb-lg-3">
                 <a class="sidebar-nav-link nav-link" href="{{ url_for('tickets.tickets_home') }}">Trouble Tickets</a>
             </li>
+            <!-- Admin dashboard only shows if current user is an admin -->
+            {% if current_user.is_admin %}
+            <li class="nav-item pb-md-2 pb-lg-3">
+                <a class="sidebar-nav-link nav-link" href="{{ url_for('admin.admin_dashboard') }}">Admin Dashboard</a>
+            </li>
+            {% endif %}
+
+            <!-- Logout only shows if current user is logged in -->
+            {% if current_user.is_authenticated %}
+            <li class="nav-item pb-md-2 pb-lg-3">
+                <a class="sidebar-nav-link nav-link" href="{{ url_for('auth.logout') }}">Logout</a>
+            </li>
+            {% endif %}
         </ul>
     </div>
 </div>

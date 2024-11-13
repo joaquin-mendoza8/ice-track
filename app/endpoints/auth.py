@@ -1,6 +1,6 @@
 from flask import Blueprint, request, redirect, url_for, render_template
 from flask_login import login_user, logout_user, login_required, current_user
-from config.config import db
+from app.extensions import db
 from app.models import User
 # hash password
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -15,8 +15,8 @@ def login():
     if request.method == 'POST':
 
         # get username/pw from form
-        username = request.form['username']
-        password = request.form['password']
+        username = request.form.get('username')
+        password = request.form.get('password')
 
         # process login
         user = User.query.filter_by(username=username).first()
@@ -25,16 +25,18 @@ def login():
             # login the user
             login_user(user)
 
-            # get the 'next' param from the request
-            next_page = request.args.get('next')
-
             # redirect to home
-            return redirect(url_for(next_page)) if next_page else redirect(url_for('home'))
+            return redirect(url_for('home.home_home'))
+
         else:
-            return render_template('auth/login.html', msg="Invalid credentials provided.")
+
+            # invalid credentials
+            return render_template('auth/login.html', msg="Invalid credentials provided."), 400
         
     else:
-        return render_template('auth/login.html')
+
+        # render the login page (GET request)
+        return render_template('auth/login.html'), 200
     
 
 # create the logout endpoint
@@ -72,29 +74,22 @@ def register():
         # if user does not exist, create user
         if not user:
 
-            # check if all fields are filled
-            if all([first_name, last_name, username, password, shipping_address, billing_address]):
-
-                # create the user object
-                new_user = User(username=username, password=generate_password_hash(password),
-                                first_name=first_name, last_name=last_name, status='preferred',
-                                shipping_address=shipping_address, billing_address=billing_address)
-                
-                # add user to the database
-                db.session.add(new_user)
-                db.session.commit()
-
-                # redirect to login
-                return redirect(url_for('auth.login'))
+            # create the user object
+            new_user = User(username=username, password=generate_password_hash(password),
+                            first_name=first_name, last_name=last_name, status='preferred',
+                            shipping_address=shipping_address, billing_address=billing_address)
             
-            else:
+            # add user to the database
+            db.session.add(new_user)
+            db.session.commit()
 
-                # missing fields
-                return render_template('auth/register.html', msg="All fields are required.")
+            # redirect to login
+            return redirect(url_for('auth.login'))
+
         else:
 
             # user already exists (return error)
-            return render_template('auth/register.html', msg="User already exists.")
-        
-    else:
-        return render_template('auth/register.html')
+            return render_template('auth/register.html', msg="User already exists."), 400
+
+    # render the register page (GET request)
+    return render_template('auth/register.html'), 200

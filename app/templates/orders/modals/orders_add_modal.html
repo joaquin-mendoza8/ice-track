@@ -11,7 +11,11 @@
                 <div class="columns">
                     <div class="column">
                         <h3>Order Info</h3>
-                        <!-- TODO: hidden input for user id of sorts -->
+
+                        <!-- Hidden inputs for user-id, cost -->
+                        <input type="hidden" name="user-id" id="user-id" value="{{ current_user.id }}">
+                        <input type="hidden" name="cost" id="cost" value="0">
+                        <input type="hidden" name="customer-status" id="customer-status" value="{{ current_user.status }}">
 
                         <!-- Flavor -->
                         <div class="mb-3">
@@ -21,15 +25,15 @@
                                 <option value="" disabled selected>Select product</option>
                                 
                                 {% for flavor in unique_flavors %}
-                                    <option value="">{{ flavor }}</option>
+                                    <option value="{{ flavor }}">{{ flavor }}</option>
                                 {% endfor %}
                             </select>
                         </div>
 
-                        <!-- Size -->
+                        <!-- Container size -->
                         <div class="mb-3">
                             <label for="size" class="form-label">Size</label>
-                            <select class="form-control" id="size" name="size" required>
+                            <select class="form-control" id="container-size" name="container-size" required>
                                 <!-- default disabled option -->
                                 <option value="" disabled selected>Select size</option>
                             </select>
@@ -37,22 +41,19 @@
 
                         <!-- Product Quantity -->
                         <div class="mb-3">
-                            <label for="product-quantity" class="form-label">Quantity</label>
+                            <label for="quantity" class="form-label">Quantity <span id="max-quantity-container" hidden><b>(max: <span id="max-quantity"></span>)</b></span></label>
                             <input type="number"
                                    class="form-control"
-                                   id="product-quantity"
-                                   name="product-quantity" required>
+                                   id="quantity"
+                                   name="quantity"
+                                   min="1" required>
                         </div>
 
-                        <!-- Cost -->
+                        <!-- Customer Status -->
                         <div class="mb-3">
-                            <label for="cost" class="form-label">Cost</label>
-                            <input type="number" step="0.01"
-                                   class="form-control"
-                                   id="cost"
-                                   name="cost" 
-                                   min="0" pattern="^\d+(\.\d{1,2})?$" required>
+                            <label for="customer-status-display" class="form-label">Customer Status: <span id="customer-status-display">{{ current_user.status }}</span></label>
                         </div>
+
                     </div>
                     
                     <div class="column">
@@ -61,7 +62,7 @@
                         <div class="mb-3">
                             <label for="shipping-type" class="form-label">Shipping Type</label>
                             <select class="form-control" id="shipping-type" name="shipping-type" required>
-                                <option value="standard">Standard</option>
+                                <option value="standard" selected>Standard</option>
                                 <option value="express">Express</option>
                             </select>
                         </div>
@@ -88,9 +89,19 @@
                     </div>
                 </div>
 
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Add Order</button>
+                <!-- Modal Footer -->
+                <div class="modal-footer d-flex justify-content-between align-items-center">
+                    
+                    <!-- Cost Display and hidden input -->
+                    <div class="d-flex align-items-center">
+                        <h4>Total: $<span id="cost-display">0.00</span></h4>
+                    </div>
+
+                    <!-- Push buttons to right side of footer -->
+                    <div class="ml-auto">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Order</button>
+                    </div>
                 </div>
             </form>
         </div>

@@ -1,63 +1,72 @@
-from flask import Flask, request, jsonify, render_template, redirect, url_for
-from flask_session import Session as flask_session
-from flask_migrate import Migrate
-from flask_login import LoginManager, login_required, login_user, logout_user, current_user
-from config.config import Config, db, session as flask_session
-from app.utils.filters import *
-from app.endpoints.auth import auth
-from app.endpoints.inventory import inventory
-from app.endpoints.order import orders
-from app.endpoints.shipments import shipments
-from app.endpoints.tickets import tickets
-from app.models import User
+from flask import Flask
+from app.extensions import db, migrate, login_manager, flask_session
+from config.config import Config, DevelopmentConfig, TestConfig, ProductionConfig
 
-# create the flask app
-app = Flask(__name__)
 
-# configure the flask app
-app.config.from_object(Config)
-db.init_app(app)
-flask_session.init_app(app)
-migrate = Migrate(app, db)
+def create_app(config_class=Config):
+    """Application factory function."""
 
-# register all custom Jinja filters
-filters = globals().copy()
-for name, func in filters.items():
-    if callable(func) and name.startswith('format_'):
-        app.jinja_env.filters[name.split('format_')[1]] = func
+    # create the flask app
+    app = Flask(__name__)
 
-# connect blueprints
-# app.register_blueprint(<BLUEPRINT_NAME>)
-app.register_blueprint(auth)
-app.register_blueprint(inventory)
-app.register_blueprint(orders)
-app.register_blueprint(shipments)
-app.register_blueprint(tickets)
+    # load the app configuration
+    app.config.from_object(config_class)
 
-# create the database tables
-with app.app_context():
-    db.create_all()
+    # initialize extensions with the app
+    db.init_app(app)
+    migrate.init_app(app, db)
+    login_manager.init_app(app)
 
-# init flask-login
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'auth.login'
+    # Conditionally initialize Flask-Session
+    if app.config['SESSION_TYPE'] == 'sqlalchemy':
+        app.config['SESSION_SQLALCHEMY'] = db  # Link Flask-Session with SQLAlchemy
+        flask_session.init_app(app)  # Initialize with only app
+    else:
+        flask_session.init_app(app)
 
-# load user
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
+    # configure the login manager (required by flask-login)
+    login_manager.login_view = 'auth.login'
 
-# create the home endpoint
-@app.route('/')
-@login_required
-def home():
+    # register blueprints
+    from app.endpoints.auth import auth
+    from app.endpoints.inventory import inventory
+    from app.endpoints.order import orders
+    from app.endpoints.shipments import shipments
+    from app.endpoints.tickets import tickets
+    from app.endpoints.admin import admin
+    from app.endpoints.home import home
 
-    # if user is not logged in, redirect to login
-    if not current_user.is_authenticated:
-        return redirect(url_for('auth.login'))
+    app.register_blueprint(auth)
+    app.register_blueprint(admin)
+    app.register_blueprint(inventory)
+    app.register_blueprint(orders)
+    app.register_blueprint(shipments)
+    app.register_blueprint(tickets)
+    app.register_blueprint(home)
 
-    return render_template('inventory/inventory.html')
+    # register all custom Jinja filters
+    from app.utils.filters import format_currency, format_date, format_attribute, format_address
+
+    app.jinja_env.filters['currency'] = format_currency
+    app.jinja_env.filters['date'] = format_date
+    app.jinja_env.filters['attribute'] = format_attribute
+    app.jinja_env.filters['address'] = format_address
+
+    # create the database tables
+    with app.app_context():
+        db.create_all()
+
+    # user loader for login manager (required by flask-login)
+    from app.models import User
+    @login_manager.user_loader
+    def load_user(user_id):
+        """
+        Flask-Login user loader callback.
+        Loads a user from the database by ID.
+        """
+        return User.query.get(int(user_id))
+
+    return app
 
 
 
