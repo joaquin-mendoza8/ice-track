@@ -12,6 +12,10 @@ else
 fi
 
 # Run an update to requirements.txt
+echo "Updating requirements.txt..."
+pip list --outdated --format=columns | tail -n +3 | awk '{print $1}' | xargs pip install -U
+
+# Update the requirements.txt file
 pip freeze > requirements.txt
 
 # Add all changes to the staging area
