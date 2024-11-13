@@ -11,6 +11,10 @@ from config.config import TestConfig
 from app.models import User
 from app.extensions import db
 
+# load environment variables
+from dotenv import load_dotenv
+load_dotenv()
+
 # 1. Create and configure the test app
 @pytest.fixture(scope="session")
 def app_instance():
