@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% import 'components/macros.html' as macros %}
+
+{% block title %}Admin{% endblock %}
+
+{% block content %}
+
+    {% include 'admin/modals/admin_delete_modal.html' %}
+
+    <div class="container-md">
+
+        <h2>Admin Dashboard</h2>
+        <form method="post" action="/admin/update_configs">
+            <div class="row justify-content-left">
+                <div class="col-md-3">
+                    <div class="form-group mb-3">
+                        <label for="auto-signoff-interval">Auto-Signoff Interval (minutes):</label>
+                        <input type="number" 
+                            class="form-control"
+                            id="auto-signoff-interval"
+                            name="auto-signoff-interval" 
+                            min="1" max="180">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="container-sizes">Supported Container Sizes (comma-separated):</label>
+                        <input type="text"
+                            class="form-control"
+                            id="container-sizes"
+                            name="container-sizes">
+                    </div>
+                    <button type="submit" class="btn btn-primary mb-3">Save Settings</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Message Display Container -->
+        {% if msg %}
+            {{ macros.message(msg, "danger", "/admin") }}
+        {% endif %}
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Setting</th>
+                    <th>Value</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if configs %}
+                    {% for config in configs %}
+                        <tr>
+                            <td>{{ config.key | attribute }}</td>
+                            <td>{{ config.value }}{% if config.key == 'auto_signoff_interval' %} min{% endif %}</td>
+                            <td>
+                                <!-- delete config trigger endpoint 'delete_config' -->
+                                <button 
+                                    type="button" 
+                                    class="btn btn-danger delete-config" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#deleteModal" 
+                                    data-config-id="{{ config.id }}">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="3">No settings found</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}

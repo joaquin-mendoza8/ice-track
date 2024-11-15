@@ -102,3 +102,13 @@ class OrderItem(db.Model):
         self.ship_date = ship_date
     
         
+# Admin Configuration Settings data model
+class AdminConfig(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(50), nullable=False) # e.g., "supported_container_sizes"
+    value = db.Column(db.Text, nullable=False) # store JSON data as text
+    type = db.Column(db.String(50), nullable=False) # e.g., "list", "dict", "str", "int", "float"
+
+    # print the admin configuration
+    def __repr__(self):
+        return f'<AdminConfig {self.id}>'

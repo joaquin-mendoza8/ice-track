@@ -131,8 +131,8 @@ def orders_fetch_sizes():
     else:
         return jsonify([])
 
-    # fetch all products from the database
-    products = Product.query.filter_by(flavor=flavor).all()
+    # fetch all products from the database with the specified flavor and no deletion date
+    products = Product.query.filter_by(flavor=flavor, deleted_at=None).all()
 
     # extract unique sizes from the products
     sizes = set([product.container_size for product in products])
@@ -159,8 +159,8 @@ def orders_fetch_stock():
     else:
         return jsonify([])
 
-    # fetch all products from the database
-    product = Product.query.filter_by(flavor=flavor, container_size=container_size).first()
+    # fetch all products from the database with the specified flavor, container size, and no deletion date
+    product = Product.query.filter_by(flavor=flavor, container_size=container_size, deleted_at=None).first()
 
     # check if the product exists
     if product:

@@ -28,9 +28,10 @@
                         <div class="mb-3">
                             <label for="product-container-size" class="form-label">Container Size</label>
                             <select class="form-select" id="product-container-size" name="product-container-size" required>
-                                <option value="small">Small</option>
-                                <option value="medium">Medium</option>
-                                <option value="large">Large</option>
+                                <option disabled selected>Select size</option>
+                                {% for size in container_sizes %}
+                                    <option value="{{ size }}">{{ size.capitalize() }}</option>
+                                {% endfor %}
                             </select>
                         </div>
 
@@ -57,7 +58,8 @@
                         <div class="mb-3">
                             <label for="product-status" class="form-label">Status</label>
                             <select class="form-select" id="product-status" name="product-status" required>
-                                <option value="planned" selected>Planned</option>
+                                <option disabled selected>Select status</option>
+                                <option value="planned">Planned</option>
                                 <option value="actual">Actual</option>
                             </select>
                         </div>

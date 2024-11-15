@@ -43,9 +43,9 @@
                             <select class="form-control product-container-size-input" 
                                     id="product-container-size" 
                                     name="product-container-size" required>
-                                <option value="small">small</option>
-                                <option value="medium">medium</option>
-                                <option value="large">large</option>
+                                {% for size in container_sizes %}
+                                    <option value="{{ size }}">{{ size.capitalize() }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="form-group">
