@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% import 'macros.html' as macros %}
+{% import 'components/macros.html' as macros %}
 
 {% block title %}Inventory{% endblock %}
 
@@ -9,13 +9,13 @@
 
 {% block content %}
 
-    {% include 'modals/product_modal.html' %}
+    {% include 'inventory/modals/inventory_update_modal.html' %}
 
     <!-- Main content container -->
     <div class="container-md">
 
         <!-- Offcanvas sidebar -->
-        {% include 'navbar.html' %}
+        {% include 'components/navbar.html' %}
 
         <!-- Main content -->
         <main class="ms-sm-auto px-md-4 pt-md-3">
@@ -32,14 +32,14 @@
             </div>
 
             <!-- Inventory Add Modal -->
-            {% include 'modals/add_modal.html' %}
+            {% include 'inventory/modals/inventory_add_modal.html' %}
 
             <!-- Inventory Table -->
             <div class="mt-5">
                 <!-- inline container for title and modal button -->
                 <div class="d-flex justify-content-between">
                     <h1>Products</h1>
-                    <button type="button" class="btn modal-btn" data-bs-toggle="modal" data-bs-target="#exampleModal">+ New</button>
+                    <button type="button" class="btn modal-btn" data-bs-toggle="modal" data-bs-target="#addModal">+ New</button>
                 </div>
 
                 <!-- Dropdown for 'Filter By' functionality -->
@@ -75,6 +75,7 @@
                             {% set outer_index = loop.index - 1 %}
                             <tr onclick="openModal({{ product }}, {{ product['id'] }})" id="row-{{ outer_index }}">
                                 <td>{{ product.flavor }}</td>
+                                <td>{{ product.container_size }}</td>
                                 <td>{{ product.price | currency}}</td>
                                 <td>{{ product.quantity }}</td>
                                 <td>{{ product.status }}</td>

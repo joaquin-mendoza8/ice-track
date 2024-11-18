@@ -7,7 +7,7 @@
     background-color: #FFF;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    width: 18rem;
+    width: 64rem;
     max-height: 10rem;
 }
 
@@ -22,12 +22,6 @@
     cursor: pointer;
 }
 
-/* #deleteForm {
-    display: flex;
-    align-items: start;
-    justify-content: left;
-} */
-
 .modal {
     display: flex;
     justify-content: center;
@@ -36,3 +30,14 @@
     height: 100vh;
     width: 100vw;
   }
+
+.columns {
+  display: flex;
+  gap: 20px;
+}
+
+.column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
