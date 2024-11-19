@@ -4,12 +4,14 @@
 {% block title %}Trouble Tickets{% endblock %}
 
 {% block head %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/inventory.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tickets.css') }}" type="text/css">
 {% endblock %}
 
 {% block content %}
 
     <!-- include here for modal -->
+    {% include 'tickets/modals/tickets_add_modal.html' %}
+    {% include 'tickets/modals/tickets_update_modal.html' %}
 
     <!-- Main content container -->
     <div class="container-md">
@@ -24,35 +26,44 @@
                 <h1>Customer Support</h1>
             </div>
 
-            <!-- Inventory Add Modal -->
-            <!-- include here -->
-
-            <!-- Inventory Table -->
+            <!-- Tickets Table -->
             <div class="mt-5">
                 <!-- inline container for title and modal button -->
                 <div class="d-flex justify-content-between">
                     <h1>Ticket History</h1>
-                    <button type="button" class="btn modal-btn" data-bs-toggle="modal" data-bs-target="#exampleModal">+ New</button>
+                    <button type="button" class="btn modal-btn" data-bs-toggle="modal" data-bs-target="#tickets-add-modal">+ New</button>
                 </div>
                 <table class="table table-hover table-borderless">
-                    {% if products %}
-                    <thead>
-                        {% for key in products[0].keys() %}
-                            {% if key not in ['id'] %}
-                                <th scope="col">{{ key.capitalize() }}</th>
-                            {% endif %}
-                        {% endfor %}
-                    </thead>
-                    <tbody>
-                        {% for product in products %}
-                            {% set outer_index = loop.index - 1 %}
-                            <tr onclick="openModal({{ product }}, {{ product['id'] }})" id="row-{{ outer_index }}">
-                                <td>{{ product.flavor }}</td>
-                                <td>{{ product.price }}</td>
-                                <td>{{ product.quantity }}</td>
+                    {% if tickets %}
+                        <thead>
+                            <tr>
+                                {% for key in tickets[0].keys() %}
+                                    {% if key not in ['id'] %}
+                                        <th scope="col">{{ key.replace('_', ' ').capitalize() }}</th>
+                                    {% endif %}
+                                {% endfor %}
                             </tr>
-                        {% endfor %}
-                    </tbody>
+                        </thead>
+                        <tbody>
+                            {% for ticket in tickets %}
+                                <tr onclick="openModal({{ ticket }}, {{ ticket['id'] }})">
+                                    {% for key, value in ticket.items() %}
+                                        {% if key not in ['id'] %}
+                                            <td>{{ value }}</td>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <td>
+                                        <!-- Only surface update ticket button if the current user is an admin -->
+                                        {% if current_user.is_admin %}
+                                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" 
+                                            data-bs-target="#tickets-update-modal" ticket-id={{ticket['id']}}>
+                                                    Update Ticket
+                                            </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
                     {% else %}
                         No Outstanding Tickets.
                     {% endif %}
@@ -63,5 +74,5 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="{{ url_for('static', filename='js/inventory.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/tickets.js') }}"></script>
 {% endblock %}

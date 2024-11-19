@@ -1,0 +1,76 @@
+<div class="modal" id="tickets-update-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Trouble Ticket</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Form to allow admin to update a ticket -->
+                <form action="{{ url_for('tickets.tickets_update_ticket') }}" method="POST">
+                    <div class="colums">
+                        <div class="column">
+
+                            <!-- Hidden ticket id field to retrieve current ticket from the JS function -->
+                            <input type="hidden" id="ticket-id" name="ticket-id">
+
+                            <!-- Date Detected (default value is at time of click)-->
+                            <div class="mb-3">
+                                <label for="date-detected" class="form-label">Date Detected</label>
+                                <input
+                                    type="date"
+                                    class="form-control"
+                                    id="date-detected"
+                                    name="date-detected"
+                                    required>
+                            </div>
+
+                            <!-- Problem Status -->
+                            <div class="mb-3">
+                                <label for="problem-status" class="form-label">Problem Status</label>
+                                <select class="form-control" id="problem-stauts" name="problem-status" required>
+                                    <option value="" disabled selected>Select Status</option>
+                                    <option value="open">Open</option>
+                                    <option value="in-progress">In Progress</option>
+                                    <option value="resolved">Resolved</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Problem Resolution -->
+                            <div class="mb-3">
+                                <label for="problem-resolution" class="form-label">Problem Resolution</label>
+                                <textarea
+                                class="form-control"
+                                id="problem-resolution"
+                                name="problem-resolution"
+                                ></textarea>
+                            </div>
+                            
+                            <!-- Date Resolved -->
+                            <div class="mb-3">
+                                <label for="date-resolved" class="form-label">Date Resolved</label>
+                                <input
+                                   type="date"
+                                   class="form-control"
+                                   id="date-resolved"
+                                   name="date-resolved"
+                                   >
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <div class="modal-footer d-flex justify-content-between align-items-center">
+                        
+                        <!-- Push buttons to right side of footer -->
+                        <div class="ml-auto">
+                            <button type="submit" class="btn btn-primary">Update Ticket</button>
+                            <button type="button" class="btn btn-danger">Delete Ticket</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
