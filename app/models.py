@@ -3,7 +3,7 @@
 from app.extensions import db
 from sqlalchemy.sql import func
 from flask_login import UserMixin
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone, timedelta
 
 # User class
 class User(db.Model, UserMixin):
@@ -250,6 +250,13 @@ class Log(db.Model):
 
     # Many:1 relationship with User
     user = db.relationship('User', backref='logs', lazy=True)
+    # initializing attributes
+    def __init__(self, order_id, product_id, quantity, ship_date):
+        self.order_id = order_id
+        self.product_id = product_id
+        self.quantity = quantity
+        self.ship_date = ship_date
+    
 # Trouble Ticket model 
 class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -274,5 +281,5 @@ class Ticket(db.Model):
         self.problem_description = problem_description
 
     def __repr__(self):
-        return f"<Ticket {self.id} - {self.problem_type} - Status: {self.problem_status}>"
+        return f"<Ticket {self.id} - {self.problem_type} - Status: {self.status}>"
         
