@@ -13,7 +13,7 @@ tickets = Blueprint('tickets', __name__)
 @login_required
 def tickets_home():
     
-    # fetch all tickets and customers from the database
+    # fetch all tickets and customers that are not admin from the database
     tickets = Ticket.query.all()
     customers = User.query.filter_by(is_admin=False).all()
     

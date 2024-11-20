@@ -55,6 +55,35 @@
                                         {% endif %}
                                     {% endif %}
                                 {% endfor %}
+            <div class="align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <!-- Banner header -->
+                <h1>Orders and Customer Status</h1>
+            </div>
+            
+            <div class="mt-5">
+                <!-- inline container for title and modal button -->
+                <div class="d-flex justify-content-between">
+                    <h1>Customers</h1>
+                    <!-- Commented out the customer add modal -->
+                    <!-- <button type="button" class="btn modal-btn" data-bs-toggle="modal" data-bs-target="#customerModal">+ New</button> -->
+                </div>
+                <table class="table table-hover table-borderless">
+                    {% if customers %}
+                    <thead>
+                        {% for key in customers[0].keys() %}
+                            {% if key not in ['id'] %}
+                                <th scope="col">{{ key | attribute }}</th>
+                            {% endif %}
+                        {% endfor %}
+                    </thead>
+                    <tbody>
+                        {% for customer in customers %}
+                            {% set outer_index = loop.index - 1 %}
+                            <tr onclick="openModal({{ customer }}, {{ customer['id'] }})" id="row-{{ outer_index }}">
+                                <td>{{ customer.name }}</td>
+                                <td>{{ customer.status }}</td>
+                                <td>{{ customer.shipping_address | address }}</td>
+                                <td>{{ customer.billing_address | address }}</td>
                             </tr>
                         {% endif %}
                     {% endfor %}

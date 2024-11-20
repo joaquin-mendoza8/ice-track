@@ -15,11 +15,18 @@
                             <!-- TODO: if user is not an admin, lets make this default to their username, as of now, just leave it as an input -->
                             <div class="mb-3">
                                 <label for="problem-type" class="form-label">Source (Customer Name)</label>
-                                <input
-                                   class="form-control"
-                                   id="source"
-                                   name="source"
-                                   required>
+                                <select class="form-control" id="source" name="source" required>
+                                    <option value="{{ current_user.first_name ~ ' ' ~ current_user.last_name }}" selected>
+                                        {{ current_user.first_name ~ ' ' ~ current_user.last_name }}
+                                    </option>
+
+                                    <!-- If the current user is an admin, then other customers can be picked -->
+                                    {% if current_user.is_admin %}
+                                        {% for customer in customers %}
+                                            <option value="{{ customer.name }}">{{ customer.name }}</option>
+                                        {% endfor %}
+                                    {% endif %}
+                                </select>
                             </div>
 
                             <!-- Problem Type -->
