@@ -26,6 +26,48 @@
                 <h1>Customer Support</h1>
             </div>
 
+            <!-- Query Search Bar -->
+            <div class="query-container mt-4">
+                <form method="GET" action="{{ url_for('tickets.tickets_query_tickets') }}"class="row g-3">
+                    <!-- Customer Name -->
+                    <div class="col-md-3">
+                        <input type="text" class="form-control" name="customer-name" placeholder="Customer Name">
+                    </div>
+            
+                    <!-- Type of Problem -->
+                    <div class="col-md-3">
+                        <input type="text" class="form-control" name="problem-type" placeholder="Type of Problem">
+                    </div>
+            
+                    <!-- Problem Status -->
+                    <div class="col-md-2">
+                        <select class="form-select" name="problem-status">
+                            <option value="" selected>Select Problem Status</option>
+                            <option value="open">Open</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="resolved">Resolved</option>
+                        </select>
+                    </div>
+            
+                    <!-- Date Reported -->
+                    <div class="col-md-2">
+                        <input type="date" class="form-control" name="date-reported" placeholder='Date Reported'>
+                        <label for="date-reported">Date Reported</label>
+                    </div>
+            
+                    <!-- Date Resolved -->
+                    <div class="col-md-2">
+                        <input type="date" class="form-control" name="date-resolved" placeholder="Date Resolved">
+                        <label for="date-resolved">Date Resolved</label>
+                    </div>
+            
+                    <!-- Submit Button -->
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Search</button>
+                    </div>
+                </form>
+            </div>
+
             <!-- Tickets Table -->
             <div class="mt-5">
                 <!-- inline container for title and modal button -->
@@ -59,6 +101,10 @@
                                             data-bs-target="#tickets-update-modal" ticket-id={{ticket['id']}}>
                                                     Update Ticket
                                             </button>
+                                            <form method="POST" action="{{ url_for('tickets.tickets_delete_ticket') }}">
+                                                <input type="hidden" name="ticket-id" value="{{ ticket['id'] }}">
+                                                <button type="submit" class="btn btn-sm btn-danger">Delete Ticket</button>
+                                            </form>
                                         {% endif %}
                                     </td>
                                 </tr>

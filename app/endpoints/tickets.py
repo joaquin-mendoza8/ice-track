@@ -93,13 +93,63 @@ def tickets_update_ticket():
             
     return render_template('tickets/tickets.html')
 
-@tickets.route('/tickets_delete', methods=['DELETE'])
-def tickets_tickets_delete():
-    if request.method == 'DELETE':
+@tickets.route('/tickets_delete', methods=['POST'])
+def tickets_delete_ticket():
+    if request.method == 'POST': 
+       
+        ticket_id = request.form.get('ticket-id')
+        ticket = Ticket.query.get(ticket_id)
+        db.session.delete(ticket)
+        db.session.commit()
         
-        
-        
-        # redirect back to the ticket form
         return redirect(url_for('tickets.tickets_home'))
     
+    return render_template('tickets/tickets.html')
+
+@tickets.route('/tickets_query', methods=['GET'])
+def tickets_query_tickets():
+    if request.method == 'GET':
+        # Extract form data from query form
+        customer_name = request.args.get('customer-name')
+        problem_type = request.args.get('problem-type')
+        problem_status = request.args.get('problem-status')
+        date_reported = request.args.get('date-reported')
+        date_resolved = request.args.get('date-resolved')
+        
+        # Base query
+        query = Ticket.query
+        
+        # Apply filters dynamically
+        if customer_name:
+            query = query.filter(Ticket.source.ilike(f"%{customer_name}%"))
+            
+        if problem_type:
+            query = query.filter(Ticket.problem_type.ilike(f"%{problem_type}%"))
+            
+        if problem_status:
+            query = query.filter(Ticket.problem_status.ilike(problem_status))
+            
+        if date_reported:
+            query = query.filter(Ticket.date_detected == datetime.strptime(date_reported, '%Y-%m-%d').date())
+            
+        if date_resolved:
+            query = query.filter(Ticket.date_resolved == datetime.strptime(date_resolved, '%Y-%m-%d').date())
+
+        # Fetch the filtered results
+        filtered_tickets = query.all()
+
+        # Convert tickets to dictionary format for rendering
+        queried_tickets_dict = parse_ticket_data(filtered_tickets)
+    
+        # requery and parse customers for add ticket model
+        customers = User.query.filter_by(is_admin=False).all()
+        customers_dict = parse_customer_data(customers)
+        
+        jinja_vars = {'tickets' : queried_tickets_dict,
+                        'customers' : customers_dict}
+
+        # Pass filtered results to the template
+        return render_template('tickets/tickets.html', **jinja_vars)
+    
+    # On GET request, simply render the ticket query page
     return render_template('tickets/tickets.html')
