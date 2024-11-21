@@ -1,0 +1,69 @@
+<!-- POP-UP MODAL FOR TRANSACTIONS -->
+<div class="modal" id="customersUpdateModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Product content will be inserted dynamically here -->
+                <div class="product-edit-container">
+
+                    <!-- Product ID -->
+                    <p>Product ID: <span id="product-id-display"></span></p>
+
+                    <!-- Form of modifiable inputs (preset to current product attributes)-->
+                    <form id="updateForm" method="POST" action="/customers_update">
+                        <input type="hidden" name="product-id" class="product-id" id="product-id">
+                        <div class="form-group">
+                            <label for="product-flavor">Flavor</label>
+                            <input type="text"
+                                class="form-control product-flavor-input"
+                                id="product-flavor"
+                                name="product-flavor" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="product-price">Price <em>($ USD)</em></label>
+                            <input type="number" step="0.01"
+                                class="form-control product-price-input"
+                                id="product-price"
+                                name="product-price"
+                                min="0" pattern="^\d+(\.\d{1,2})?$" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="product-quantity">Quantity</label>
+                            <input type="number"
+                                class="form-control product-quantity-input"
+                                id="product-quantity"
+                                name="product-quantity" required>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal Footer Buttons -->
+            <div class="modal-footer d-flex justify-content-between align-items-center">
+
+                <!-- Form to trigger server call without needing JS -->
+                <form id="deleteForm" method="POST" action="/inventory_delete" class="d-flex align-items-center">
+                    
+                    <!-- Hidden input holding product id for server call -->
+                    <input type="hidden" name="product-id-delete" id="product-id-delete">
+                    
+                    <!-- Button to delete product from inventory -->
+                    <button type="button" class="btn btn-danger">Delete</button>
+                </form>
+
+                <!-- Push buttons to right side of footer -->
+                <div class="ml-auto">
+                    <!-- Button to close modal -->
+                    <button type="button" class="btn" data-dismiss="modal" onclick="closeModal()">Close</button>
+
+                    <!-- Button to submit form -->
+                    <button type="button" class="btn btn-primary" onclick="document.querySelector('#updateForm').submit();">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
