@@ -101,7 +101,7 @@ class OrderItem(db.Model):
         self.quantity = quantity
         self.ship_date = ship_date
     
-        
+
 # Admin Configuration Settings data model
 class AdminConfig(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -112,3 +112,20 @@ class AdminConfig(db.Model):
     # print the admin configuration
     def __repr__(self):
         return f'<AdminConfig {self.id}>'
+class Shipment(db.Model):
+
+    # composite primary key 
+    id=db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+    # shipment attributes
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    date_shipped = db.Column(db.Date, nullable=False)
+    shippment_boxes = db.Column(db.Integer, nullable=False)
+    partial_delivery = db.Column(db.Boolean, nullable=False, default=False)
+    estimated_date = db.Column(db.Date, nullable=False)
+    delivery_date = db.Column(db.Date, nullable=False)
+    shippment_type = db.Column(db.String(150), nullable=False)
+
+    # print the shipment
+    def __repr__(self):
+        return f'<Shipment {self.id}>'
