@@ -1,9 +1,9 @@
-<!-- POP-UP MODAL FOR TRANSACTIONS -->
+<!-- POP-UP MODAL FOR EDITING A PRODUCT -->
 <div class="modal" id="productModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Add Item</h5>
+                <h5 class="modal-title">Edit Item</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="modalBody">
@@ -16,13 +16,20 @@
                     <!-- Form of modifiable inputs (preset to current product attributes)-->
                     <form id="updateForm" method="POST" action="/inventory_update">
                         <input type="hidden" name="product-id" class="product-id" id="product-id">
+
+                        <!-- Flavors dropdown -->
                         <div class="form-group">
                             <label for="product-flavor">Flavor</label>
-                            <input type="text"
-                                class="form-control product-flavor-input"
-                                id="product-flavor"
+                            <select class="form-control product-flavor-input" 
+                                id="product-flavor" 
                                 name="product-flavor" required>
+                                    {% for flavor in supported_flavors %}
+                                        <option value="{{ flavor }}">{{ flavor.capitalize() }}</option>
+                                    {% endfor %}
+                            </select>
                         </div>
+
+                        <!-- Price input -->
                         <div class="form-group">
                             <label for="product-price">Price <em>($ USD)</em></label>
                             <input type="number" step="0.01"
@@ -31,6 +38,8 @@
                                 name="product-price"
                                 min="0" pattern="^\d+(\.\d{1,2})?$" required>
                         </div>
+
+                        <!-- Quantity input -->
                         <div class="form-group">
                             <label for="product-quantity">Quantity</label>
                             <input type="number"
@@ -38,22 +47,27 @@
                                 id="product-quantity"
                                 name="product-quantity" required>
                         </div>
+
+                        <!-- Container Size dropdown -->
                         <div class="form-group">
                             <label for="product-status">Container Size</label>
                             <select class="form-control product-container-size-input" 
                                     id="product-container-size" 
                                     name="product-container-size" required>
-                                {% for size in container_sizes %}
+                                {% for size in supported_container_sizes %}
                                     <option value="{{ size }}">{{ size.capitalize() }}</option>
                                 {% endfor %}
                             </select>
                         </div>
+
+                        <!-- Status dropdown -->
                         <div class="form-group">
                             <label for="product-status">Status</label>
                             <select class="form-control product-status-input" 
                                     id="product-status" 
                                     name="product-status" required>
                                 <option value="actual">Actual</option>
+                                <!-- <option value="committed">Committed</option> -->
                                 <option value="planned">Planned</option>
                             </select>
                         </div>

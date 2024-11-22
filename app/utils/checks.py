@@ -4,10 +4,10 @@ from app.models import Product
 
 def check_container_sizes_in_use(container_sizes_list):
     """
-    Check if any container sizes exist in non-deleted products in the inventory.
+    Before deleting a container size, check if it is in use by any products in the inventory.
 
     Args:
-        container_sizes_list (list): List of container sizes to check.
+        container_sizes_list (list): List of container sizes that were passed in the request.
 
     Returns:
         list: List of container sizes that are in use.
@@ -25,3 +25,27 @@ def check_container_sizes_in_use(container_sizes_list):
             container_sizes_in_use.append(size)
 
     return container_sizes_in_use
+
+def check_flavors_in_use(supported_flavors_list):
+    """
+    Before deleting a flavor, check if it is in use by any products in the inventory.
+
+    Args:
+        supported_flavors_list (list): List of flavors that were passed in the request.
+
+    Returns:
+        list: List of flavors that are in use.
+    """
+    # get all currently existing flavors from the products table
+    flavors_in_inventory = Product.query.with_entities(Product.flavor).filter(Product.deleted_at.is_(None)).distinct().all()
+    flavors_in_inventory = [flavor[0] for flavor in flavors_in_inventory] if flavors_in_inventory else []
+
+    # list of flavors in use (in inventory)
+    flavors_in_use = []
+
+    # check if any flavors are in use
+    for flavor in supported_flavors_list:
+        if flavor in flavors_in_inventory:
+            flavors_in_use.append(flavor)
+
+    return flavors_in_use

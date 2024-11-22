@@ -20,10 +20,11 @@ def parse_order_data(orders):
     return [
         {
             "id": order.id,
-            "customer_name": order.customer_name, 
-            "customer_status": order.customer_status, 
+            "customer": f'{order.user.first_name} {order.user.last_name}',
             "shipping_address": order.shipping_address, 
+            "billing_address": order.billing_address,
             "shipping_type": order.shipping_type, 
+            "shipping_date": order.shipping_date,
             "shipping_cost": order.shipping_cost, 
             "billing_address": order.billing_address, 
             "total_cost": order.total_cost

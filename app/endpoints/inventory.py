@@ -1,7 +1,8 @@
 from flask import Blueprint, request, redirect, url_for, render_template
 from flask_login import login_required
 from app.utils.data import *
-from app.utils.fetch_settings import fetch_autosignoff_interval, fetch_supported_container_sizes
+from app.utils.fetch_settings import fetch_autosignoff_interval, \
+    fetch_supported_container_sizes, fetch_supported_flavors
 from app.models import Product, User
 from app.extensions import db
 from datetime import datetime
@@ -31,13 +32,17 @@ def inventory_home():
     # fetch the supported container sizes from the database
     container_sizes = fetch_supported_container_sizes()
 
+    # fetch the supported flavors from the database
+    supported_flavors = fetch_supported_flavors()
+
     # parse the product data into a dictionary
     products_dict = parse_product_data(products)
 
     # dictionary of items to pass to the template
     jinja_vars = {
         'products': products_dict,
-        'container_sizes': container_sizes,
+        'supported_container_sizes': container_sizes,
+        'supported_flavors': supported_flavors
     }
 
     return render_template('inventory/inventory.html', **jinja_vars)

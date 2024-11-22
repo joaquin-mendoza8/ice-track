@@ -33,3 +33,21 @@ def fetch_supported_container_sizes():
 
     # return the supported container sizes, or the default
     return container_sizes_config if container_sizes_config else default_container_sizes
+
+def fetch_supported_flavors():
+    """
+    Function to fetch the supported flavors from the database.
+    Defaults to ['chocolate', 'vanilla', 'strawberry'] if the setting does not exist.
+    """
+
+    # set the default flavors
+    default_flavors = ['chocolate', 'vanilla', 'strawberry']
+
+    # get the supported flavors from the database
+    supported_flavors_config = AdminConfig.query.filter_by(key='supported_flavors').first()
+
+    # format the flavors as a list
+    supported_flavors_config = supported_flavors_config.value.split(',') if supported_flavors_config else None
+
+    # return the supported flavors, or the default
+    return supported_flavors_config if supported_flavors_config else default_flavors

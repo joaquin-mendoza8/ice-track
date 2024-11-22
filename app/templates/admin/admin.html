@@ -10,24 +10,43 @@
     <div class="container-md">
 
         <h2>Admin Dashboard</h2>
+
+        <!-- Admin-level Configurations Form -->
         <form method="post" action="/admin/update_configs">
             <div class="row justify-content-left">
                 <div class="col-md-3">
+
+                    <!-- Auto Signoff Time Interval -->
                     <div class="form-group mb-3">
                         <label for="auto-signoff-interval">Auto-Signoff Interval (minutes):</label>
                         <input type="number" 
                             class="form-control"
                             id="auto-signoff-interval"
                             name="auto-signoff-interval" 
-                            min="1" max="180">
+                            min="1" max="180"
+                            value="{{ auto_signoff_interval }}">
                     </div>
+
+                    <!-- Supported Container Sizes List -->
                     <div class="form-group mb-3">
                         <label for="container-sizes">Supported Container Sizes (comma-separated):</label>
                         <input type="text"
                             class="form-control"
                             id="container-sizes"
-                            name="container-sizes">
+                            name="container-sizes"
+                            value="{{ supported_container_sizes }}">
                     </div>
+
+                    <!-- Supported Flavors List -->
+                    <div class="form-group mb-3">
+                        <label for="flavors">Supported Flavors (comma-separated):</label>
+                        <input type="text"
+                            class="form-control"
+                            id="flavors"
+                            name="flavors"
+                            value="{{ supported_flavors or '' }}">
+                    </div>
+
                     <button type="submit" class="btn btn-primary mb-3">Save Settings</button>
                 </div>
             </div>

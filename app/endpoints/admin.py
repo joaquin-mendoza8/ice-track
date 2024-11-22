@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for
 from app.utils.admin_decorator import admin_required
 from app.extensions import db
 from app.models import AdminConfig, Product
-from app.utils.checks import check_container_sizes_in_use
+from app.utils.checks import check_container_sizes_in_use, check_flavors_in_use
 from app.utils.data import parse_admin_config_data
 
 # create the admin blueprint
@@ -22,15 +22,28 @@ def admin_home():
     # parse the admin configuration data into a dictionary
     formatted_configs = parse_admin_config_data(configs)
 
+    # get individual configuration objects from list of configurations
+    auto_signoff_interval, supported_container_sizes, supported_flavors = None, None, None
+    for config in configs:
+        if config.key == 'auto_signoff_interval':
+            auto_signoff_interval = config.value
+        elif config.key == 'supported_container_sizes':
+            supported_container_sizes = config.value
+        elif config.key == 'supported_flavors':
+            supported_flavors = config.value
+
     # dictionary of items to pass to the template
     jinja_vars = {
         'configs': formatted_configs,
+        'auto_signoff_interval': auto_signoff_interval,
+        'supported_container_sizes': supported_container_sizes,
+        'supported_flavors': supported_flavors,
     }
 
     # fetch any messages passed to the template
     msg = request.args.get('msg')
 
-    print(f"Message: {msg}")
+    # print(f"Message: {msg}")
 
     # if a message was passed, add it to the dictionary
     if msg:
@@ -45,9 +58,10 @@ def update_admin_config():
     # get the request form data
     request_auto_signoff_interval = request.form.get('auto-signoff-interval')
     supported_container_sizes = request.form.get('container-sizes')
+    supported_flavors = request.form.get('flavors')
 
     # if none of the fields were passed, redirect back to the admin dashboard
-    if not request_auto_signoff_interval and not supported_container_sizes:
+    if not all([request_auto_signoff_interval, supported_container_sizes, supported_flavors]):
         return redirect(url_for('admin.admin_home'))
 
     # update the auto signoff interval, if it was passed
@@ -73,29 +87,65 @@ def update_admin_config():
     if supported_container_sizes:
         supported_container_sizes_list = [size.strip().lower() for size in supported_container_sizes.split(',')]
         supported_container_sizes_str = ','.join(supported_container_sizes_list)
-
-        # get the supported container sizes from the database
         supported_container_sizes_config = AdminConfig.query.filter_by(key='supported_container_sizes').first()
 
-        # check if any container sizes are in use
-        container_sizes_in_use = check_container_sizes_in_use(supported_container_sizes_list)
+        # check if the container sizes are different
+        if supported_container_sizes_config:
+            # format the database container sizes into a list
+            current_container_sizes = supported_container_sizes_config.value.split(',')
 
-        # if any container sizes are in use, redirect back to the admin dashboard with an error message
-        if container_sizes_in_use:
-            container_sizes_in_use_str = ', '.join(container_sizes_in_use)
-            msg = (f"Cannot complete action. Container sizes in use: <{container_sizes_in_use_str}>. "
-                   "Please remove these container sizes from the list before updating.")
-            return redirect(url_for('admin.admin_home', msg=msg))
+            # compare the current container sizes to the ones passed in the request
+            if set(current_container_sizes) != set(supported_container_sizes_list):
+                container_sizes_in_use = check_container_sizes_in_use(supported_container_sizes_list)
 
-        # update the setting in the database, if it exists
-        if supported_container_sizes_config is not None:
-            supported_container_sizes_config.value = supported_container_sizes_str
+                # if any container sizes are in use, redirect back to the admin dashboard w/ an error message
+                if container_sizes_in_use:
+                    container_sizes_in_use_str = ', '.join(container_sizes_in_use)
+                    msg = (f"Cannot complete action. Container sizes in use: <{container_sizes_in_use_str}>. "
+                           "Please remove these container sizes from the list before updating.")
+                    return redirect(url_for('admin.admin_home', msg=msg))
+                
+                # else, update the setting in the database
+                supported_container_sizes_config.value = supported_container_sizes_str
+
+        # if the setting does not exist, create it
         else:
-            # create the setting in the database, if it does not exist
             container_sizes_config = AdminConfig(key='supported_container_sizes', 
-                                                           value=supported_container_sizes_str, 
-                                                           type='list')
+                                                 value=supported_container_sizes_str, 
+                                                 type='list')
             db.session.add(container_sizes_config)
+
+    # update the supported flavors, if it was passed
+    if supported_flavors:
+
+        # convert the supported flavors to a list
+        supported_flavors_list = [flavor.strip().lower() for flavor in supported_flavors.split(',')]
+        supported_flavors_str = ','.join(set(supported_flavors_list))
+        supported_flavors_config = AdminConfig.query.filter_by(key='supported_flavors').first()
+
+        if supported_flavors_config:
+            # format the current database flavors into a list
+            current_flavors = supported_flavors_config.value.split(',')
+
+            # set the supported flavors if they are different
+            if set(current_flavors) != set(supported_flavors_list):
+                # flavors_in_use = check_flavors_in_use(supported_flavors_list)
+
+                flavors_to_remove = set(current_flavors) - set(supported_flavors_list)
+                if flavors_to_remove:
+                    flavors_in_use = check_flavors_in_use(list(flavors_to_remove))
+                    if flavors_in_use:
+                        flavors_in_use_str = ', '.join(flavors_in_use)
+                        msg = (f"Cannot complete action. Flavors in use: <{flavors_in_use_str}>. "
+                               "Please remove these flavors from the list before updating.")
+                        return redirect(url_for('admin.admin_home', msg=msg))
+                    
+            supported_flavors_config.value = supported_flavors_str
+        else:
+            flavors_config = AdminConfig(key='supported_flavors', 
+                                         value=supported_flavors_str, 
+                                         type='list')
+            db.session.add(flavors_config)
 
     # commit the changes, if any
     if db.session.dirty:
@@ -129,6 +179,22 @@ def delete_admin_config():
                 container_sizes_in_use_str = ', '.join(container_sizes_in_use)
                 msg = (f"Cannot complete action. Container sizes in use: <{container_sizes_in_use_str}>. "
                        "Please remove these container sizes from the list before updating.")
+                return redirect(url_for('admin.admin_home', msg=msg))
+            
+        # check if the configuration is flavors and if any are in use
+        elif config.key == 'supported_flavors':
+
+            # get the supported flavors from the database
+            supported_flavors_list = config.value.split(',')
+
+            # get the flavors that are in use
+            flavors_in_use = check_flavors_in_use(supported_flavors_list)
+
+            # if any flavors are in use, redirect back to the admin dashboard with an error message
+            if flavors_in_use:
+                flavors_in_use_str = ', '.join(flavors_in_use)
+                msg = (f"Cannot complete action. Flavors in use: <{flavors_in_use_str}>. "
+                       "Please remove these flavors from the list before updating.")
                 return redirect(url_for('admin.admin_home', msg=msg))
 
         db.session.delete(config)
