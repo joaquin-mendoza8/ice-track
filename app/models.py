@@ -77,6 +77,9 @@ class Order(db.Model):
     # sets a one to many relationship with Order(one) and OrderItem(many)
     order_items = db.relationship('OrderItem', backref='parent_order', lazy=True)
 
+    # sets a one to one relationship with Order and shipment
+    shipment = db.relationship('Shipment', backref='order', uselist=False)
+
     # print the order
     def __repr__(self):
         return f'<Order {self.id}>'
@@ -108,10 +111,10 @@ class AdminConfig(db.Model):
 class Shipment(db.Model):
 
     # composite primary key 
-    id=db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
 
     # shipment attributes
-    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
     date_shipped = db.Column(db.Date, nullable=False)
     shippment_boxes = db.Column(db.Integer, nullable=False)
     partial_delivery = db.Column(db.Boolean, nullable=False, default=False)

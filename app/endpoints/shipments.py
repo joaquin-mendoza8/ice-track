@@ -15,16 +15,11 @@ def shipments_home():
     # fetch all shipments from database
     shipments = Shipment.query.all()
 
-    # fetch all orders from database
-    #orders = Order.query.all()
-
     #parse the shipment data into a dictionary
-    shipments_dict = parse_product_data(shipments)
-    #orders_dict = parse_order_data(orders)
+    shipments_dict = parse_shipment_data(shipments)
 
     # dictionary of items to pass to the template
     jinja_vars = {
-        #'orders': orders_dict,
         'shipments': shipments_dict
     }
 
@@ -35,23 +30,29 @@ def shipments_home():
 @login_required
 def shipments_update_shipment():
 
+    # check if POST was made
     if request.method == 'POST':
-
-        #order_id = request.form.get("order-id")
+        
+        # extract form data
         shipment_id = request.form.get("shipment-id")
-
         date_shipped = request.form.get("date-shipped")
-        shippment_boxes = request.form.get("shipment_boxes")
+        shippment_boxes = request.form.get("shippment_boxes")
         partial_delivery = request.form.get("partial_delivery")
         estimated_date = request.form.get("estimated-date")
         delivery_date = request.form.get("deliver-date")
         shippment_type = request.form.get("shippment_type")
-
+        
+        # ensure all fields are made
         if all([shipment_id, date_shipped, shippment_boxes, partial_delivery, 
                 estimated_date, delivery_date, shippment_type]):
             
-            shipment = Shipment.query.get()
+            # fetch shipment from database
+            shipment = Shipment.query.get(shipment_id)
 
+            if not shipment:
+                return redirect(url_for('shipments.shipments_home', error="Shipment not found"))
+            
+            # update shipment object
             shipment.date_shipped = date_shipped
             shipment.shippment_boxes = shippment_boxes
             shipment.partial_delivery = partial_delivery
@@ -59,7 +60,9 @@ def shipments_update_shipment():
             shipment.delivery_date = delivery_date
             shipment.shippment_type = shippment_type
             
+            # commit changes to database
             db.session.commit()
 
+            # redirect back to order form
             return redirect(url_for('shipments.shipments_home'))
 

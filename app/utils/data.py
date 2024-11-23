@@ -58,3 +58,15 @@ def parse_admin_config_data(configs):
         }
         for config in configs
     ]
+
+def parse_shipment_data(shipments):
+    """Converts a SQLAlchemy list of objects to a dictionary."""
+
+    return [
+        {"id": shipment.id, "date_shipped": shipment.date_shipped,
+         "shippment_boxes": shipment.shippment_boxes,
+         "partial_delivery": shipment.partial_delivery,
+         "estimated_date": shipment.delivery_date,
+         "shippment_type": shipment.shippment_type}
+         for shipment in shipments
+    ]
