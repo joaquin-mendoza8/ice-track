@@ -34,7 +34,7 @@ fi
 TITLE="Entity-Relationship Diagram"
 
 # create the ERD
-eralchemy --exclude-tables "alembic_version" --exclude-tables "sessions" -i sqlite:///$DB_PATH --title $TITLE -o erd.png
+eralchemy --exclude-tables "alembic_version" --exclude-tables "sessions" -i sqlite:///$DB_PATH -o erd.png
 
 # print a message
 echo -e "ERD created..."

@@ -23,7 +23,7 @@
             <!-- Admin dashboard only shows if current user is an admin -->
             {% if current_user.is_admin %}
             <li class="nav-item pb-md-2 pb-lg-3">
-                <a class="sidebar-nav-link nav-link" href="{{ url_for('admin.admin_dashboard') }}">Admin Dashboard</a>
+                <a class="sidebar-nav-link nav-link" href="{{ url_for('admin.admin_home') }}">Admin Dashboard</a>
             </li>
             {% endif %}
 

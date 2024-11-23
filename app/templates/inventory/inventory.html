@@ -26,9 +26,12 @@
 
             <!-- Key Metrics Cards -->
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 gap-4">
-                {{ macros.metrics_card('Metric 1', 'text 1') }}
-                {{ macros.metrics_card('Metric 2', 'text 2') }}
-                {{ macros.metrics_card('Metric 3', 'text 3') }}
+                {% set total_quantity = products | map(attribute='quantity') | sum %}
+                {{ macros.metrics_card('Total Units', total_quantity | string) }}
+
+                {{ macros.metrics_card('Total Products', products | length) }}
+
+                {{ macros.metrics_card('Metric 3', 'Metric value') }}
             </div>
 
             <!-- Inventory Add Modal -->
@@ -39,7 +42,11 @@
                 <!-- inline container for title and modal button -->
                 <div class="d-flex justify-content-between">
                     <h1>Products</h1>
-                    <button type="button" class="btn modal-btn" data-bs-toggle="modal" data-bs-target="#addModal">+ New</button>
+
+                    <!-- only displays the add button if user is an admin -->
+                    {% if current_user.is_admin %}
+                        <button type="button" class="btn modal-btn" data-bs-toggle="modal" data-bs-target="#addModal">+ New</button>
+                    {% endif %}
                 </div>
 
                 <!-- Dropdown for 'Filter By' functionality -->
@@ -73,7 +80,7 @@
                     <tbody>
                         {% for product in products %}
                             {% set outer_index = loop.index - 1 %}
-                            <tr onclick="openModal({{ product }}, {{ product['id'] }})" id="row-{{ outer_index }}">
+                            <tr onclick="openModal({{ product }}, {{ product['id'] }}, {{ current_user.is_admin | tojson | safe }})" id="row-{{ outer_index }}">
                                 <td>{{ product.flavor }}</td>
                                 <td>{{ product.container_size }}</td>
                                 <td>{{ product.price | currency}}</td>
