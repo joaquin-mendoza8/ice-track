@@ -13,42 +13,102 @@
 
         <!-- Admin-level Configurations Form -->
         <form method="post" action="/admin/update_configs">
-            <div class="row justify-content-left">
+
+            <div class="row justify-content-left mb-5">
+
                 <div class="col-md-3">
 
                     <!-- Auto Signoff Time Interval -->
-                    <div class="form-group mb-3">
-                        <label for="auto-signoff-interval">Auto-Signoff Interval (minutes):</label>
-                        <input type="number" 
-                            class="form-control"
-                            id="auto-signoff-interval"
-                            name="auto-signoff-interval" 
-                            min="1" max="180"
-                            value="{{ auto_signoff_interval }}">
-                    </div>
+                    {{ macros.input_group_floating(
+                        label='Auto-Signoff Interval', 
+                        id='auto-signoff-interval', 
+                        name='auto-signoff-interval', 
+                        value=auto_signoff_interval or 60,
+                        min=1, 
+                        max=180, 
+                        type='number', 
+                        unit='minutes',
+                        tooltip='Set the interval (in minutes) after which users will be automatically signed off.'
+                    ) }}
+                </div>
+
+                <div class="col-md-3">
 
                     <!-- Supported Container Sizes List -->
-                    <div class="form-group mb-3">
-                        <label for="container-sizes">Supported Container Sizes (comma-separated):</label>
-                        <input type="text"
-                            class="form-control"
-                            id="container-sizes"
-                            name="container-sizes"
-                            value="{{ supported_container_sizes }}">
-                    </div>
+                    {{ macros.input_group_floating(
+                        label='Supported Container Sizes', 
+                        id='container-sizes', 
+                        name='container-sizes',  
+                        value=supported_container_sizes or '',
+                        min='', 
+                        max='', 
+                        type='text',
+                        unit='',
+                        tooltip='Enter a comma-separated list of supported container sizes.') 
+                    }}
+
+                </div>
+
+                <div class="col-md-3">
 
                     <!-- Supported Flavors List -->
-                    <div class="form-group mb-3">
-                        <label for="flavors">Supported Flavors (comma-separated):</label>
-                        <input type="text"
-                            class="form-control"
-                            id="flavors"
-                            name="flavors"
-                            value="{{ supported_flavors or '' }}">
-                    </div>
+                    {{ macros.input_group_floating(
+                        label='Supported Flavors', 
+                        id='flavors', 
+                        name='flavors', 
+                        value=supported_flavors or '',
+                        min='', 
+                        max='', 
+                        type='text',
+                        unit='',
+                        tooltip='Enter a comma-separated list of supported flavors.') 
+                    }}
 
-                    <button type="submit" class="btn btn-primary mb-3">Save Settings</button>
                 </div>
+            
+            </div>
+
+            <div class="row justify-content-left mb-5">
+
+                <div class="col-md-3">
+
+                    <!-- Shipping Types -->
+                    {{ macros.input_group_floating(
+                        label='Shipping Types', 
+                        id='shipping-types', 
+                        name='shipping-types', 
+                        value=supported_shipping_types or '',
+                        min='', 
+                        max='', 
+                        type='text',
+                        unit='',
+                        tooltip='Enter a comma-separated list of shipping types.') 
+                    }}
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <!-- Shipping Costs -->
+                    {{ macros.input_group_floating(
+                        label='Shipping Costs ($)', 
+                        id='shipping-costs', 
+                        name='shipping-costs', 
+                        value=supported_shipping_costs | currency_list or '',
+                        min='', 
+                        max='', 
+                        type='text',
+                        unit='',
+                        tooltip='Enter a comma-separated list of shipping costs corresponding to the shipping types.') 
+                    }}
+
+                </div>
+
+                <!-- Save button (submit form) -->
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                </div>
+
             </div>
         </form>
 
@@ -70,7 +130,15 @@
                     {% for config in configs %}
                         <tr>
                             <td>{{ config.key | attribute }}</td>
-                            <td>{{ config.value }}{% if config.key == 'auto_signoff_interval' %} min{% endif %}</td>
+                            <td>
+                                {% if config.key == 'supported_shipping_costs' %}
+                                    {{ config.value | currency_list }}
+                                {% elif config.key == 'auto_signoff_interval' %}
+                                    {{ config.value }} min
+                                {% else %}
+                                    {{ config.value }}
+                                {% endif %}
+                            </td>
                             <td>
                                 <!-- delete config trigger endpoint 'delete_config' -->
                                 <button 

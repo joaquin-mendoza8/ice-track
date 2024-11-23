@@ -1,5 +1,5 @@
 
-from app.models import Product
+from app.models import Product, Order
 
 
 def check_container_sizes_in_use(container_sizes_list):
@@ -26,6 +26,7 @@ def check_container_sizes_in_use(container_sizes_list):
 
     return container_sizes_in_use
 
+
 def check_flavors_in_use(supported_flavors_list):
     """
     Before deleting a flavor, check if it is in use by any products in the inventory.
@@ -49,3 +50,27 @@ def check_flavors_in_use(supported_flavors_list):
             flavors_in_use.append(flavor)
 
     return flavors_in_use
+
+def check_shipping_types_in_use(supported_shipping_types_list):
+    """
+    Before deleting a shipping type, check if it is in use by any orders in the database.
+
+    Args:
+        supported_shipping_types_list (list): List of shipping types that were passed in the request.
+
+    Returns:
+        list: List of shipping types that are in use.
+    """
+    # get all currently existing shipping types from the orders table
+    shipping_types_in_orders = Order.query.with_entities(Order.shipping_type).distinct().all()
+    shipping_types_in_orders = [shipping_type[0] for shipping_type in shipping_types_in_orders] if shipping_types_in_orders else []
+
+    # list of shipping types in use (in orders)
+    shipping_types_in_use = []
+
+    # check if any shipping types are in use
+    for shipping_type in supported_shipping_types_list:
+        if shipping_type in shipping_types_in_orders:
+            shipping_types_in_use.append(shipping_type)
+
+    return shipping_types_in_use

@@ -1,5 +1,7 @@
-{% macro metrics_card(title, text) %}
-    <div class="metrics-card card flex-grow-1 mx-1" style="max-width: 300px;">
+
+<!-- Metrics Card -->
+{% macro metrics_card(title, text, tooltip='') %}
+    <div class="metrics-card card flex-grow-1 mx-1" style="max-width: 300px;" {% if tooltip %} data-bs-toggle="tooltip" title="{{ tooltip }}" {% endif %}>
         <div class="card-body">
             <h5 class="card-title">{{ title }}</h5>
             <h2 class="card-text">{{ text }}</h2>
@@ -7,8 +9,8 @@
     </div>
 {% endmacro %}
 
-{% macro message(text, type, redirect) %}
-
+<!-- Message -->
+{% macro message(text, type, redirect, tooltip='') %}
     <!-- define the accepted message types -->
     {% set valid_types = ["success", "info", "warning", "danger"] %}
     {% set selected_type = "" %}
@@ -21,7 +23,7 @@
     {% endif %}
 
     <!-- apply the message type, display the message -->
-    <div class="alert alert-{{ type }} alert-dismissible fade show" role="alert">
+    <div class="alert alert-{{ type }} alert-dismissible fade show" role="alert" {% if tooltip %} data-bs-toggle="tooltip" title="{{ tooltip }}" {% endif %}>
         {{ text }}
 
         <!-- if a redirect is passed, navigate to it to clear the URL parameters -->
@@ -31,4 +33,34 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         {% endif %}
     </div>
+{% endmacro %}
+
+<!-- Floating Input -->
+{% macro input_group_floating(label, id, name, value='', min='', max='', type='text', unit='', is_required=true, tooltip='') %}
+<div class="{% if unit %}input-group {% endif %}form-floating" {% if tooltip %} data-bs-toggle="tooltip" title="{{ tooltip }}" {% endif %}>
+    <input type="{{ type }}" 
+           class="form-control"
+           id="{{ id }}"
+           name="{{ name }}" 
+           {% if min %} min="{{ min }}" {% endif %}
+           {% if max %} max="{{ max }}" {% endif %}
+           value="{{ value }}"
+           {% if is_required %}required{% endif %}>
+    <label for="{{ id }}">{{ label }}</label>
+    {% if unit %}
+    <span class="input-group-text" id="basic-addon2">{{ unit }}</span>
+    {% endif %}
+</div>
+{% endmacro %}
+
+<!-- Select Input with Floating Label -->
+{% macro select_group_floating(label, id, name, options, selected='', is_required=true, tooltip='') %}
+<div class="form-floating" {% if tooltip %} data-bs-toggle="tooltip" title="{{ tooltip }}" {% endif %}>
+    <select class="form-control" id="{{ id }}" name="{{ name }}" {% if is_required %}required{% endif %}>
+        {% for value, text in options %}
+            <option value="{{ value }}" {% if value == selected %}selected{% endif %}>{{ text }}</option>
+        {% endfor %}
+    </select>
+    <label for="{{ id }}">{{ label }}</label>
+</div>
 {% endmacro %}
