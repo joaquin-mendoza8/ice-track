@@ -7,7 +7,7 @@ from flask_login import UserMixin
 # User class
 class User(db.Model, UserMixin):
 
-    id=db.Column(db.Integer, primary_key=True)
+    id=db.Column(db.Integer, primary_key=True, autoincrement=True)
     username=db.Column(db.String(150), unique=True, nullable=False)
     password=db.Column(db.String(150), nullable=False)
     last_login=db.Column(db.DateTime, nullable=True, default=func.now())    # automatically set to current time for new users
@@ -19,6 +19,9 @@ class User(db.Model, UserMixin):
     status=db.Column(db.String(150), nullable=False) # preferred, ok, shaky
     shipping_address=db.Column(db.String(250), nullable=False)
     billing_address=db.Column(db.String(250), nullable=False)
+
+    # relationship to Order (1-to-many)
+    orders = db.relationship('Order', backref='user', lazy=True)
     
     # print the user
     def __repr__(self):
@@ -46,8 +49,8 @@ class Product(db.Model):
     user_id_add=db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) # user who added the product
     user_id_delete=db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True) # user who deleted the product
     
-    
-    # order_id=db.Column(db.Integer, db.ForeignKey('order.id'), nullable=True) # TODO: implement after orders are implemented
+    # relationship to OrderItem (1-to-many)
+    order_items = db.relationship('OrderItem', backref='product', lazy=True)
 
     # print the product
     def __repr__(self):
@@ -58,19 +61,17 @@ class Product(db.Model):
 class Order(db.Model):
 
     # defining data attributes in order
-    id = db.Column(db.Integer, primary_key= True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
-    # foreign keys to User model
-    customer_first_name = db.ForeignKey('user.first_name')
-    customer_last_name = db.ForeignKey('user.last_name')
-    customer_status = db.ForeignKey('user.status')
-    shipping_address = db.ForeignKey('user.shipping_address')
-    billing_address = db.ForeignKey('user.billing_address')
+    # foreign key to User model
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     # order data attributes
     shipping_type = db.Column(db.String(100), nullable=False)
     shipping_cost = db.Column(db.Float, nullable=False)
-    billing_address = db.Column(db.String(150), nullable=False)
+    shipping_date = db.Column(db.Date, nullable=False)
+    shipping_address = db.Column(db.String(250), nullable=False)
+    billing_address = db.Column(db.String(250), nullable=False)
     total_cost = db.Column(db.Float, nullable=False)
 
     # sets a one to many relationship with Order(one) and OrderItem(many)
@@ -82,23 +83,42 @@ class Order(db.Model):
             
 # Order item data models (products inside of an order)
 class OrderItem(db.Model):
-    #defining product data attributes
-    id = db.Column(db.Integer, primary_key= True)
+
+    # order item data attributes
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    quantity = db.Column(db.Integer, nullable=False)
+    line_item_cost = db.Column(db.Float, nullable=False)
+
+    # foreign keys to Order and Product models
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
-    ship_date = db.Column(db.Date, nullable=False)
-
-    # sets a one to many relationship with OrderItem(one) and product(many) 
-    # product = db.relationship('Product', backref='order_item')
-    # sets a many to one relationship with OrderItem(many) and order(one)
-    # order = db.relationship('Order', backref='order_item')
-
-    # initializing attributes
-    def __init__(self, order_id, product_id, quantity, ship_date):
-        self.order_id = order_id
-        self.product_id = product_id
-        self.quantity = quantity
-        self.ship_date = ship_date
     
-        
+
+# Admin Configuration Settings data model
+class AdminConfig(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    key = db.Column(db.String(50), nullable=False) # e.g., "supported_container_sizes"
+    value = db.Column(db.Text, nullable=False) # store JSON data as text
+    type = db.Column(db.String(50), nullable=False) # e.g., "list", "dict", "str", "int", "float"
+
+    # print the admin configuration
+    def __repr__(self):
+        return f'<AdminConfig {self.id}>'
+
+class Shipment(db.Model):
+
+    # composite primary key 
+    id=db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+    # shipment attributes
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    date_shipped = db.Column(db.Date, nullable=False)
+    shippment_boxes = db.Column(db.Integer, nullable=False)
+    partial_delivery = db.Column(db.Boolean, nullable=False, default=False)
+    estimated_date = db.Column(db.Date, nullable=False)
+    delivery_date = db.Column(db.Date, nullable=False)
+    shippment_type = db.Column(db.String(150), nullable=False)
+
+    # print the shipment
+    def __repr__(self):
+        return f'<Shipment {self.id}>'
