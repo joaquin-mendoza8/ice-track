@@ -9,6 +9,7 @@ def parse_product_data(products):
             "container_size": product.container_size,
             "price": product.price,
             "quantity": product.quantity,
+            "committed_quantity": product.committed_quantity,
             "status": product.status
         }
         for product in products

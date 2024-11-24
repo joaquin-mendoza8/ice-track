@@ -29,9 +29,10 @@
                 {% set total_quantity = products | map(attribute='quantity') | sum %}
                 {{ macros.metrics_card('Total Units', total_quantity | string) }}
 
-                {{ macros.metrics_card('Total Products', products | length) }}
+                {% set total_actual = products | selectattr('status', 'equalto', 'actual') | map(attribute='quantity') | sum %}
+                {{ macros.metrics_card('Total Actual Units', total_actual) }}
 
-                {{ macros.metrics_card('Metric 3', 'Metric value') }}
+                {{ macros.metrics_card('Total Products', products | length) }}
             </div>
 
             <!-- Inventory Add Modal -->
@@ -50,6 +51,7 @@
                 </div>
 
                 <!-- Dropdown for 'Filter By' functionality -->
+                {% set hidden_attributes = ['id', 'disposition', 'deleted_at'] %}
                 <div class="dropdown mt-3">
                     <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                         Filter By
@@ -58,7 +60,7 @@
 
                         {% if products %}
                             {% for key in products[0].keys() %}
-                                {% if key not in ['id', 'disposition', 'deleted_at'] %}
+                                {% if key not in hidden_attributes %}
                                     <li><a class="dropdown-item" href="/inventory?filter={{ key }}">{{ key | attribute }}</a></li>
                                 {% endif %}
                             {% endfor %}
@@ -72,7 +74,7 @@
                     {% if products %}
                     <thead>
                         {% for key in products[0].keys() %}
-                            {% if key not in ['id', 'disposition', 'deleted_at'] %}
+                            {% if key not in hidden_attributes %}
                                 <th scope="col">{{ key | attribute }}</th>
                             {% endif %}
                         {% endfor %}
@@ -81,11 +83,15 @@
                         {% for product in products %}
                             {% set outer_index = loop.index - 1 %}
                             <tr onclick="openModal({{ product }}, {{ product['id'] }}, {{ current_user.is_admin | tojson | safe }})" id="row-{{ outer_index }}">
-                                <td>{{ product.flavor }}</td>
-                                <td>{{ product.container_size }}</td>
-                                <td>{{ product.price | currency}}</td>
-                                <td>{{ product.quantity }}</td>
-                                <td>{{ product.status }}</td>
+                                {% for key, value in product.items() %}
+                                    {% if key not in hidden_attributes %}
+                                        {% if key == 'price' %}
+                                            <td>{{ value | currency }}</td>
+                                        {% else %}
+                                            <td>{{ value | capitalize }}</td>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
                             </tr>
                         {% endfor %}
                     </tbody>

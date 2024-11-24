@@ -267,24 +267,90 @@ document.addEventListener('DOMContentLoaded', function() {
     handleMaxQuantity(firstFlavorSelect);
     handleCost(firstFlavorSelect);
 
+
+
+    // add event listeners to the table rows
+    // const ordersTable = document.getElementById('orders-table');
+    // const tableRows = ordersTable.querySelectorAll('tr');
+    // tableRows.forEach(row => {
+    //     row.addEventListener('click', () => {
+    //         const orderId = row.getAttribute('id');
+    //         const orderContent = row.getAttribute('data-content');
+    //         populateOrdersModal(orderContent, orderId);
+    //     });
+    // });
+
 });
 
-
 // function to open the view/edit order modal
-function handleViewEditOrder(orderId) {
-    // const orderDetailsModal = document.getElementById('order-details-modal');
-    // const orderDetailsModalTitle = document.getElementById('order-details-modal-title');
-    // const orderDetailsModalBody = document.getElementById('order-details-modal-body');
+function openOrderUpdateModal(order_id) {
+    const orderIdInput = document.getElementById('order-id-update');
+    const orderIdInputHidden = document.getElementById('order-id-update-hidden');
 
-    // fetch(`/orders/fetch_order_details?order_id=${orderId}`)
-    //     .then(response => response.json())
-    //     .then(data => {
-    //         orderDetailsModalTitle.textContent = `Order #${orderId}`;
-    //         orderDetailsModalBody.innerHTML = data.order_details;
-    //         orderDetailsModal.show();
-    //     })
-    //     .catch(error => {
-    //         console.error('Error fetching order details:', error);
-    //         alert('Failed to load order details. Please try again.');
-    //     });
+    // Set the order id and content in the modal
+    if (order_id) {
+        orderIdInput.value = parseInt(order_id);
+        orderIdInputHidden.value = parseInt(order_id);
+    }
+
+    // fetch the order info from the server
+    fetch(`/orders/fetch_order_info?order_id=${order_id}`)
+        .then(response => response.json())
+        .then(data => {
+            const orderContent = data;
+            console.log(data);
+
+            // Set the customer name
+            const customerNameInput = document.getElementById('customer-update');
+            customerNameInput.value = orderContent.customer;
+
+            // Set the shipping type, date, and cost
+            const shippingTypeSelect = document.getElementById('shipping-type-update');
+            const shippingDateInput = document.getElementById('shipping-date-update');
+            const shippingCostInput = document.getElementById('shipping-cost-update');
+            shippingTypeSelect.value = orderContent.shipping_type.charAt(0).toUpperCase() + orderContent.shipping_type.slice(1);
+            
+            const shippingDate = new Date(orderContent.shipping_date);
+            const formattedShippingDate = `${shippingDate.getMonth() + 1}/${shippingDate.getDate() + 1}/${shippingDate.getFullYear()}`;
+            shippingDateInput.value = formattedShippingDate;
+
+            shippingCostInput.value = `$${parseFloat(orderContent.shipping_cost).toFixed(2)}`;
+
+        })
+        .catch(error => {
+            console.error('Error fetching order:', error);
+            alert('Failed to load order. Please try again.');
+        });
+
+    $('#ordersUpdateModal').modal('show');
+}
+
+
+// function to change all inputs in the view/edit order modal from readonly to editable
+function toggleEdit() {
+
+    // get all input fields in the modal
+    const updateModal = document.getElementById('ordersUpdateModal');
+    const inputs = updateModal.querySelectorAll('.order-input');
+    const updateInputs = updateModal.querySelectorAll('[id*="-update"]');
+    updateInputs.forEach(input => {
+        input.readOnly = !input.readOnly;
+        if (input.classList.contains('form-control-plaintext')) {
+            input.classList.remove('form-control-plaintext');
+            input.classList.add('form-control');
+        } else {
+            input.classList.remove('form-control');
+            input.classList.add('form-control-plaintext');
+        }
+    });
+
+    // toggle the readonly attribute of each input
+    inputs.forEach(input => {
+        input.readOnly = !input.readOnly;
+    });
+
+    // toggle the hidden attribute of the "Save Changes" button
+    // const saveChangesButton = document.getElementById('save-changes');
+    // saveChangesButton.hidden = !saveChangesButton.hidden;
+
 }

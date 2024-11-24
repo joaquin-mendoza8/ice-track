@@ -1,3 +1,5 @@
+# TODO: Stress testing with pytest-benchmark pytest
+
 # test the inventory home endpoint
 def test_inventory_home(client):
 

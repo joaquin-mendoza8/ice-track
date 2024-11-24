@@ -36,16 +36,17 @@
 {% endmacro %}
 
 <!-- Floating Input -->
-{% macro input_group_floating(label, id, name, value='', min='', max='', type='text', unit='', is_required=true, tooltip='') %}
+{% macro input_group_floating(label, id, name, value='', min='', max='', type='text', unit='', plaintext=false, is_required=true, is_readonly=false, tooltip='') %}
 <div class="{% if unit %}input-group {% endif %}form-floating" {% if tooltip %} data-bs-toggle="tooltip" title="{{ tooltip }}" {% endif %}>
     <input type="{{ type }}" 
-           class="form-control"
+           class="form-control{% if plaintext %}-plaintext{% endif %}"
            id="{{ id }}"
            name="{{ name }}" 
            {% if min %} min="{{ min }}" {% endif %}
            {% if max %} max="{{ max }}" {% endif %}
            value="{{ value }}"
-           {% if is_required %}required{% endif %}>
+            {% if is_required %}required{% endif %}
+            {% if is_readonly %}readonly{% endif %}>
     <label for="{{ id }}">{{ label }}</label>
     {% if unit %}
     <span class="input-group-text" id="basic-addon2">{{ unit }}</span>
