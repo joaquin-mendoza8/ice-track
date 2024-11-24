@@ -1,18 +1,3 @@
-import pytest
-from flask import template_rendered
-
-@pytest.fixture
-def captured_templates(app_instance):
-    recorded = []
-
-    def record(sender, template, context, **extra):
-        recorded.append((template, context))
-
-    template_rendered.connect(record, app_instance)
-    try:
-        yield recorded
-    finally:
-        template_rendered.disconnect(record, app_instance)
 
 def test_register_post_success(client):
 

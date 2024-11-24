@@ -41,25 +41,16 @@
 
                     <!-- Shipping Type -->
                     <div class="col-md-3">
-
-                        <!-- Use floating input macro -->
-                         {{ macros.input_group_floating(
-                            label='Shipping Type',
-                            id='shipping-type',
-                            name='shipping-type',
-                            value=shipping_types or '',
-                            min='',
-                            max='',
-                            type='text',
-                            unit='',
-                            tooltip='Enter a comma-separated list of shipping types.'
-                         ) }}
-
                         <label for="shipping-type" class="form-label">Shipping Type</label>
                         <select class="form-control" id="shipping-type" name="shipping-type" required>
                             <option value="" disabled selected>Select shipping</option>
-                            <option value="standard">Standard</option>
-                            <option value="express">Express</option>
+                            {% if shipping_types %}
+                                {% for i in range(shipping_types|length) %}
+                                    <option value="{{ shipping_types[i] }}" data-cost="{{ shipping_costs[i] }}">{{ shipping_types[i] }}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="" disabled selected>No shipping types available</option>
+                            {% endif %}
                         </select>
                     </div>
 

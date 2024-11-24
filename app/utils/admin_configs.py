@@ -200,3 +200,23 @@ def process_pre_delete_flavors(config):
         return (f"Cannot complete action. Flavors in use: <{flavors_in_use_str}>. "
                 "Please remove these flavors from the list before updating.")
     return None
+
+def process_pre_delete_shipping_types(config):
+    """
+    Process the pre-deletion logic of supported shipping types.
+
+    Returns an error message if any of the shipping types are in use.
+    """
+
+    # get the supported shipping types from the database
+    supported_shipping_types_list = config.value.split(',')
+
+    # get the shipping types that are in use
+    shipping_types_in_use = check_shipping_types_in_use(supported_shipping_types_list)
+
+    # if any shipping types are in use, return an error message
+    if shipping_types_in_use:
+        shipping_types_in_use_str = ', '.join(shipping_types_in_use)
+        return (f"Cannot complete action. Shipping types in use: <{shipping_types_in_use_str}>. "
+                "Please remove these shipping types from the list before updating.")
+    return None

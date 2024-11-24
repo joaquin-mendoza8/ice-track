@@ -94,13 +94,31 @@
                         label='Shipping Costs ($)', 
                         id='shipping-costs', 
                         name='shipping-costs', 
-                        value=supported_shipping_costs | currency_list or '',
+                        value=supported_shipping_costs or '',
                         min='', 
                         max='', 
                         type='text',
                         unit='',
                         tooltip='Enter a comma-separated list of shipping costs corresponding to the shipping types.') 
                     }}
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <!-- Dropdown for elevating non-admin users to admins -->
+                    {% set options = [] %}
+                    {% for user in users %}
+                        {% set _ = options.append((user.id, user.name)) %}
+                    {% endfor %}
+                    {{ macros.select_group_floating(
+                        label='Elevate User',
+                        id='user-select',
+                        name='user-select',
+                        options=options,
+                        is_required=false,
+                        tooltip='Select a user to elevate to admin status.'
+                    ) }}
 
                 </div>
 
@@ -128,11 +146,19 @@
             <tbody>
                 {% if configs %}
                     {% for config in configs %}
+                        {% if config.key != 'supported_shipping_costs' %}
                         <tr>
                             <td>{{ config.key | attribute }}</td>
                             <td>
-                                {% if config.key == 'supported_shipping_costs' %}
-                                    {{ config.value | currency_list }}
+                                {% if config.key == 'supported_shipping_types' %}
+                                    <ul>
+                                        {% set shipping_types = config.value.split(',') %}
+                                        {% set formatted_shipping_costs = supported_shipping_costs | currency_list %}
+                                        {% set shipping_costs = formatted_shipping_costs.split(',') %}
+                                        {% for i in range(shipping_types | length) %}
+                                            <li>{{ shipping_types[i] }}: {{ shipping_costs[i] }}</li>
+                                        {% endfor %}
+                                    </ul>
                                 {% elif config.key == 'auto_signoff_interval' %}
                                     {{ config.value }} min
                                 {% else %}
@@ -151,6 +177,7 @@
                                 </button>
                             </td>
                         </tr>
+                        {% endif %}
                     {% endfor %}
                 {% else %}
                     <tr>

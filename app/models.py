@@ -77,8 +77,8 @@ class Order(db.Model):
     # sets a one to many relationship with Order(one) and OrderItem(many)
     order_items = db.relationship('OrderItem', backref='parent_order', lazy=True)
 
-    # sets a one to one relationship with Order and shipment
-    shipment = db.relationship('Shipment', backref='order', uselist=False)
+    # 1:1 relationship with Shipment
+    shipment = db.relationship('Shipment', backref='order', uselist=False, lazy=True)
 
     # print the order
     def __repr__(self):
