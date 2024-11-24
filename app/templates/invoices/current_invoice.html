@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Invoice Details{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Invoice Details</h1>
+    <!-- Display basic invoice information -->
+    <p><strong>Order ID:</strong> {{ invoice.id }}</p>
+    <p><strong>Customer Name:</strong> {{ invoice.customer_name }}</p>
+    <p><strong>Due Date:</strong> {{ invoice.due_date }}</p>
+
+    <!-- Display the list of items in the invoice -->
+    <h2>Items</h2>
+    <table class="table table-hover table-borderless">
+        <thead>
+            <tr>
+                <th scope="col">Item Name</th>
+                <th scope="col">Quantity</th>
+                <th scope="col">Unit Price</th>
+                <th scope="col">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if invoice.order_items %}
+                {% for item in invoice.order_items %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.unit_price | currency }}</td>
+                    <td>{{ item.total | currency }}</td>
+                </tr>
+                {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="4">No items found for this invoice.</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <!-- Display the total amount for the invoice -->
+    <p><strong>Total Amount:</strong> {{ invoice.total | currency }}</p>
+
+    <!-- Print Invoice Button -->
+    <button onclick="window.print()">Print Invoice</button>
+</div>
+{% endblock %}
