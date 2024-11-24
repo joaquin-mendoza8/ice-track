@@ -9,7 +9,9 @@ def format_currency(value):
 
 def format_currency_list(value):
     """Format comma-separated list of strings as currency."""
-    return ",".join(format_currency(float(v)) for v in value.split(","))
+    if value:
+        return ",".join(format_currency(float(v)) for v in value.split(","))
+    return ""
 
 def format_date(value):
     """Format date as <Mon DD, YYYY>."""

@@ -3,6 +3,7 @@ from flask_login import login_required
 from app.utils.data import *
 from app.models import Product, User, Order, OrderItem, Shipment
 from app.extensions import db
+from datetime import datetime, timedelta
 
 # create the shipments blueprint
 shipments = Blueprint('shipments', __name__)
@@ -66,3 +67,28 @@ def shipments_update_shipment():
             # redirect back to order form
             return redirect(url_for('shipments.shipments_home'))
 
+def create_shipment(order_id):
+
+    print(f"Creating shipment for order ID: {order_id}")
+    order = Order.query.get(order_id)
+    if not order:
+        raise ValueError(f"Order ID {order_id} does not exist")
+    total_products = sum(item.quantity for item in order.order_items)
+    shipment_boxes = (total_products + 4) // 5
+
+    new_shipment = Shipment(
+        order_id=order.id,
+        date_shipped=None,
+        shippment_boxes=shipment_boxes,
+        partial_delivery=False,
+        estimated_date=order.shipping_date,
+        delivery_date=None,
+        shippment_type=order.shipping_type
+    )
+
+    db.session.add(new_shipment)
+    db.session.commit()
+    shipments = Shipment.query.all()
+    print(shipments)
+
+    return new_shipment

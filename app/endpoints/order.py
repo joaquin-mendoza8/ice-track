@@ -5,6 +5,7 @@ from app.utils.data import *
 from app.models import Product, User, Order, OrderItem, Shipment
 from app.extensions import db
 from datetime import datetime, timedelta
+from app.endpoints.shipments import create_shipment
 
 # create the order entry form blueprint
 orders = Blueprint('orders', __name__)
@@ -156,8 +157,8 @@ def orders_add_order():
             return redirect(url_for('orders.orders_home'))
 
         # check if the quantity is available
-        if product.quantity < quantity:
-            print(f"Not enough stock for product {product.name} ({product.container_size})", "error")
+        if product.quantity < int(quantity):
+            print(f"Not enough stock for product {product.flavor} ({product.container_size})", "error")
             return redirect(url_for('orders.orders_home'))
 
         # update the product quantity
@@ -176,6 +177,9 @@ def orders_add_order():
     db.session.commit()
 
     print("Order added successfully", "success")
+
+    # create new shipment with order
+    create_shipment(new_order.id)
 
     # redirect back to the order form
     return redirect(url_for('orders.orders_home'))

@@ -115,11 +115,11 @@ class Shipment(db.Model):
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
 
     # shipment attributes
-    date_shipped = db.Column(db.Date, nullable=False)
+    date_shipped = db.Column(db.Date, nullable=True)
     shippment_boxes = db.Column(db.Integer, nullable=False)
     partial_delivery = db.Column(db.Boolean, nullable=False, default=False)
     estimated_date = db.Column(db.Date, nullable=False)
-    delivery_date = db.Column(db.Date, nullable=False)
+    delivery_date = db.Column(db.Date, nullable=True)
     shippment_type = db.Column(db.String(150), nullable=False)
 
     # print the shipment
