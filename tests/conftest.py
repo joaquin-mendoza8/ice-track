@@ -2,8 +2,9 @@ import pytest
 import os
 import sys
 from werkzeug.security import generate_password_hash
+from flask import template_rendered
 
-
+# add the parent directory to the sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from app.app import create_app
@@ -47,7 +48,8 @@ def seed_database(app_instance):
                 password=generate_password_hash(password),
                 shipping_address="123 Test St",
                 billing_address="123 Test St",
-                status="preferred"
+                status="preferred",
+                is_admin=True
             )
             db.session.add(user)
             db.session.commit()
@@ -78,3 +80,17 @@ def client(app_instance, seed_database):
         session['_user_id'] = user.id  # Flask-Login uses this to track logged-in users
 
     return client
+
+# 4. Capture templates for testing
+@pytest.fixture
+def captured_templates(app_instance):
+    recorded = []
+
+    def record(sender, template, context, **extra):
+        recorded.append((template, context))
+
+    template_rendered.connect(record, app_instance)
+    try:
+        yield recorded
+    finally:
+        template_rendered.disconnect(record, app_instance)

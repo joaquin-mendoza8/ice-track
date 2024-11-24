@@ -57,6 +57,7 @@
 {% macro select_group_floating(label, id, name, options, selected='', is_required=true, tooltip='') %}
 <div class="form-floating" {% if tooltip %} data-bs-toggle="tooltip" title="{{ tooltip }}" {% endif %}>
     <select class="form-control" id="{{ id }}" name="{{ name }}" {% if is_required %}required{% endif %}>
+        {% if not selected %}<option value="" selected>Choose...</option>{% endif %}
         {% for value, text in options %}
             <option value="{{ value }}" {% if value == selected %}selected{% endif %}>{{ text }}</option>
         {% endfor %}

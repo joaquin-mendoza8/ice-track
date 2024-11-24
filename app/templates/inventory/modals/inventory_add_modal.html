@@ -19,8 +19,8 @@
                         <div class="mb-3">
                             <label for="product-flavor" class="form-label">Flavor</label>
                             <select class="form-select" 
-                                    name="product-flavor"
-                                    id="product-flavor" required>
+                                    name="product-flavor-add"
+                                    id="product-flavor-add" required>
                                     <option disabled selected>Select flavor</option>
                                     {% for flavor in supported_flavors %}
                                         <option value="{{ flavor }}">{{ flavor.capitalize() }}</option>
@@ -30,8 +30,8 @@
 
                         <!-- Product Container Size -->
                         <div class="mb-3">
-                            <label for="product-container-size" class="form-label">Container Size</label>
-                            <select class="form-select" id="product-container-size" name="product-container-size" required>
+                            <label for="product-container-size-add" class="form-label">Container Size</label>
+                            <select class="form-select" id="product-container-size-add" name="product-container-size-add" required>
                                 <option disabled selected>Select size</option>
                                 {% for size in supported_container_sizes %}
                                     <option value="{{ size }}">{{ size.capitalize() }}</option>
@@ -41,30 +41,30 @@
 
                         <!-- Product Price -->
                         <div class="mb-3">
-                            <label for="product-price" class="form-label">Price</label>
+                            <label for="product-price-add" class="form-label">Price</label>
                             <div class="input-group">
                                 <div class="input-group-text" id="btnGroupAddon">$</div>
                                 <input type="number" step="0.01"
                                     class="form-control"
-                                    id="product-price"
-                                    name="product-price" 
+                                    id="product-price-add"
+                                    name="product-price-add" 
                                     min="0" pattern="^\d+(\.\d{1,2})?$" required>
                             </div>
                         </div>
 
                         <!-- Product Quantity -->
                         <div class="mb-3">
-                            <label for="product-quantity" class="form-label">Quantity</label>
+                            <label for="product-quantity-add" class="form-label">Quantity</label>
                             <input type="number"
                                 class="form-control"
-                                id="product-quantity"
-                                name="product-quantity" required>
+                                id="product-quantity-add"
+                                name="product-quantity-add" required>
                         </div>
 
                         <!-- Product Status -->
                         <div class="mb-3">
-                            <label for="product-status" class="form-label">Status</label>
-                            <select class="form-select" id="product-status" name="product-status" required>
+                            <label for="product-status-add" class="form-label">Status</label>
+                            <select class="form-select" id="product-status-add" name="product-status-add" required>
                                 <option disabled selected>Select status</option>
                                 <option value="planned">Planned</option>
                                 <!-- <option value="committed">Committed</option> -->

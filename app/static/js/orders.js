@@ -208,6 +208,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Function to set the shipping date depending on the shipping type
+    // TODO: Implement in AdminConfigs
     function setShippingDate() {
         const shippingTypeSelect = document.getElementById('shipping-type');
         const shippingDateInput = document.getElementById('shipping-date');
@@ -239,15 +240,16 @@ document.addEventListener('DOMContentLoaded', function() {
     function setShippingCost() {
         const shippingTypeSelect = document.getElementById('shipping-type');
         const shippingCostInput = document.getElementById('shipping-cost');
-        const expressShippingCost = 10; // $10 TODO: Implement in AdminConfigs
-        const standardShippingCost = 5; // $5
 
-        const selectedShippingType = shippingTypeSelect.value;
+        // Get the selected shipping type
+        const selectedOption = shippingTypeSelect.options[shippingTypeSelect.selectedIndex];
+        const shippingCost = selectedOption.getAttribute('data-cost');
 
-        if (selectedShippingType === 'express') {
-            shippingCostInput.value = expressShippingCost;
+        // Set the shipping cost based on the selected shipping type
+        if (shippingCost) {
+            shippingCostInput.value = parseFloat(shippingCost).toFixed(2);
         } else {
-            shippingCostInput.value = standardShippingCost;
+            shippingCostInput.value = '0.00';
         }
 
         // trigger the total cost update

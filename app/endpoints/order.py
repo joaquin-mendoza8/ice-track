@@ -2,7 +2,7 @@ from flask import Blueprint, request, redirect, url_for, render_template, jsonif
 from flask_login import login_required
 from datetime import datetime
 from app.utils.data import *
-from app.models import Product, User, Order, OrderItem
+from app.models import Product, User, Order, OrderItem, AdminConfig
 from app.extensions import db
 
 # create the order entry form blueprint
@@ -22,6 +22,10 @@ def orders_home():
     # fetch all customers from the database
     customers = User.query.all()
 
+    # fetch supported shipping types and costs from the database
+    shipping_types = AdminConfig.query.filter_by(key='supported_shipping_types').first()
+    shipping_costs = AdminConfig.query.filter_by(key='supported_shipping_costs').first()
+
     # parse the orders and customers data into lists of dictionaries
     orders_dict = parse_order_data(orders)
     customers_dict = parse_customer_data(customers)
@@ -30,7 +34,9 @@ def orders_home():
     jinja_vars = {
         'unique_flavors': list(set([product.flavor for product in products])),
         'orders': orders_dict,
-        'customers': customers_dict
+        'customers': customers_dict,
+        'shipping_types': shipping_types.value.split(','),
+        'shipping_costs': shipping_costs.value.split(',')
     }
 
     return render_template('orders/orders.html', **jinja_vars)
@@ -242,8 +248,6 @@ def orders_fetch_cost():
     container_size = request.args.get('container-size')
     quantity = request.args.get('quantity')
 
-    # print(flavor, container_size, quantity)
-
     # if all fields are filled, parse them into the correct types
     if all([flavor, container_size, quantity]):
         flavor = str(flavor)
@@ -264,4 +268,29 @@ def orders_fetch_cost():
     # return the cost as a JSON response
     return jsonify({"cost": cost})
     
-    
+
+# get status of a product endpoint
+@orders.route('/orders/fetch_product_status', methods=['GET'])
+def orders_fetch_product_status():
+
+    # get the flavor and container size from the query string
+    flavor = request.args.get('flavor')
+    container_size = request.args.get('container-size')
+
+    # parse the flavor and container size into strings
+    if all([flavor, container_size]):
+        flavor = str(flavor)
+        container_size = str(container_size)
+    else:
+        return jsonify({"status": "planned"})
+
+    # fetch the product from the database
+    product = Product.query.filter_by(flavor=flavor, container_size=container_size).first()
+
+    # check if the product exists
+    if product:
+        return jsonify({"status": product.status})
+    else:
+        print("Product not found") # TODO: handle this
+
+    return jsonify({"status": "planned"})
