@@ -128,9 +128,6 @@ def orders_add_order():
         except ValueError:
             print("Invalid date format")
             return redirect(url_for('orders.orders_home'))
-        
-        print(f"Extracted Data: {user_id}, {shipping_date}, {shipping_type}, {shipping_cost}, {total_cost}, {order_items_data}")
-        # return redirect(url_for('orders.orders_home'))
 
         # initialize the order object
         new_order = Order(
@@ -165,8 +162,8 @@ def orders_add_order():
             print(f"Not enough stock for product {product.name} ({product.container_size})", "error")
             return redirect(url_for('orders.orders_home'))
 
-        # update the product quantity
-        product.quantity -= quantity
+        # update the product quantity and committed quantity
+        product.adjust_quantity(-quantity, commit=True)
 
         # create the order item
         order_item = OrderItem(
@@ -294,3 +291,26 @@ def orders_fetch_product_status():
         print("Product not found") # TODO: handle this
 
     return jsonify({"status": "planned"})
+
+
+@orders.route('/orders/fetch_order_info', methods=['GET'])
+def orders_fetch_order_info():
+
+    # get the order ID from the query string
+    order_id = request.args.get('order_id')
+
+    # parse the order ID into an integer
+    if order_id:
+        order_id = int(order_id)
+    else:
+        return jsonify({})
+
+    # fetch the order from the database
+    order = Order.query.get(order_id)
+
+    # check if the order exists
+    if order:
+        order_dict = parse_order_data([order])[0]
+        return jsonify(order_dict)
+    else:
+        print("Order not found")

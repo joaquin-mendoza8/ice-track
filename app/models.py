@@ -40,6 +40,7 @@ class Product(db.Model):
     flavor=db.Column(db.String(150), nullable=False)
     price=db.Column(db.Float, nullable=False)
     quantity=db.Column(db.Integer, nullable=False)
+    committed_quantity=db.Column(db.Integer, nullable=False, default=0) # quantity committed to orders
     status=db.Column(db.String(150), nullable=False, default='planned') # status of the product (planned or actual inventory)
     created_at=db.Column(db.DateTime, nullable=False, default=func.now()) # when the product was created
     deleted_at=db.Column(db.DateTime, nullable=True, default=None) # when the product was deleted
@@ -55,6 +56,19 @@ class Product(db.Model):
     # print the product
     def __repr__(self):
         return f'<Product {self.flavor}>'
+    
+    def adjust_quantity(self, quantity_change, commit=False):
+        """
+        Adjust the quantity and committed_quantity of the product.
+
+        :param quantity_change: The amount to adjust the quantity by (positive or negative)
+        :param commit: Whether to commit the changes to the database
+        """
+        self.quantity += quantity_change
+        if commit:
+            self.committed_quantity += quantity_change
+        db.session.add(self)
+        db.session.commit()
 
 
 # Order Entry data model
