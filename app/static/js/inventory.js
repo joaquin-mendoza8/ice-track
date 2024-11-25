@@ -1,4 +1,9 @@
-function openModal(product_content, productId) {
+function openModal(product_content, productId, isAdmin) {
+
+    // don't allow editing of product if not admin
+    if (!isAdmin) {
+        return;
+    }
 
     // set transaction id to hidden input fields
     const hiddenInput = document.getElementById('product-id');
@@ -37,12 +42,8 @@ function openModal(product_content, productId) {
     });
 
     $('#productModal').modal('show'); // Show the modal
-
-    console.log("Modal opened");
 }
 
 function closeModal() {
     $('#productModal').modal('hide'); // Hide the modal
-
-    console.log("Modal closed");
 }

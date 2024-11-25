@@ -7,6 +7,10 @@ def format_currency(value):
     """Format value as currency."""
     return "${:,.2f}".format(value)
 
+def format_currency_list(value):
+    """Format comma-separated list of strings as currency."""
+    return ",".join(format_currency(float(v)) for v in value.split(","))
+
 def format_date(value):
     """Format date as <Mon DD, YYYY>."""
     return value.strftime("%b %d, %Y").replace(" 0", " ")
