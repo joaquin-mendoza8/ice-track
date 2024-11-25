@@ -11,6 +11,8 @@
 
     {% include 'inventory/modals/inventory_update_modal.html' %}
 
+    {% include 'inventory/modals/inventory_log_modal.html' %}
+
     <!-- Main content container -->
     <div class="container-md">
 
@@ -45,7 +47,8 @@
 
                     <!-- only displays the add button if user is an admin -->
                     {% if current_user.is_admin %}
-                        <button type="button" class="btn modal-btn" data-bs-toggle="modal" data-bs-target="#addModal">+ New</button>
+                        <button type="button" class="btn modal-btn" data-bs-toggle="modal" data-bs-target="#logModal">Log</button>
+                    <button type="button" class="btn modal-btn" data-bs-toggle="modal" data-bs-target="#addModal">+ New</button>
                     {% endif %}
                 </div>
 
