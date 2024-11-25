@@ -1,0 +1,31 @@
+<div class="modal" id="logModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Inventory Log</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {% if logs %}
+                    <ul class="list-group">
+                        {% for log in logs %}
+                            <li class="list-group-item">
+                                <p><strong>{{ log.timestamp | date }}</strong> </p>
+                                {% if log.action == 'Added' %}
+                                    <span class="text-success">{{ log.action }}: </span>
+                                {% else %}
+                                    <span class="text-danger">{{ log.action }}: </span>
+                                {% endif %}
+                                <strong>{{ log.product }}</strong> 
+                                by user: <strong>{{ log.user }}</strong>
+                                
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No logs available at this time.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>``
