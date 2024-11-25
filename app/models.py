@@ -3,6 +3,7 @@
 from app.extensions import db
 from sqlalchemy.sql import func
 from flask_login import UserMixin
+from datetime import datetime
 
 # User class
 class User(db.Model, UserMixin):
@@ -122,3 +123,12 @@ class Shipment(db.Model):
     # print the shipment
     def __repr__(self):
         return f'<Shipment {self.id}>'
+    
+# Logging Data Model
+class Log(db.Model):
+    
+    id = db.Column(db.Integer, primary_key = True)
+    action = db.Column(db.String(50), nullable = False) # "Added", or "Deleted"
+    product = db.Column(db.String(100), nullable = False) # Product name or details
+    user = db.Column(db.String(100), nullable = False) # User who performed the action
+    timestamp = db.Column(db.DateTime, default = func.now())

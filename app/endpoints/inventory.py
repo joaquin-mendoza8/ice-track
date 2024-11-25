@@ -3,7 +3,7 @@ from flask_login import login_required
 from app.utils.data import *
 from app.utils.fetch_settings import fetch_autosignoff_interval, \
     fetch_supported_container_sizes, fetch_supported_flavors
-from app.models import Product, User
+from app.models import Product, User , Log
 from app.extensions import db
 from datetime import datetime
 
@@ -37,10 +37,14 @@ def inventory_home():
 
     # parse the product data into a dictionary
     products_dict = parse_product_data(products)
+    
+    # fetch all logs from the database
+    logs = Log.query.order_by(Log.timestamp.desc()).all()
 
     # dictionary of items to pass to the template
     jinja_vars = {
         'products': products_dict,
+        'logs' : logs, # pass logs to the template,
         'supported_container_sizes': container_sizes,
         'supported_flavors': supported_flavors
     }
@@ -131,6 +135,16 @@ def inventory_add_product():
             # log the addition
             print(f'Added product: {new_product}')
             
+            # log the action
+            new_log = Log(
+                action = "Added",
+                product = product_flavor,
+                user = associated_user
+            )
+            
+            db.session.add(new_log)
+            db.session.commit()
+            
     return redirect(url_for('inventory.inventory_home'))
 
 
@@ -161,6 +175,16 @@ def inventory_delete_product():
 
                 # TODO: log the deletion
                 print(f'Deleted product: {product}')
+                
+                # log the action
+                new_log = Log(
+                    action =  "Deleted",
+                    product = product.flavor,
+                    user = associated_user
+                )
+                
+                db.session.add(new_log)
+                db.session.commit()
 
             else:
 
