@@ -3,6 +3,7 @@
 from app.extensions import db
 from sqlalchemy.sql import func
 from flask_login import UserMixin
+from datetime import datetime
 
 # User class
 class User(db.Model, UserMixin):
