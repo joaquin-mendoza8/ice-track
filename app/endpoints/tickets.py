@@ -71,7 +71,6 @@ def tickets_update_ticket():
             
         # the only required form field is problem_status
         if problem_status:
-            
             # retrieve the current ticket from the db using the id
             ticket = Ticket.query.get(id)
             
@@ -110,7 +109,7 @@ def tickets_delete_ticket():
 def tickets_query_tickets():
     if request.method == 'GET':
         # Extract form data from query form
-        customer_name = request.args.get('customer-name')
+        customer_name = request.args.get('customer-name') # customer name == source
         problem_type = request.args.get('problem-type')
         problem_status = request.args.get('problem-status')
         date_reported = request.args.get('date-reported')
