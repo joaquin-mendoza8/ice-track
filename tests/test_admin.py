@@ -71,7 +71,7 @@ def test_admin_config_update(client, app_instance, captured_templates, admin_con
         # Check if any messages were passed to the template
         template, context = captured_templates[0]
         assert template.name == 'admin/admin.html'
-        assert context.get('msg_type') is not 'danger'
+        assert context.get('msg_type') != 'danger'
 
         # Check if the configuration was updated
         current_config = AdminConfig.query.filter_by(key=config_key).first()
