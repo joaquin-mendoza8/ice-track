@@ -84,5 +84,4 @@ def test_admin_config_update(client, app_instance, captured_templates, admin_con
 
         # Revert the changes
         current_config.value = original_config
-        db.session.add(current_config)
         db.session.commit()
