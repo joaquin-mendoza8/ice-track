@@ -107,11 +107,11 @@ def inventory_add_product():
     if request.method == 'POST':
 
         # extract the product data from the form
-        product_flavor = request.form.get('product-flavor')
-        product_container_size = request.form.get('product-container-size')
-        product_price = request.form.get('product-price')
-        product_quantity = request.form.get('product-quantity')
-        product_status = request.form.get('product-status')
+        product_flavor = request.form.get('product-flavor-add')
+        product_container_size = request.form.get('product-container-size-add')
+        product_price = request.form.get('product-price-add')
+        product_quantity = request.form.get('product-quantity-add')
+        product_status = request.form.get('product-status-add')
         associated_user = request.form.get('user-id')
 
         # ensure all fields are filled
@@ -123,17 +123,32 @@ def inventory_add_product():
             product_price = float(product_price)
             product_quantity = int(product_quantity)
 
-            # create a new product object
-            new_product = Product(flavor=product_flavor, container_size=product_container_size, 
-                                  price=product_price, quantity=product_quantity, 
-                                  status=product_status, user_id_add=associated_user)
+            # update existing product if it exists
+            existing_product = Product.query.filter_by(flavor=product_flavor, container_size=product_container_size).first()
+            if existing_product:
+                existing_product.price = product_price
+                existing_product.quantity = product_quantity
+                existing_product.status = product_status
 
-            # add the new product to the database
-            db.session.add(new_product)
-            db.session.commit()
+                # log the update
+                print(f'Updated product: {existing_product}')
+        
+            else:
 
-            # log the addition
-            print(f'Added product: {new_product}')
+                # create a new product object
+                new_product = Product(flavor=product_flavor, container_size=product_container_size, 
+                                    price=product_price, quantity=product_quantity, 
+                                    status=product_status, user_id_add=associated_user)
+
+                # add the new product to the database
+                db.session.add(new_product)
+
+                # log the addition
+                print(f'Added product: {new_product}')
+
+            # commit the changes
+            if db.session.dirty:
+                db.session.commit()
             
             # log the action
             new_log = Log(

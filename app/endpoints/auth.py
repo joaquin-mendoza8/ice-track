@@ -5,6 +5,8 @@ from app.models import User
 # hash password
 from werkzeug.security import generate_password_hash, check_password_hash
 
+# TODO: enforce strong passwords
+
 # create the auth blueprint
 auth = Blueprint('auth', __name__)
 

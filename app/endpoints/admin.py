@@ -1,12 +1,13 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 from app.utils.admin_decorator import admin_required
 from app.extensions import db
-from app.models import AdminConfig, Product
+from app.models import AdminConfig, User
 # from app.utils.checks import check_container_sizes_in_use, check_flavors_in_use
 from app.utils.admin_configs import update_auto_signoff_interval, update_supported_container_sizes, \
                                     update_supported_flavors, update_shipping_data, \
-                                    process_pre_delete_container_sizes, process_pre_delete_flavors
-from app.utils.data import parse_admin_config_data
+                                    process_pre_delete_container_sizes, process_pre_delete_flavors, \
+                                    process_pre_delete_shipping_types
+from app.utils.data import parse_admin_config_data, parse_customer_data
 
 # create the admin blueprint
 admin = Blueprint('admin', __name__)
@@ -18,6 +19,12 @@ admin = Blueprint('admin', __name__)
 @admin.route('/admin')
 @admin_required
 def admin_home():
+
+    # fetch all users from the database
+    users = User.query.filter_by(is_admin=False).all()
+
+    # parse the users data into a list of dictionaries
+    users = parse_customer_data(users)
 
     # fetch all admin configurations from the database
     configs = AdminConfig.query.all()
@@ -34,22 +41,37 @@ def admin_home():
         'supported_shipping_costs': None
     }
     
+    # map the configuration objects to their respective keys
     for config in configs:
         if config.key in config_map:
             config_map[config.key] = config.value
 
+    # format the supported shipping types and costs into key-value pairs
+    if config_map['supported_shipping_types'] and config_map['supported_shipping_costs']:
+        shipping_types = config_map['supported_shipping_types'].split(',')
+        shipping_costs = config_map['supported_shipping_costs'].split(',')
+        
+        configs.append({
+            'key': 'supported_shipping_data',
+            'value': dict(zip(shipping_types, shipping_costs))
+        })
+
     # dictionary of items to pass to the template
     jinja_vars = {
         'configs': formatted_configs,
+        'users': users,
         **config_map
     }
 
-    # fetch any messages passed to the template
-    msg = request.args.get('msg')
-
     # if a message was passed, add it to the dictionary
+    msg = request.args.get('msg')
     if msg:
         jinja_vars['msg'] = str(msg)
+
+    # if a message type was passed, add it to the dictionary
+    msg_type = request.args.get('msg_type')
+    if msg_type:
+        jinja_vars['msg_type'] = str(msg_type)
 
     return render_template('admin/admin.html', **jinja_vars)
 
@@ -63,6 +85,7 @@ def update_admin_config():
     request_supported_flavors = request.form.get('flavors')
     request_supported_shipping_types = request.form.get('shipping-types')
     request_supported_shipping_costs = request.form.get('shipping-costs')
+    request_user_to_elevate = request.form.get('user-select')
 
     # if there are missing required fields, redirect back to the admin dashboard
     if not all([request_auto_signoff_interval, request_supported_container_sizes, 
@@ -79,7 +102,6 @@ def update_admin_config():
             return redirect(url_for('admin.admin_home', msg=msg))
         if shipping_type.strip().lower() not in shipping_types_list:
             shipping_types_list.append(shipping_type.strip())
-
     shipping_costs_list = []
     for shipping_cost in request_supported_shipping_costs.strip().split(','):
         try:
@@ -88,8 +110,6 @@ def update_admin_config():
         except ValueError:
             msg = "Shipping costs must be numbers. Please try again."
             return redirect(url_for('admin.admin_home', msg=msg))
-
-    print(shipping_types_list, shipping_costs_list)
 
     # if the length of the supported shipping types and costs are not equal, redirect back to the admin dashboard
     if len(shipping_types_list) != len(shipping_costs_list):
@@ -123,12 +143,23 @@ def update_admin_config():
         # if an error message was returned, redirect back to the admin dashboard with the error message
         if msg:
             return redirect(url_for('admin.admin_home', msg=msg))
+        
+    # update the user to an admin, if a user was selected
+    if request_user_to_elevate:
+        user = User.query.get(request_user_to_elevate)
+        if user:
+            user.is_admin = True
+        else:
+            msg = "User not found. Please try again."
+            return redirect(url_for('admin.admin_home', msg=msg))
 
     # commit the changes, if any
     if db.session.dirty:
+        msg = "Configuration updated successfully."
+        msg_type = "success"
         db.session.commit()
 
-    return redirect(url_for('admin.admin_home'))
+    return redirect(url_for('admin.admin_home', msg=msg, msg_type=msg_type))
     
 
 # admin delete configuration endpoint
@@ -145,7 +176,7 @@ def delete_admin_config():
         pre_delete_functions = {
             'supported_container_sizes': process_pre_delete_container_sizes,
             'supported_flavors': process_pre_delete_flavors,
-            # 'supported_shipping_types': process_pre_delete_shipping_types,
+            'supported_shipping_types': process_pre_delete_shipping_types,
         }
 
         # call the appropriate pre-delete function if the config key exists in the dictionary
