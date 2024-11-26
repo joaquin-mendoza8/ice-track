@@ -42,11 +42,11 @@ def test_admin_config_update(client, app_instance, captured_templates, admin_con
     # assert admin_configs['auto_signoff_interval'] == 60
     with app_instance.app_context():
         # Ensure the configuration exists
-        config = AdminConfig.query.filter_by(key=config_key).first()
-        if not config:
-            config = AdminConfig(key=config_key, value='')
-            db.session.add(config)
-            db.session.commit()
+        # config = AdminConfig.query.filter_by(key=config_key).first()
+        # if not config:
+        #     config = AdminConfig(key=config_key, value='')
+        #     db.session.add(config)
+        #     db.session.commit()
 
         # get a snapshot of the current configuration
         original_config = AdminConfig.query.filter_by(key=config_key).first().value
