@@ -34,18 +34,6 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         {% endif %}
     </div>
-
-    <!-- if a timeout is set, hide the alert after the specified time -->
-    {% if timeout == 0 %}
-        <script>
-            setTimeout(function() {
-                var alertElement = document.querySelector('.alert.alert-{{ selected_type }}');
-                if (alertElement) {
-                    alertElement.remove();
-                }
-            }, {{ timeout }} * 1000);
-        </script>
-    {% endif %}
 {% endmacro %}
 
 <!-- Floating Input -->
