@@ -9,6 +9,12 @@ document.addEventListener('DOMContentLoaded', function() {
     flavorSelect.addEventListener('change', updateModalInputs);
     sizeSelect.addEventListener('change', updateModalInputs);
 
+    // set event listener for status dropdown
+    const statusSelect = document.getElementById('product-status-add');
+    statusSelect.addEventListener('change', updateDockDropdown);
+
+    // TODO: finish dock date js
+
 });
 
 

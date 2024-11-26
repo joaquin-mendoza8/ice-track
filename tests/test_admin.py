@@ -30,31 +30,6 @@ def test_admin_get(client):
     assert response.request.path == '/admin'
     assert b'<title>Admin</title>' in response.data
 
-# @pytest.mark.parametrize('value', [10, 20])
-# def test_admin_config_update(client, app_instance, captured_templates, admin_configs, value):
-#     with app_instance.app_context():
-#         # Update the auto signoff interval with a post request
-#         response = client.post('/admin/update_configs', data={
-#             'auto-signoff-interval': value,
-#             'container-sizes': admin_configs['supported_container_sizes'],
-#             'flavors': admin_configs['supported_flavors'],
-#             'shipping-types': admin_configs['supported_shipping_types'],
-#             'shipping-costs': admin_configs['supported_shipping_costs']
-#         }, follow_redirects=True)
-
-#         # Check if the response was successful
-#         assert response.status_code == 200
-#         assert response.request.path == '/admin'
-
-#         # Check if any messages were passed to the template
-#         template, context = captured_templates[0]
-#         assert template.name == 'admin/admin.html'
-#         assert context.get('msg') is None
-
-#         # Check if the auto signoff interval was updated
-#         assert AdminConfig.query.filter_by(key='auto_signoff_interval').first().value == str(value)
-
-
 @pytest.mark.parametrize("config_key, new_value", [
     ('auto_signoff_interval', 10),
     ('supported_container_sizes', 'small,medium,large'),
@@ -74,13 +49,7 @@ def test_admin_config_update(client, app_instance, captured_templates, admin_con
             db.session.commit()
 
         # get a snapshot of the current configuration
-        admin_configs = {
-            'auto_signoff_interval': AdminConfig.query.filter_by(key='auto_signoff_interval').first().value,
-            'supported_container_sizes': AdminConfig.query.filter_by(key='supported_container_sizes').first().value,
-            'supported_flavors': AdminConfig.query.filter_by(key='supported_flavors').first().value,
-            'supported_shipping_types': AdminConfig.query.filter_by(key='supported_shipping_types').first().value,
-            'supported_shipping_costs': AdminConfig.query.filter_by(key='supported_shipping_costs').first().value
-        }
+        original_config = AdminConfig.query.filter_by(key=config_key).first().value
 
         # Prepare data for the post request
         data = {
@@ -102,7 +71,7 @@ def test_admin_config_update(client, app_instance, captured_templates, admin_con
         # Check if any messages were passed to the template
         template, context = captured_templates[0]
         assert template.name == 'admin/admin.html'
-        assert context.get('msg') is None
+        assert context.get('msg_type') is not 'danger'
 
         # Check if the configuration was updated
         current_config = AdminConfig.query.filter_by(key=config_key).first()
@@ -114,7 +83,6 @@ def test_admin_config_update(client, app_instance, captured_templates, admin_con
             assert current_config.value == new_value
 
         # Revert the changes
-        current_config.value = admin_configs[config_key]
+        current_config.value = original_config
         db.session.add(current_config)
-
         db.session.commit()

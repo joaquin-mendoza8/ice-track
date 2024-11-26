@@ -141,7 +141,7 @@
 
             <!-- Message Display Container -->
             {% if msg %}
-                {{ macros.message(msg, "danger", "/admin") }}
+                {{ macros.message(msg, msg_type or "danger", "/admin") }}
             {% endif %}
 
             <table class="table">

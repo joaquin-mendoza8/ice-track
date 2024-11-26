@@ -44,7 +44,14 @@ def update_supported_container_sizes(request_supported_container_sizes):
 
         # compare the current container sizes to the ones passed in the request
         if set(current_container_sizes) != set(supported_container_sizes_list):
-            container_sizes_in_use = check_container_sizes_in_use(supported_container_sizes_list)
+
+            container_sizes_to_remove = set(current_container_sizes) - set(supported_container_sizes_list)
+            if container_sizes_to_remove:
+                container_sizes_in_use = check_container_sizes_in_use(list(container_sizes_to_remove))
+                if container_sizes_in_use:
+                    msg = (f"Cannot complete action. Container sizes in use: <{', '.join(container_sizes_in_use)}>. "
+                            "Please remove these container sizes from the list before updating.")
+                    return msg
 
             # if any container sizes are in use, redirect back to the admin dashboard w/ an error message
             if container_sizes_in_use:

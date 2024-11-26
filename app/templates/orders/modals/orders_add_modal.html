@@ -12,131 +12,190 @@
 
                 <h3>Order Info</h3>
 
-                <div class="row mb-5">
+                <div class="row mb-3">
                     
                     <!-- Hidden Inputs -->
                     <input type="hidden" name="total-cost" id="total-cost" value="0">
                     <input type="hidden" name="customer-status" id="customer-status" value="{{ current_user.status }}">
                     <input type="hidden" name="shipping-address" id="shipping-address" value="{{ current_user.shipping_address }}">
                     <input type="hidden" name="billing-address" id="billing-address" value="{{ current_user.billing_address }}">
+                    <input type="hidden" name="order-status" id="order-status" value="pending">
 
                     <!-- Customer Selection -->
                     <div class="col-md-3">
-                        <label for="user-id" class="form-label">Customer</label>
-                        <select class="form-control" id="user-id" name="user-id" required>
-                            <option value="{{ current_user.id }}" selected>{{ current_user.first_name }} {{ current_user.last_name }}</option>
-                            {% if current_user.is_admin %}
-                                {% if customers %}
 
+                        {% set customer_options = [] %}
+                        {% if customers %}
+                            {% set name_current_user = current_user.first_name + " " + current_user.last_name %}
+                            {% set _ = customer_options.append((current_user.id, name_current_user)) %}
+                            {% if current_user.is_admin %}
                                     {% for customer in customers %}
                                         {% if customer.id != current_user.id %}
-                                            <option value="{{ customer.id }}">{{ customer.name }}</option>
+                                            {% set _ = customer_options.append((customer.id, customer.name)) %}
                                         {% endif %}
                                     {% endfor %}
-
-                                {% endif %}
                             {% endif %}
-                        </select>
+                        {% else %}
+                            {% set _ = customer_options.append(("", "No customers found")) %}
+                        {% endif %}
+
+                        {{ macros.select_group_floating(
+                            label='Customer',
+                            id='user-id',
+                            name='user-id',
+                            options=customer_options,
+                            selected=current_user.id,
+                            tooltip='Select the customer for the order.'
+                        ) }}
+
                     </div>
 
                     <!-- Shipping Type -->
                     <div class="col-md-3">
-                        <label for="shipping-type" class="form-label">Shipping Type</label>
-                        <select class="form-control" id="shipping-type" name="shipping-type" required>
-                            <option value="" disabled selected>Select shipping</option>
-                            {% if shipping_types %}
-                                {% for i in range(shipping_types|length) %}
-                                    <option value="{{ shipping_types[i] }}" data-cost="{{ shipping_costs[i] }}">{{ shipping_types[i] }}</option>
-                                {% endfor %}
-                            {% else %}
-                                <option value="" disabled selected>No shipping types available</option>
-                            {% endif %}
-                        </select>
+
+                        {% set shipping_options = [] %}
+                        {% set extra_data = [] %}
+                        {% if shipping_types %}
+                            {% for i in range(shipping_types | length) %}
+                                {% set _ = shipping_options.append((shipping_types[i], shipping_types[i])) %}
+                                {% set _ = extra_data.append(('cost', shipping_costs[i])) %}
+                            {% endfor %}
+                        {% else %}
+                            {% set _ = shipping_options.append(('No shipping types available', '0.0')) %}
+                        {% endif %}
+                        {{ macros.select_group_floating(
+                            label='Shipping Type',
+                            id='shipping-type',
+                            name='shipping-type',
+                            options=shipping_options,
+                            extra_data=extra_data,
+                            tooltip='Select the shipping type for the order.'
+                        ) }}
+
                     </div>
 
-                    <!-- Shipping Date -->
+                    <!-- Desired Receipt Date -->
                     <div class="col-md-3">
-                        <label for="shipping-date" class="form-label">Shipping Date</label>
-                        <input 
-                            type="text" 
-                            class="form-control shipping-date" 
-                            id="shipping-date" 
-                            name="shipping-date" 
-                            placeholder="MM/DD/YYYY" 
-                            pattern="^(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])/\d{4}$" required readonly>
+
+                        {{ macros.input_group_floating(
+                            label='Desired Receipt Date',
+                            id='desired-receipt-date',
+                            name='desired-receipt-date',
+                            value='',
+                            pattern="^(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])/\d{4}$",
+                            tooltip='Enter the desired receipt date in MM/DD/YYYY format.'
+                        ) }}
+
                     </div>
+
+                    <!-- Expected Shipping Date -->
+                    <div class="col-md-3">
+
+                            {{ macros.input_group_floating(
+                                label='Expected Shipping Date',
+                                id='expected-shipping-date',
+                                name='expected-shipping-date',
+                                type='text',
+                                pattern='^(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])/\d{4}$',
+                                is_readonly=true,
+                                tooltip='Expected shipping date will be calculated based on the selected shipping type.'
+                            ) }}
+
+                    </div>
+
+                </div>
+
+                <div class="row mb-3">
 
                     <!-- Shipping Cost -->
                     <div class="col-md-3">
-                        <label for="shipping-cost" class="form-label">Shipping Cost</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input 
-                                value="" 
-                                type="number" 
-                                class="form-control" 
-                                id="shipping-cost" 
-                                name="shipping-cost" 
-                                step="1" required readonly>
-                        </div>
+
+                        {{ macros.input_group_floating(
+                            label='Shipping Cost ($)',
+                            id='shipping-cost',
+                            name='shipping-cost',
+                            value='',
+                            type='number',
+                            is_readonly=true,
+                            extra='step=1',
+                            tooltip='Shipping cost will be calculated based on the selected shipping type.'
+                        ) }}
+
                     </div>
 
                 </div>
 
                 <!-- Line Items -->
                 <div id="line-items-container">
-                    <div class="line-item mb-3 row">
+                    <div class="line-item mb-3 row" id="first-line-item">
                         <h5>Line Item 1</h5>
 
                         <!-- Flavor -->
                         <div class="col-md-3">
-                            <label for="flavor-0" class="form-label">Flavor</label>
-                            <select class="form-control flavor" id="flavor-0" name="order_items[0][flavor]" required>
-                                {% if unique_flavors %}
-                                    <option value="" disabled selected>Select flavor</option>
-                                    {% for flavor in unique_flavors %}
-                                        <option value="{{ flavor }}">{{ flavor }}</option>
-                                    {% endfor %}
-                                {% else %}
-                                    <option disabled selected>No flavors available</option>
-                                {% endif %}
-                            </select>
+
+                            {% set _unique_flavors = [] %}
+                            {% if unique_flavors %}
+                                {% for flavor in unique_flavors %}
+                                    {% set _ = _unique_flavors.append((flavor, flavor)) %}
+                                {% endfor %}
+                            {% else %}
+                                {% set _ = _unique_flavors.append(("", "No flavors available")) %}
+                            {% endif %}
+
+                            {{ macros.select_group_floating(
+                                label='Flavor',
+                                id='flavor-0',
+                                name='order_items[0][flavor]',
+                                classes='flavor',
+                                options=_unique_flavors,
+                                tooltip='Select the flavor for the line item.'
+                            ) }}
+
                         </div>
 
                         <!-- Container Size -->
                         <div class="col-md-3">
-                            <label for="container-size-0" class="form-label">Container Size</label>
-                            <select class="form-control container-size" id="container-size-0" name="order_items[0][container-size]" required>
-                                <option value="" disabled selected>Select size</option>
-                                <!-- Options will be populated dynamically -->
-                            </select>
+
+                            {{ macros.select_group_floating(
+                                label='Container Size',
+                                id='container-size-0',
+                                name='order_items[0][container-size]',
+                                classes='container-size',
+                                options=[],
+                                tooltip='Select the container size for the line item.'
+                            ) }}
                         </div>
 
                         <!-- Quantity -->
                         <div class="col-md-3">
-                            <label 
-                                for="quantity-0" 
-                                class="form-label">
-                                Quantity <span class="max-quantity-container" id="max-quantity-container-0" hidden><b>(max: <span class="max-quantity" id="max-quantity-0"></span>)</b></span>
-                            </label>
-                            <input 
-                                type="number" 
-                                class="form-control quantity" 
-                                id="quantity-0" 
-                                name="order_items[0][quantity]" 
-                                min="1" step="1"
-                                oninput="this.value = this.value.replace(/\D/g, '')"
-                                required>
+
+                                {{ macros.input_group_floating(
+                                    label='Quantity',
+                                    id='quantity-0',
+                                    name='order_items[0][quantity]',
+                                    classes='quantity',
+                                    type='number',
+                                    min='1',
+                                    extra="step=1",
+                                    oninput="this.value = this.value.replace(/\D/g, '')",
+                                    tooltip='Enter the quantity for the line item.'
+                                ) }}
                         </div>
                         
                         <!-- Line-Item Cost -->
                         <div class="col-md-3">
-                            <label for="line-item-cost-0" class="form-label">Line Item Cost</label>
 
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" class="form-control line-item-cost" id="line-item-cost-0" name="order_items[0][line-item-cost]" step="0.01" readonly>
-                            </div>
+                            {{ macros.input_group_floating(
+                                label='Line Item Cost ($)',
+                                id='line-item-cost-0',
+                                name='order_items[0][line-item-cost]',
+                                classes='line-item-cost',
+                                type='number',
+                                extra='step=0.01',
+                                is_readonly=true,
+                                tooltip='Line item cost will be calculated based on the selected flavor and container size.'
+                            ) }}
+
                         </div>
                     </div>
                 </div>

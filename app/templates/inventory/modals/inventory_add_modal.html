@@ -65,12 +65,26 @@
                         <div class="mb-3">
                             <label for="product-status-add" class="form-label">Status</label>
                             <select class="form-select" id="product-status-add" name="product-status-add" required>
-                                <option disabled selected>Select status</option>
+                                <option value="" disabled selected>Select status</option>
                                 <option value="planned">Planned</option>
                                 <!-- <option value="committed">Committed</option> -->
                                 <option value="actual">Actual</option>
                             </select>
                         </div>
+
+                        <!-- Product Dock Date -->
+                        <!-- TODO: finish this -->
+                        <div class="mb-3">
+                            <label for="product-dock-date-add" class="form-label">Dock Date</label>
+                            <input 
+                            type="text" 
+                            class="form-control product-dock-date-add" 
+                            id="product-dock-date-add" 
+                            name="product-dock-date-add" 
+                            placeholder="MM/DD/YYYY" 
+                            pattern="^(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])/\d{4}$" required>
+                        </div>
+
                     </div>
 
                     <div class="modal-footer">
