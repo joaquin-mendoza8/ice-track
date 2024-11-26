@@ -63,12 +63,15 @@ def admin_home():
         **config_map
     }
 
-    # fetch any messages passed to the template
-    msg = request.args.get('msg')
-
     # if a message was passed, add it to the dictionary
+    msg = request.args.get('msg')
     if msg:
         jinja_vars['msg'] = str(msg)
+
+    # if a message type was passed, add it to the dictionary
+    msg_type = request.args.get('msg_type')
+    if msg_type:
+        jinja_vars['msg_type'] = str(msg_type)
 
     return render_template('admin/admin.html', **jinja_vars)
 
@@ -152,9 +155,11 @@ def update_admin_config():
 
     # commit the changes, if any
     if db.session.dirty:
+        msg = "Configuration updated successfully."
+        msg_type = "success"
         db.session.commit()
 
-    return redirect(url_for('admin.admin_home'))
+    return redirect(url_for('admin.admin_home', msg=msg, msg_type=msg_type))
     
 
 # admin delete configuration endpoint

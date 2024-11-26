@@ -31,7 +31,7 @@ def upgrade():
 
     with op.batch_alter_table('order_item', schema=None) as batch_op:
         batch_op.add_column(sa.Column('ship_date', sa.Date(), nullable=False))
-        batch_op.drop_column('shipping_date')
+        batch_op.drop_column('expected_shipping_date')
 
     with op.batch_alter_table('product', schema=None) as batch_op:
         batch_op.add_column(sa.Column('container_size', sa.String(length=50), nullable=False))
@@ -53,7 +53,7 @@ def downgrade():
         batch_op.drop_column('container_size')
 
     with op.batch_alter_table('order_item', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('shipping_date', sa.DATE(), nullable=False))
+        batch_op.add_column(sa.Column('expected_shipping_date', sa.DATE(), nullable=False))
         batch_op.drop_column('ship_date')
 
     with op.batch_alter_table('order', schema=None) as batch_op:

@@ -41,23 +41,23 @@ def shipments_update_shipment():
         shipment_id = request.form.get("shipment-id")
 
         date_shipped = request.form.get("date-shipped")
-        shippment_boxes = request.form.get("shipment_boxes")
+        shipment_boxes = request.form.get("shipment_boxes")
         partial_delivery = request.form.get("partial_delivery")
         estimated_date = request.form.get("estimated-date")
         delivery_date = request.form.get("deliver-date")
-        shippment_type = request.form.get("shippment_type")
+        shipment_type = request.form.get("shipment_type")
 
-        if all([shipment_id, date_shipped, shippment_boxes, partial_delivery, 
-                estimated_date, delivery_date, shippment_type]):
+        if all([shipment_id, date_shipped, shipment_boxes, partial_delivery, 
+                estimated_date, delivery_date, shipment_type]):
             
             shipment = Shipment.query.get()
 
             shipment.date_shipped = date_shipped
-            shipment.shippment_boxes = shippment_boxes
+            shipment.shipment_boxes = shipment_boxes
             shipment.partial_delivery = partial_delivery
             shipment.estimated_date = estimated_date
             shipment.delivery_date = delivery_date
-            shipment.shippment_type = shippment_type
+            shipment.shipment_type = shipment_type
             
             db.session.commit()
 
