@@ -12,9 +12,11 @@ document.addEventListener('DOMContentLoaded', function() {
     let timeout = 10;
     setTimeout(function() {
         var alertElement = document.querySelector('.alert');
-        const alertTimeout = alertElement.getAttribute('data-timeout');
-        if (alertTimeout) {
-            timeout = parseInt(alertTimeout);
+        if (alertElement) {
+            const alertTimeout = alertElement.getAttribute('data-timeout');
+            if (alertTimeout) {
+                timeout = parseInt(alertTimeout);
+            }
         }
         if (alertElement) {
             alertElement.remove();
