@@ -28,11 +28,10 @@ function updateModalInputs() {
     // get product price and quantity inputs
     const priceInput = document.getElementById('product-price-add');
     const quantityInput = document.getElementById('product-quantity-add');
-
     const selectedFlavor = flavorSelect.value;
     const selectedSize = sizeSelect.value;
 
-    if (selectedFlavor && selectedSize && (sizeSelect.value !== 'Select size')) {
+    if (selectedFlavor && selectedSize && (sizeSelect.value !== 'Choose...')) {
         
         // fetch stock of selected product
         fetch(`/orders/fetch_stock?flavor=${encodeURIComponent(selectedFlavor)}&container-size=${encodeURIComponent(selectedSize)}`)
@@ -116,16 +115,26 @@ function openModal(product_content, productId, isAdmin) {
     // set modifiable product attribute inputs
     const productAttributes = Object.keys(product_content);
 
-    console.log(productAttributes);
-
     // set flavor, price, and quantity inputs
     productAttributes.forEach(attribute => {
-        const inputField = document.getElementById(`product-${attribute}`);
 
+        // skip non-modifiable attributes
+        const inputField = document.getElementById(`product-${attribute.replace('_', '-')}`);
+
+        // set input field value to current product attribute value
         if (inputField) {
-            inputField.value = product_content[attribute];
             if (inputField.id === 'product-price') {
+
+                // format price to 2 decimal places
                 inputField.value = parseFloat(product_content[attribute]).toFixed(2);
+            } else if (inputField.id === 'product-dock-date') {
+
+                // format date for input field
+                const dbDate = product_content[attribute.replace('-', '_')]
+                const formattedDate = dbDate.split('/').reverse().join('-');
+                inputField.value = formattedDate;
+            } else {
+                inputField.value = product_content[attribute];
             }
         }
     });
