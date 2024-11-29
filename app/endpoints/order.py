@@ -41,8 +41,8 @@ def orders_home():
         'unique_flavors': list(set([product.flavor for product in products])),
         'orders': orders_dict,
         'customers': customers_dict,
-        'shipping_types': shipping_types.value.split(','),
-        'shipping_costs': shipping_costs.value.split(',')
+        'shipping_types': shipping_types.value.split(',') if shipping_types else None,
+        'shipping_costs': shipping_costs.value.split(',') if shipping_costs else None
     }
 
     # if a message was passed, add it to the dictionary
