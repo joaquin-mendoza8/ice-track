@@ -15,6 +15,10 @@ def format_date(value):
     """Format date as <Mon DD, YYYY>."""
     return value.strftime("%b %d, %Y").replace(" 0", " ")
 
+def format_datetime(value):
+    """Format datetime as <Mon DD, YYYY HH:MM>."""
+    return value.strftime("%b %d, %Y %H:%M").replace(" 0", " ")
+
 def format_attribute(value):
     """Format SQL attribute as space-delimited titled phrase."""
     return value.replace("_", " ").title()

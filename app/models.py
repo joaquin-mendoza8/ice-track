@@ -24,6 +24,10 @@ class User(db.Model, UserMixin):
     # relationship to Order (1-to-many)
     orders = db.relationship('Order', backref='user', lazy=True)
     
+    # relationship to Product (1-to-many)
+    products_added = db.relationship('Product', foreign_keys='Product.user_id_add', backref='added_by', lazy=True)
+    products_deleted = db.relationship('Product', foreign_keys='Product.user_id_delete', backref='deleted_by', lazy=True)
+
     # print the user
     def __repr__(self):
         return f'<User {self.username}>'
@@ -45,18 +49,20 @@ class Product(db.Model):
     status=db.Column(db.String(150), nullable=False, default='planned') # status of the product (planned or actual inventory)
     created_at=db.Column(db.DateTime, nullable=False, default=func.now()) # when the product was created
     deleted_at=db.Column(db.DateTime, nullable=True, default=None) # when the product was deleted
-    disposition=db.Column(db.String(150), nullable=True)  # disposition of a removed product (shipped, defective, spoiled, etc.)
+    dock_date=db.Column(db.Date, nullable=True) # when the product was/will be docked
     
     # create a link to User model to associate add/deletes to a user.
     user_id_add=db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) # user who added the product
     user_id_delete=db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True) # user who deleted the product
-    
-    # relationship to OrderItem (1-to-many)
-    order_items = db.relationship('OrderItem', backref='product', lazy=True)
+
+    # 1:1 relationship between product & product_allocation
+    allocation = db.relationship('ProductAllocation', backref='product', lazy=True, uselist=False)
 
     # print the product
     def __repr__(self):
-        return f'<Product {self.flavor}>'
+        created_at_str = self.created_at.strftime('%m-%d-%Y %H:%S') if self.created_at else 'N/A'
+        deleted_at_str = self.deleted_at.strftime('%m-%d-%Y %H:%S') if self.deleted_at else 'N/A'
+        return f'<Product {self.flavor}, {self.container_size}, {created_at_str}, {deleted_at_str}>'
     
     def adjust_quantity(self, quantity_change, commit=False):
         """
@@ -70,6 +76,40 @@ class Product(db.Model):
             self.committed_quantity += -quantity_change
         db.session.add(self)
         db.session.commit()
+
+    
+# Product allocation (to decouple products from inventory)
+class ProductAllocation(db.Model):
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+    # foreign keys to Product and Order Item models
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    order_item_id = db.Column(db.Integer, db.ForeignKey('order_item.id'), nullable=False)
+
+    # allocation attributes
+    quantity_allocated = db.Column(db.Integer, nullable=False)
+    disposition = db.Column(db.String(150), nullable=True)
+    allocated_at = db.Column(db.DateTime, nullable=False, default=func.now())
+
+    # 1:1 relationship between product_allocation and order_item
+    # order_item = db.relationship('OrderItem', backref='allocation', lazy=True, uselist=False)
+
+    # print the product allocation
+    def __repr__(self):
+        return (f'<ProductAllocation {self.id} for Product {self.product_id} => \
+                order_items_id: {self.order_item_id}, quantity_allocated: {self.quantity_allocated}, \
+                disposition: {self.disposition}>')
+    
+    # adjust the quantity of the product allocation and associated product
+    def adjust_quantity(self, quantity_change):
+        """
+        Adjust the quantity of the product allocation and associated product.
+
+        :param quantity_change: The amount to adjust the quantity by (positive or negative)
+        """
+        self.quantity_allocated += quantity_change
+        self.product.adjust_quantity(-quantity_change, commit=True)
 
 
 # Order Entry data model
@@ -108,14 +148,25 @@ class Order(db.Model):
 # Order item data models (products inside of an order)
 class OrderItem(db.Model):
 
-    # order item data attributes
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+    # foreign keys
+    # product_allocation_id = db.Column(db.Integer, db.ForeignKey('product_allocation.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+
+    # order item data attributes
     quantity = db.Column(db.Integer, nullable=False)
     line_item_cost = db.Column(db.Float, nullable=False)
 
     # foreign keys to Order and Product models
-    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    # parent_order = db.relationship('Order', backref='order_item', lazy=True)
+    product = db.relationship('Product', backref='order_items', lazy=True)
+    allocation = db.relationship('ProductAllocation', backref='order_item', lazy=True, cascade="all, delete-orphan")
+
+    # print the order item
+    def __repr__(self):
+        return f'<OrderItem {self.id}, {self.product_id}, {self.order_id}, {self.quantity}, {self.line_item_cost}, {self.allocation}>'
     
 
 # Admin Configuration Settings data model
@@ -152,8 +203,16 @@ class Shipment(db.Model):
 # Logging Data Model
 class Log(db.Model):
     
-    id = db.Column(db.Integer, primary_key = True)
-    action = db.Column(db.String(50), nullable = False) # "Added", or "Deleted"
-    product = db.Column(db.String(100), nullable = False) # Product name or details
-    user = db.Column(db.String(100), nullable = False) # User who performed the action
-    timestamp = db.Column(db.DateTime, default = func.now())
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+    # foreign key
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    # log attributes
+    action = db.Column(db.String(50), nullable=False)
+    product = db.Column(db.String(100), nullable=False)
+    container_size = db.Column(db.String(50), nullable=True)
+    timestamp = db.Column(db.DateTime, default=func.now())
+
+    # Many:1 relationship with User
+    user = db.relationship('User', backref='logs', lazy=True)
