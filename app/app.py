@@ -51,11 +51,13 @@ def create_app(config_class=Config):
     app.register_blueprint(home)
 
     # register all custom Jinja filters
-    from app.utils.filters import format_currency, format_currency_list, format_date, format_attribute, format_address
+    from app.utils.filters import format_currency, format_currency_list, format_datetime, \
+        format_date, format_attribute, format_address
 
     app.jinja_env.filters['currency'] = format_currency
     app.jinja_env.filters['currency_list'] = format_currency_list
     app.jinja_env.filters['date'] = format_date
+    app.jinja_env.filters['datetime'] = format_datetime
     app.jinja_env.filters['attribute'] = format_attribute
     app.jinja_env.filters['address'] = format_address
 

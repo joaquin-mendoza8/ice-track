@@ -1,3 +1,18 @@
+<!-- Section Header -->
+{% macro section_header(title, subtitle='', extra_html='') %}
+    <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <div>
+            <h1>{{ title }}</h1>
+            {% if subtitle %}
+                <p>{{ subtitle }}</p>
+            {% endif %}
+        </div>
+        <div class="ms-auto">
+            {{ extra_html | safe }}
+        </div>
+    </div>
+{% endmacro %}
+
 
 <!-- Metrics Card -->
 {% macro metrics_card(title, text, tooltip='') %}
@@ -37,15 +52,15 @@
 {% endmacro %}
 
 <!-- Floating Input -->
-{% macro input_group_floating(label, id, name, value='', min='', max='', type='text', unit='', pattern='', extra='', classes='',
+{% macro input_group_floating(label, id, name, value='', min=None, max=None, type='text', unit='', pattern='', extra='', classes='',
                               oninput='', placeholder='', plaintext=false, is_required=true, is_readonly=false, tooltip='') %}
 <div class="{% if unit %}input-group {% endif %}form-floating" {% if tooltip %} data-bs-toggle="tooltip" title="{{ tooltip }}" {% endif %}>
     <input type="{{ type }}" 
            class="form-control{% if plaintext %}-plaintext{% endif %} {{ classes }}"
            id="{{ id }}"
            name="{{ name }}" 
-           {% if min %} min="{{ min }}" {% endif %}
-           {% if max %} max="{{ max }}" {% endif %}
+           {% if min is not none %} min={{ min }} {% endif %}
+           {% if max is not none %} max={{ max }} {% endif %}
            {% if value %}value="{{ value }}"{% endif %}
             {% if is_required %}required{% endif %}
             {% if is_readonly %}readonly{% endif %}
@@ -62,15 +77,17 @@
 
 <!-- Select Input with Floating Label -->
 {% macro select_group_floating(label, id, name, options, extra_data, selected='', classes='', 
-                               is_required=true, tooltip='') %}
+                               is_disabled=False, is_required=True, tooltip='') %}
 <div class="form-floating" {% if tooltip %} data-bs-toggle="tooltip" title="{{ tooltip }}" {% endif %}>
-    <select class="form-control {{ classes }}" id="{{ id }}" name="{{ name }}" {% if is_required %}required{% endif %}>
+    <select class="form-control {{ classes }}" id="{{ id }}" name="{{ name }}"
+        {% if is_required %}required{% endif %}
+        {% if is_disabled %}disabled{% endif %}>
         {% if not selected %}<option value="" selected>Choose...</option>{% endif %}
         {% for value, text in options %}
             <option value="{{ value }}"
                 {% if extra_data %}data-{{ extra_data[loop.index0][0] }}="{{ extra_data[loop.index0][1] }}"{% endif %}
                 {% if value == selected %}selected{% endif %}>
-                {{ text }}
+                {{ text | title }}
             </option>
         {% endfor %}
     </select>

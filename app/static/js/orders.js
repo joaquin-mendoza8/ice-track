@@ -157,6 +157,7 @@ function deleteMostRecentLineItem(isUpdateModal) {
     } 
     
     // if only one line item remains, hide the "Delete Line Item" button
+    // TODO: investigate whether this works
     if (lineItemCount === 1) {
         deleteLineItemButton.hidden = true;
     }
@@ -172,7 +173,7 @@ function handleSize(event) {
     const sizeSelect = document.getElementById(sizeSelectId);
 
     // Clear the size dropdown
-    sizeSelect.innerHTML = '<option value="" disabled selected>Select size</option>';
+    sizeSelect.innerHTML = '<option value="" disabled selected>Choose...</option>';
 
     // If a flavor is selected, fetch the sizes for that flavor
     if (selectedFlavor) {
@@ -182,7 +183,7 @@ function handleSize(event) {
                 data.sizes.forEach(size => {
                     const option = document.createElement('option');
                     option.value = size;
-                    option.textContent = size;
+                    option.textContent = capitalize(size);
                     sizeSelect.appendChild(option);
                 });
             });
@@ -211,7 +212,7 @@ function updateMaxQuantity(flavorSelect, sizeSelect, quantityInput, quantityLabe
     const selectedFlavor = flavorSelect.value;
     const selectedSize = sizeSelect.value;
 
-    if (selectedFlavor && selectedSize && (sizeSelect.value !== 'Select size')) {
+    if (selectedFlavor && selectedSize && (sizeSelect.value !== 'Choose...')) {
         fetch(`/orders/fetch_stock?flavor=${encodeURIComponent(selectedFlavor)}&container-size=${encodeURIComponent(selectedSize)}`)
             .then(response => response.json())
             .then(data => {
@@ -338,7 +339,7 @@ function openOrderUpdateModal(order_id) {
             customerNameInput.value = orderContent.customer;
 
             // Set the shipping type, date, and cost
-            document.getElementById('shipping-type-update').value = orderContent.shipping_type.charAt(0).toUpperCase() + orderContent.shipping_type.slice(1);
+            document.getElementById('shipping-type-update').value = capitalize(orderContent.shipping_type);
             document.getElementById('expected-shipping-date-update').value = orderContent.expected_shipping_date;
             document.getElementById('shipping-cost-update').value = parseFloat(orderContent.shipping_cost).toFixed(2);
             document.getElementById('shipping-cost-update').parentElement.querySelector('label').textContent = 'Shipping Cost ($)';
@@ -353,99 +354,112 @@ function openOrderUpdateModal(order_id) {
 
             // set the order status
             const orderStatusSelect = document.getElementById('order-status-update');
-            const orderStatusOption = Array.from(orderStatusSelect.options).find(option => option.value === orderContent.status);
-            if (orderStatusOption) {
-                orderStatusSelect.value = orderStatusOption.value;
+            if (orderContent.status === 'cancelled') {
+                const cancelledOption = document.createElement('option');
+                cancelledOption.value = 'cancelled';
+                cancelledOption.textContent = 'Cancelled';
+                cancelledOption.selected = true;
+                orderStatusSelect.disabled = true;
+                orderStatusSelect.required = true;
+                orderStatusSelect.appendChild(cancelledOption);
+            } else {
+                const orderStatusOption = Array.from(orderStatusSelect.options).find(option => option.value === orderContent.status);
+                if (orderStatusOption) {
+                    orderStatusSelect.value = orderStatusOption.value;
+                }
             }
-            orderStatusSelect.disabled = true;
-            orderStatusSelect.required = true;
 
             // set the line items
-            const lineItems = orderContent.line_items;
-            const lineItemsContainer = document.getElementById('update-line-items-container');
-            lineItemsContainer.innerHTML = '';
-            lineItems.forEach((lineItem, index) => {
-                const newLineItem = document.createElement('div');
-                newLineItem.classList.add('update-line-item', 'mb-3', 'row');
-                newLineItem.innerHTML = document.getElementById('first-line-item').innerHTML;
+            if (orderContent.line_items && orderContent.line_items.length > 0) {
+                const lineItems = orderContent.line_items;
+                const lineItemsContainer = document.getElementById('update-line-items-container');
+                lineItemsContainer.innerHTML = '';
+                lineItems.forEach((lineItem, index) => {
+                    const newLineItem = document.createElement('div');
+                    newLineItem.classList.add('update-line-item', 'mb-3', 'row');
+                    newLineItem.innerHTML = document.getElementById('first-line-item').innerHTML;
 
-                // get the first line item to replace the 0s with the current line item count
-                newLineItem.innerHTML = newLineItem.innerHTML.replace(/(id|name|for)="([^"]*?)0([^"]*?)"/g, function(match, p1, p2, p3) {
-                    return `${p1}="${p2}${index}${p3}"`;
+                    // get the first line item to replace the 0s with the current line item count
+                    newLineItem.innerHTML = newLineItem.innerHTML.replace(/(id|name|for)="([^"]*?)0([^"]*?)"/g, function(match, p1, p2, p3) {
+                        return `${p1}="${p2}${index}${p3}"`;
+                    });
+
+                    // replace the line item number
+                    newLineItem.innerHTML = newLineItem.innerHTML.replace(/Line Item \d+/g, `Line Item ${index + 1}`);
+
+                    // if not the first line item, add a dotted line above the new line item
+                    if (index > 0) {
+                        newLineItem.innerHTML = `
+                            <hr style="border-top: 2px dotted #000;">
+                        ` + newLineItem.innerHTML;
+                    }
+
+                    // set the line item id
+                    if (index === 0) {
+                        newLineItem.id = 'update-first-line-item';
+                    }
+
+                    // replace the flavor select
+                    const flavorSelect = newLineItem.querySelector('.flavor');
+                    const flavorOption = Array.from(flavorSelect.options).find(option => option.value === lineItem.flavor);
+                    if (flavorOption) {
+                        flavorSelect.value = flavorOption.value;
+                    }
+                    flavorSelect.disabled = true;
+                    flavorSelect.id = `flavor-${index}-update`;
+
+                    // append the lineItem size to the sizeSelect options
+                    const sizeSelect = newLineItem.querySelector('.container-size');
+                    const sizeOption = document.createElement('option');
+                    sizeSelect.id = `container-size-${index}-update`;
+                    sizeOption.value = lineItem.container_size;
+                    sizeOption.textContent = capitalize(lineItem.container_size);
+                    sizeOption.selected = true;
+                    sizeSelect.disabled = true;
+                    sizeSelect.required = true;
+                    sizeSelect.appendChild(sizeOption);
+
+                    // replace the quantity input
+                    const quantityInput = newLineItem.querySelector('.quantity');
+                    quantityInput.id = `quantity-${index}-update`;
+                    quantityInput.classList = 'quantity form-control-plaintext';
+                    quantityInput.value = lineItem.quantity;
+                    quantityInput.required = true;
+                    quantityInput.readOnly = true;
+
+                    // event listener to clear line item inputs when flavor is changed
+                    flavorSelect.addEventListener('change', () => {
+                        sizeSelect.innerHTML = '<option value="" disabled selected>Choose...</option>';
+                        quantityInput.value = '';
+                        const lineItemCostInput = newLineItem.querySelector('.line-item-cost');
+                        lineItemCostInput.value = '';
+                    });
+
+                    // set event listeners for the new line item (max quantity, cost)
+                    flavorSelect.addEventListener('change', handleSize);
+                    handleMaxQuantity(flavorSelect);
+                    handleCost(flavorSelect);
+
+                    // replace the cost input
+                    const costInput = newLineItem.querySelector('.line-item-cost');
+                    costInput.id = `line-item-cost-${index}-update`;
+                    costInput.classList = 'update-line-item-cost form-control-plaintext';
+                    costInput.value = lineItem.line_item_cost.toFixed(2);
+                    costInput.readOnly = true;
+                    costInput.required = true;
+
+                    // append the new line item to the line items container
+                    lineItemsContainer.appendChild(newLineItem);
                 });
+            }
 
-                // replace the line item number
-                newLineItem.innerHTML = newLineItem.innerHTML.replace(/Line Item \d+/g, `Line Item ${index + 1}`);
-
-                // if not the first line item, add a dotted line above the new line item
-                if (index > 0) {
-                    newLineItem.innerHTML = `
-                        <hr style="border-top: 2px dotted #000;">
-                    ` + newLineItem.innerHTML;
-                }
-
-                // set the line item id
-                if (index === 0) {
-                    newLineItem.id = 'update-first-line-item';
-                }
-
-                // replace the flavor select
-                const flavorSelect = newLineItem.querySelector('.flavor');
-                const flavorOption = Array.from(flavorSelect.options).find(option => option.value === lineItem.flavor);
-                if (flavorOption) {
-                    flavorSelect.value = flavorOption.value;
-                }
-                flavorSelect.disabled = true;
-                flavorSelect.id = `flavor-${index}-update`;
-
-                // append the lineItem size to the sizeSelect options
-                const sizeSelect = newLineItem.querySelector('.container-size');
-                const sizeOption = document.createElement('option');
-                sizeOption.value = lineItem.container_size;
-                sizeOption.textContent = lineItem.container_size;
-                sizeOption.selected = true;
-                sizeSelect.appendChild(sizeOption);
-                sizeSelect.value = lineItem.container_size;
-                sizeSelect.disabled = true;
-                sizeSelect.id = `container-size-${index}-update`;
-                sizeSelect.required = true;
-
-                // replace the quantity input
-                const quantityInput = newLineItem.querySelector('.quantity');
-                quantityInput.value = lineItem.quantity;
-                quantityInput.readOnly = true;
-                quantityInput.id = `quantity-${index}-update`;
-                quantityInput.classList = 'quantity form-control-plaintext';
-                quantityInput.required = true;
-
-                // event listener to clear line item inputs when flavor is changed
-                flavorSelect.addEventListener('change', () => {
-                    sizeSelect.innerHTML = '<option value="" disabled selected>Select size</option>';
-                    quantityInput.value = '';
-                    const lineItemCostInput = newLineItem.querySelector('.line-item-cost');
-                    lineItemCostInput.value = '';
-                });
-
-                // set event listeners for the new flavor select
-                flavorSelect.addEventListener('change', handleSize);
-                handleMaxQuantity(flavorSelect);
-                handleCost(flavorSelect);
-
-                // replace the cost input
-                const costInput = newLineItem.querySelector('.line-item-cost');
-                costInput.value = lineItem.line_item_cost.toFixed(2);
-                costInput.readOnly = true;
-                costInput.id = `line-item-cost-${index}-update`;
-                costInput.classList = 'update-line-item-cost form-control-plaintext';
-                costInput.required = true;
-
-                // append the new line item to the line items container
-                lineItemsContainer.appendChild(newLineItem);
-            });
-
-            // Set the delete form order id
+            // set the delete form order id
             const hiddenOrderDeleteInput = document.getElementById('order-id-delete');
             hiddenOrderDeleteInput.value = order_id;
+
+            // set the order id for the cancel form
+            const hiddenOrderCancelInput = document.getElementById('order-id-cancel');
+            hiddenOrderCancelInput.value = order_id;
 
             // trigger the cost display update
             updateTotalCost(true);
@@ -466,12 +480,12 @@ function toggleEdit(toEditMode) {
     const updateButton = document.getElementById('updateOrderButton');
 
     // if the update button is hidden and the toEditMode is false, don't toggle the edit mode
-    if (!toEditMode && updateButton.hidden) {
+    if (!toEditMode && updateButton.disabled) {
         return;
     }
 
     // toggle the update button to show/hide
-    updateButton.hidden = !updateButton.hidden;
+    updateButton.disabled = !updateButton.disabled;
 
     // get all input fields in the modal
     const updateModal = document.getElementById('ordersUpdateModal');
@@ -515,8 +529,23 @@ function toggleEdit(toEditMode) {
         deleteLineItemButton.hidden = true;
     }
 
+    // update the max quantity of the container size input
+    const flavorSelects = document.querySelectorAll(".flavor")
+
+    flavorSelects.forEach(flavorSelect => {
+        const sizeSelect = flavorSelect.parentElement.parentElement.nextElementSibling.querySelector('.container-size');
+        const quantityInput = sizeSelect.parentElement.parentElement.nextElementSibling.querySelector('.quantity');
+        const quantityLabel = quantityInput.parentElement.querySelector('label');
+    
+        updateMaxQuantity(flavorSelect, sizeSelect, quantityInput, quantityLabel);
+    })
+
     // toggle the hidden attribute of the "Save Changes" button
     // const saveChangesButton = document.getElementById('save-changes');
     // saveChangesButton.hidden = !saveChangesButton.hidden;
 
+}
+
+function capitalize(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
 }

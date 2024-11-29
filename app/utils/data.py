@@ -10,7 +10,8 @@ def parse_product_data(products):
             "price": product.price,
             "quantity": product.quantity,
             "committed_quantity": product.committed_quantity,
-            "status": product.status
+            "status": product.status,
+            "dock_date": product.dock_date.strftime('%m/%d/%Y') if product.dock_date else None,
         }
         for product in products
     ]
@@ -41,18 +42,54 @@ def parse_order_data(orders):
 def parse_order_item_data(order_items):
     """Converts a SQLAlchemy list of objects to a dictionary."""
     
+    # return [
+    #     {
+    #         "id": order_item.id,
+    #         "quantity": order_item.quantity,
+    #         "line_item_cost": order_item.line_item_cost,
+    #         "flavor": order_item.allocation[0].product.flavor,
+    #         "flavor": order_item.allocation[0].product.flavor,
+    #         "container_size": order_item.allocation[0].product.container_size,
+    #         "price": order_item.allocation[0].product.price,
+    #         "order_id": order_item.order_id,
+    #     }
+        
+    # ]
+    parsed = []
+    for order_item in order_items:
+        parsed.append(
+            {
+                "id": order_item.id,
+                "quantity": order_item.quantity,
+                "line_item_cost": order_item.line_item_cost,
+                "order_id": order_item.order_id,
+            }
+        )
+
+        if order_item.allocation:
+            parsed[-1].update(
+                {
+                    "flavor": order_item.allocation[0].product.flavor,
+                    "container_size": order_item.allocation[0].product.container_size,
+                    "price": order_item.allocation[0].product.price,
+                }
+            )
+
+
+def parse_product_allocation_data(product_allocations):
+    """Converts a SQLAlchemy list of objects to a dictionary"""
+
     return [
         {
-            "id": order_item.id,
-            "quantity": order_item.quantity,
-            "line_item_cost": order_item.line_item_cost,
-            "product_id": order_item.product_id,
-            "flavor": order_item.product.flavor,
-            "container_size": order_item.product.container_size,
-            "price": order_item.product.price,
-            "order_id": order_item.order_id,
+            "id": product_allocation.id,
+            "product_id": product_allocation.product_id,
+            "order_item_id": product_allocation.order_item_id,
+            "quantity_allocated": product_allocation.quantity_allocated,
+            "disposition": product_allocation.disposition,
+            "allocated_at": product_allocation.allocated_at,
+            "product": product_allocation.product
         }
-        for order_item in order_items
+        for product_allocation in product_allocations
     ]
 
 def parse_customer_data(customers):

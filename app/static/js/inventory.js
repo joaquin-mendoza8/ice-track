@@ -6,12 +6,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const sizeSelect = document.getElementById('product-container-size-add');
 
     // set event listeners for flavor and container size dropdowns
-    flavorSelect.addEventListener('change', updateModalInputs);
-    sizeSelect.addEventListener('change', updateModalInputs);
+    // flavorSelect.addEventListener('change', updateModalInputs);
+    // sizeSelect.addEventListener('change', updateModalInputs);
 
-    // set event listener for status dropdown
-    const statusSelect = document.getElementById('product-status-add');
-    statusSelect.addEventListener('change', updateDockDropdown);
+    // // set event listener for status dropdown
+    // const statusSelect = document.getElementById('product-status-add');
+    // statusSelect.addEventListener('change', updateDockDropdown);
 
     // TODO: finish dock date js
 
@@ -100,11 +100,11 @@ function openModal(product_content, productId, isAdmin) {
         hiddenInput2.value = parseInt(productId);
     }
 
-    // set product id display value
-    const productIdDisplay = document.getElementById('product-id-display');
+    // set product id input field to current product id
+    const productIdInput = document.getElementById('product-id');
 
-    if (productIdDisplay) {
-        productIdDisplay.innerHTML = productId;
+    if (productIdInput) {
+        productIdInput.value = productId;
     }
 
     // set product status selection to current status
@@ -118,6 +118,8 @@ function openModal(product_content, productId, isAdmin) {
     // set modifiable product attribute inputs
     const productAttributes = Object.keys(product_content);
 
+    console.log(productAttributes);
+
     // set flavor, price, and quantity inputs
     productAttributes.forEach(attribute => {
 
@@ -125,6 +127,9 @@ function openModal(product_content, productId, isAdmin) {
 
         if (inputField) {
             inputField.value = product_content[attribute];
+            if (inputField.id === 'product-price') {
+                inputField.value = parseFloat(product_content[attribute]).toFixed(2);
+            }
         }
     });
 
