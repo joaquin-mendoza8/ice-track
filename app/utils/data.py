@@ -75,19 +75,24 @@ def parse_order_item_data(order_items):
                 }
             )
 
+    return parsed
+
 
 def parse_product_allocation_data(product_allocations):
     """Converts a SQLAlchemy list of objects to a dictionary"""
 
     return [
         {
+            "product": product_allocation.product,
+            "flavor": product_allocation.product.flavor,
+            "container_size": product_allocation.product.container_size,
+            "price": product_allocation.product.price,
             "id": product_allocation.id,
             "product_id": product_allocation.product_id,
             "order_item_id": product_allocation.order_item_id,
             "quantity_allocated": product_allocation.quantity_allocated,
             "disposition": product_allocation.disposition,
-            "allocated_at": product_allocation.allocated_at,
-            "product": product_allocation.product
+            "allocated_at": product_allocation.allocated_at.strftime('%m/%d/%Y') if product_allocation.allocated_at else None,
         }
         for product_allocation in product_allocations
     ]

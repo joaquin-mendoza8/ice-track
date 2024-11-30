@@ -68,7 +68,7 @@
                 {% endif %}
 
                 <!-- Table for inventory products -->
-                <table class="table table-hover table-borderless table-striped">
+                <table class="table table-hover table-borderless table-striped mb-5">
                     {% if products %}
                     {% set hidden_attributes = ['id'] %}
                     <thead class="table-dark">
@@ -108,6 +108,53 @@
                     </tbody>
                     {% else %}
                         No products found.
+                    {% endif %}
+                </table>
+
+                <!-- Inventory Allocations Header -->
+                {{ macros.section_header('Allocations') }}
+
+                <!-- Table for product allocations -->
+                <table class="table table-hover table-borderless table-striped mb-5">
+                    {% if allocations %}
+                    {% set hidden_attributes = ['id', 'product'] %}
+                    <thead class="table-dark">
+                        {% for key in allocations[0].keys() %}
+                            {% if key not in hidden_attributes %}
+                                <th class="inventory-header" scope="col">
+                                    <a class="table-header-link" href="/inventory?filter={{ key }}">{{ key | attribute }}</a>
+                                </th>
+                            {% endif %}
+                        {% endfor %}
+                    </thead>
+                    <tbody>
+                        {% for allocation in allocations %}
+
+                            {# Set the table row color based on the order status #}
+                            {% set tr_map = '' %}
+                            {% if allocation.status == 'planned' %}
+                                {% set tr_map = 'table-warning' %}
+                            {% elif allocation.status == 'actual' %}
+                                {% set tr_map = 'table-success' %}
+                            {% endif %}
+
+                            <tr onclick="openModal({{ allocation }}, {{ allocation['id'] }}, {{ current_user.is_admin | tojson | safe }})" 
+                                class="{% if tr_map %}{{ tr_map }}{% endif %}" id="row-{{ loop.index - 1 }}"
+                                style="cursor: pointer;">
+                                {% for key, value in allocation.items() %}
+                                    {% if key not in hidden_attributes %}
+                                        {% if key == 'price' %}
+                                            <td>{{ value | currency }}</td>
+                                        {% else %}
+                                            <td>{{ value | capitalize }}</td>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    {% else %}
+                        No allocations found.
                     {% endif %}
                 </table>
             </div>

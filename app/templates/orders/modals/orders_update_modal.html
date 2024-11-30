@@ -26,6 +26,7 @@
                         <!-- order id value to be populated by js -->
                         <input type="hidden" id="order-id-update-hidden" name="order-id-update-hidden" value="{{ order_id }}">
                         <input type="hidden" id="order-total-cost-hidden" name="order-total-cost-hidden">
+                        <input type="hidden" id="order-status-update-hidden" name="order-status-update-hidden">
 
                         <!-- Order ID -->
                         {{ macros.input_group_floating(
@@ -184,6 +185,7 @@
                             id='order-status-update', 
                             name='order-status-update',
                             options=_options,
+                            is_disabled=True,
                             tooltip='The status of the order') 
                         }}
                     </div>
@@ -196,8 +198,10 @@
 
                 <!-- Add/Delete Line Item Buttons -->
                 <div class="btn-group" role="group" id="update-line-item-buttons-container" hidden>
-                    <button type="button" class="btn btn-outline-secondary" id="update-add-line-item">+</button>
-                    <button type="button" class="btn btn-outline-secondary" id="update-delete-line-item" hidden>-</button>
+                    <button type="button" class="btn btn-outline-secondary update-line-item-button" 
+                            id="update-add-line-item">+</button>
+                    <button type="button" class="btn btn-outline-secondary update-line-item-button" 
+                            id="update-delete-line-item" hidden>-</button>
                 </div>
 
             </form>
@@ -236,8 +240,11 @@
                     <div class="btn-toolbar" role="toolbar">
                         <div class="btn-group me-2" role="group">
                             <!-- Cancel/Delete order buttons -->
-                            <button type="button" class="btn btn-outline-warning" onclick="document.querySelector('#orderCancelForm').submit();">Cancel Order</button>
-                            <button type="button" class="btn btn-outline-danger" onclick="document.querySelector('#orderDeleteForm').submit();">Delete Order</button>
+                            <button type="button" class="btn btn-outline-warning" onclick="document.querySelector('#orderCancelForm').submit();"
+                                    id="cancel-order-btn">Cancel Order</button>
+
+                            <button type="button" class="btn btn-outline-danger" onclick="document.querySelector('#orderDeleteForm').submit();"
+                                    id="delete-order-btn"{% if not current_user.is_admin %}disabled{% endif %}>Delete Order</button>
                         </div>
                         <div class="btn-group me-2" role="group">
                             <!-- Edit/Update order buttons -->
