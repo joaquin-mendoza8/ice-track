@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% import 'components/macros.html' as macros %}
 
 {% block title %}Login{% endblock %}
 
@@ -9,20 +10,53 @@
 {% block content %}
 
 <div class="auth-container">
-    <h1 class="auth-title">Login</h1>
+
+    {{ macros.section_header("Login") }}
 
     <form class="auth-form" action="/login" method="POST">
-        <label class="form-label" for="username">Username</label>
-        <input class="input" type="text" name="username" id="username" required>
-        <br>
-        <label class="form-label" for="password">Password</label>
-        <input class="input" type="password" name="password" id="password" required>
-        <br>
-        <button class="btn" type="submit">Login</button>
+
+        <div class="row justify-content-center mb-3">
+
+            <div class="col-md-6">
+
+                {{ macros.input_group_floating(
+                    label='Username',
+                    id='username',
+                    name='username',
+                    type='text',
+                    tooltip='Enter your username.'
+                ) }}
+
+            </div>
+
+            <div class="col-md-6">
+
+                {{ macros.input_group_floating(
+                    label='Password',
+                    id='password',
+                    name='password',
+                    type='password',
+                    tooltip='Enter your password.'
+                ) }}
+
+            </div>
+
+        </div>
+
+        <div class="row justify-content-center mb-3">
+
+            <div class="col-md-12">
+
+                <button class="btn btn-outline-primary" type="submit">Login</button>
+
+            </div>
+
+        </div>
+
     </form>
 
     <p class="auth-container-redirect">
-        Don't have an account? <a href="/register"><button class="register-btn">Register</button></a>
+        Don't have an account? <a href="/register"><button class="btn btn-outline-secondary register-btn">Register</button></a>
     </p>
 
     <p class="system-msg">{% if msg %} {{ msg }} {% endif %}</p>

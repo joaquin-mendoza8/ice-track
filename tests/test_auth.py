@@ -1,18 +1,22 @@
 
-def test_register_post_success(client):
+def test_register_post_success(client, captured_templates):
 
     response = client.post('/register', data={
         "first-name": "Test",
         "last-name": "User",
         "username": "pytestuser",
-        "password": "password",
-        "confirm-password": "password",
+        "password": "password123",
+        "confirm-password": "password123",
         "shipping-address": "123 Test St",
         "billing-address": "123 Test St"
     }, follow_redirects=True)
 
     assert response.status_code == 200
     assert response.request.path == '/login'
+    template, context = captured_templates[0]
+    assert template.name == 'auth/login.html'
+    assert context['msg_type'] == 'success'
+
 
 def test_register_post_user_exists(client, captured_templates):
 

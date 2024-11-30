@@ -6,6 +6,7 @@ from app.models import Product, User, Order, OrderItem, AdminConfig, ProductAllo
 from app.extensions import db
 from app.utils.order_items import extract_order_items, compare_order_items, create_order_item
 from app.utils.admin_decorator import admin_required
+from pprint import pprint
 
 # create the order entry form blueprint
 orders = Blueprint('orders', __name__)
@@ -64,174 +65,194 @@ def orders_update_order():
         msg = ''
         msg_type = ''
 
-        # extract form data
-        order_id = request.form.get('order-id-update-hidden')
-        shipping_type = request.form.get('shipping-type-update')
-        shipping_cost = request.form.get('shipping-cost-update')
-        desired_receipt_date = request.form.get("desired-receipt-date-update")
-        billing_address = request.form.get('billing-address-update')
-        order_status = request.form.get('order-status-update')
-        total_cost = request.form.get('order-total-cost-hidden')
-        order_items = extract_order_items(request.form)
+        # wrap in try-except block to catch any errors
+        try:
 
-        # ensure all fields are filled
-        if all([ order_id, order_status, shipping_type, shipping_cost, desired_receipt_date, 
-                billing_address, total_cost, order_items ]):
+            pprint(request.form)
 
-            # wrap in try-except block to catch any errors
-            try:
+            # extract form data
+            # print(request.form)
+            order_id = request.form.get('order-id-update-hidden')
+            shipping_type = request.form.get('shipping-type-update')
+            shipping_cost = request.form.get('shipping-cost-update')
+            desired_receipt_date = request.form.get("desired-receipt-date-update")
+            billing_address = request.form.get('billing-address-update')
+            order_status = request.form.get('order-status-update')
+            order_status_hidden = request.form.get('order-status-update-hidden')
+            total_cost = request.form.get('order-total-cost-hidden')
+            order_items = extract_order_items(request.form)
 
-                # fetch the order from the database
-                order = Order.query.get(order_id)
+            # set the order status to the hidden value if it is empty
+            if not order_status:
+                order_status = order_status_hidden
 
-                # display a message if any of the order attributes have changed
-                if any( [
-                    order.status != request.form.get('order-status-update'),
-                    order.shipping_type != request.form.get('shipping-type-update').lower(),
-                    order.shipping_cost != float(request.form.get('shipping-cost-update')),
-                    order.desired_receipt_date.strftime("%m/%d/%Y") != \
-                        datetime.strptime(request.form.get('desired-receipt-date-update'), "%m/%d/%Y").strftime("%m/%d/%Y"),
-                    order.billing_address != request.form.get('billing-address-update'),
-                    order.total_cost != float(request.form.get('order-total-cost-hidden'))
-                ] ):
-                    msg = "Order updated successfully"
-                    msg_type = "success"
-                else:
-                    msg = "No changes made"
-                    msg_type = "info"
+            # ensure all fields are filled
+            if not all([ order_id, order_status, shipping_type, shipping_cost, desired_receipt_date, 
+                    billing_address, total_cost ]):
+                return redirect(url_for('orders.orders_home', msg="Missing fields"))
 
-                # TODO: update the product allocation status
-                
-                # update the order object
-                order.status = order_status
-                order.shipping_type = shipping_type.lower()
-                order.shipping_cost = shipping_cost
-                order.desired_receipt_date = datetime.strptime(desired_receipt_date, "%m/%d/%Y")
-                order.billing_address = billing_address
-                order.total_cost = total_cost
+            # fetch the order from the database
+            order = Order.query.get(order_id)
 
-                # get order line-item ids from the database
-                order_item_ids = [order_item.id for order_item in order.order_items]
+            print(
+                order.status != (request.form.get('order-status-update') or order_status),
+                order.shipping_type != request.form.get('shipping-type-update').lower(),
+                order.shipping_cost != float(request.form.get('shipping-cost-update')),
+                order.desired_receipt_date.strftime("%m/%d/%Y") != \
+                    datetime.strptime(request.form.get('desired-receipt-date-update'), "%m/%d/%Y").strftime("%m/%d/%Y"),
+                order.billing_address != request.form.get('billing-address-update'),
+                order.total_cost != float(request.form.get('order-total-cost-hidden'))
+            )
+            print(order.total_cost, float(request.form.get('order-total-cost-hidden')))
 
-                # construct the line-items from the database
-                order_items_db = []
-                for order_item_id in order_item_ids:
+            # display a message if any of the order attributes have changed
+            if any( [
+                order.status != (request.form.get('order-status-update') or order_status),
+                order.shipping_type != request.form.get('shipping-type-update').lower(),
+                order.shipping_cost != float(request.form.get('shipping-cost-update')),
+                order.desired_receipt_date.strftime("%m/%d/%Y") != \
+                    datetime.strptime(request.form.get('desired-receipt-date-update'), "%m/%d/%Y").strftime("%m/%d/%Y"),
+                order.billing_address != request.form.get('billing-address-update'),
+                order.total_cost != float(request.form.get('order-total-cost-hidden'))
+            ] ):
+                msg = "Order updated successfully"
+                msg_type = "success"
+            else:
+                msg = "No changes made"
+                msg_type = "info"
 
-                    # fetch the associated order-item/product from the database
-                    order_item = OrderItem.query.get(order_item_id)
-                    product = Product.query.get(order_item.product_id)
+            # TODO: update the product allocation status
+            
+            # update the order object
+            order.status = order_status
+            order.shipping_type = shipping_type.lower()
+            order.shipping_cost = shipping_cost
+            order.desired_receipt_date = datetime.strptime(desired_receipt_date, "%m/%d/%Y")
+            order.billing_address = billing_address
+            order.total_cost = total_cost
 
-                    # construct the order-item dictionary from the database
-                    order_item_db_dict = {
-                        key: value for key, value in order_item.__dict__.items() if key != '_sa_instance_state'
-                    }
+            # get order line-item ids from the database
+            order_item_ids = [order_item.id for order_item in order.order_items]
 
-                    # add product attributes to the order-item dictionary
-                    order_item_db_dict.update({
-                        'flavor': product.flavor,
-                        'container_size': product.container_size,
-                    })
+            # construct the line-items from the database
+            order_items_db = []
+            for order_item_id in order_item_ids:
 
-                    # push the order-item dictionary to the order-items dictionary
-                    order_items_db.append(order_item_db_dict)
+                # fetch the associated order-item/product from the database
+                order_item = OrderItem.query.get(order_item_id)
+                product = Product.query.get(order_item.product_id)
 
-                # compare each order item from the request to the database
-                for i in range(len(order_items)):
+                # construct the order-item dictionary from the database
+                order_item_db_dict = {
+                    key: value for key, value in order_item.__dict__.items() if key != '_sa_instance_state'
+                }
 
-                    # if order item request list is larger than that in database, add new order items
-                    if i >= len(order_items_db):
+                # add product attributes to the order-item dictionary
+                order_item_db_dict.update({
+                    'flavor': product.flavor,
+                    'container_size': product.container_size,
+                })
 
-                        # create a newly added order_item
-                        inner_msg = create_order_item(order_items[i], order_id)
+                # push the order-item dictionary to the order-items dictionary
+                order_items_db.append(order_item_db_dict)
 
-                        # return with error message if received
-                        if inner_msg:
-                            return redirect(url_for('orders.orders_home', msg=inner_msg))
-                        else:
-                            print("New Item Created")
-                            continue
+            # compare each order item from the request to the database
+            for i in range(len(order_items)):
 
-                    # get the next order item dicts to compare (request vs. database)
-                    order_item_request = order_items[i]
-                    order_item_db = order_items_db[i]
+                # if order item request list is larger than that in database, add new order items
+                if i >= len(order_items_db):
 
-                    # check if the order items are the same
-                    relevant_features = ['flavor', 'container_size', 'quantity', 'line_item_cost']
-                    if not compare_order_items(order_item_request, order_item_db, relevant_features):
-                        print("Order items do not match")
+                    # create a newly added order_item
+                    inner_msg = create_order_item(order_items[i], order_id)
 
-                        # fetch the order item from the database
-                        order_item = OrderItem.query.get(order_item_db['id'])
-
-                        # fetch the product & product allocation from the database
-                        product = Product.query.filter_by(
-                            flavor=order_item_request['flavor'], 
-                            container_size=order_item_request['container_size'], 
-                            deleted_at=None).first()
-                        product_allocation = ProductAllocation.query.get(product.allocation.id)
-
-                        if product_allocation:
-
-                            # check if the product id is the same as the order item product id
-                            if product.id == order_item.product_id:
-
-                                # change attributes of the order item
-                                order_item.quantity = order_item_request['quantity']
-                                order_item.line_item_cost = order_item_request['line_item_cost']
-
-                                # update the product/allocation quantity & committed quantity
-                                quantity_diff = order_item_request['quantity'] - order_item_db['quantity']
-                                product_allocation.adjust_quantity(quantity_diff)
-
-                                print("Order item updated")
-                                msg = "Order item updated"
-
-                            else:
-                                print("Product ID mismatch")
-                                msg = "Product ID mismatch"
-
-                        else:
-                            print("Product not found")
-                            msg = "Product not found"
+                    # return with error message if received
+                    if inner_msg:
+                        return redirect(url_for('orders.orders_home', msg=inner_msg))
                     else:
-                        print("Order items match")
-                        msg = "No changes made" if not msg else msg
-                        msg_type = "info" if not msg_type else msg_type
+                        print("New Item Created")
+                        continue
 
-                # delete any order items that weren't passed in the request
-                if len(order_items_db) > len(order_items):
-                    start = len(order_items)
-                    stop = len(order_items_db)
-                    for j in range(start, stop, 1):
+                # get the next order item dicts to compare (request vs. database)
+                order_item_request = order_items[i]
+                order_item_db = order_items_db[i]
 
-                        # get order_item id
-                        order_item = order_items_db[j]
-                        order_item_id = order_item.get('id') if order_item else None
+                # check if the order items are the same
+                relevant_features = ['flavor', 'container_size', 'quantity', 'line_item_cost']
+                if not compare_order_items(order_item_request, order_item_db, relevant_features):
+                    print("Order items do not match")
 
-                        # delete order_item, if it exists
-                        if order_item_id:
-                            order_item = OrderItem.query.get(order_item_id)
-                            if order_item:
+                    # fetch the order item from the database
+                    order_item = OrderItem.query.get(order_item_db['id'])
 
-                                # adjust associated product/product allocation quantities
-                                product_allocation = ProductAllocation.query.get(order_item.allocation[0].id)
-                                product_allocation.adjust_quantity(-product_allocation.quantity_allocated)
+                    # fetch the product & product allocation from the database
+                    product = Product.query.filter_by(
+                        flavor=order_item_request['flavor'], 
+                        container_size=order_item_request['container_size'], 
+                        deleted_at=None).first()
+                    product_allocation = ProductAllocation.query.get(product.allocation.id)
 
-                                db.session.delete(order_item)
+                    if product_allocation:
 
-                                msg = "Order update successfully"
-                                msg_type = "success"
+                        # check if the product id is the same as the order item product id
+                        if product.id == order_item.product_id:
 
-                # commit the changes to the database
-                if db.session.dirty:
-                    db.session.commit()
+                            # change attributes of the order item
+                            order_item.quantity = order_item_request['quantity']
+                            order_item.line_item_cost = order_item_request['line_item_cost']
 
-            except Exception as e: # rollback if an error occurs
-                print(e)
-                db.session.rollback()
+                            # update the product/allocation quantity & committed quantity
+                            quantity_diff = order_item_request['quantity'] - order_item_db['quantity']
+                            product_allocation.adjust_quantity(quantity_diff)
 
-            # redirect back to the order form with a message
-            return redirect(url_for('orders.orders_home', msg=msg, msg_type=msg_type))
+                            print("Order item updated")
+                            msg = "Order item updated"
+
+                        else:
+                            print("Product ID mismatch")
+                            msg = "Product ID mismatch"
+
+                    else:
+                        print("Product not found")
+                        msg = "Product not found"
+                else:
+                    print("Order items match")
+                    msg = "No changes made" if not msg else msg
+                    msg_type = "info" if not msg_type else msg_type
+
+            # delete any order items that weren't passed in the request
+            if len(order_items_db) > len(order_items):
+                start = len(order_items)
+                stop = len(order_items_db)
+                for j in range(start, stop, 1):
+
+                    # get order_item id
+                    order_item = order_items_db[j]
+                    order_item_id = order_item.get('id') if order_item else None
+
+                    # delete order_item, if it exists
+                    if order_item_id:
+                        order_item = OrderItem.query.get(order_item_id)
+                        if order_item:
+
+                            # adjust associated product/product allocation quantities
+                            product_allocation = ProductAllocation.query.get(order_item.allocation[0].id)
+                            product_allocation.adjust_quantity(-product_allocation.quantity_allocated)
+
+                            db.session.delete(order_item)
+
+                            msg = "Order update successfully"
+                            msg_type = "success"
+
+            # commit the changes to the database
+            if db.session.dirty:
+                db.session.commit()
+
+        except Exception as e: # rollback if an error occurs
+            print(e)
+            db.session.rollback()
+
+        # redirect back to the order form with a message
+        return redirect(url_for('orders.orders_home', msg=msg, msg_type=msg_type))
 
 # orders add endpoint
 @orders.route('/orders_add', methods=['GET', 'POST'])
@@ -363,55 +384,64 @@ def orders_delete_order():
         # check if POST request was made
         if request.method == 'POST':
 
-            # initialize message variable
-            msg, msg_type = '', ''
-    
-            # extract form data
-            order_id = request.form.get('order-id-delete')
+            try:
 
-            # ensure all fields are filled
-            if order_id:
-    
-                # fetch the order from the database
-                order = Order.query.get(order_id)
-    
-                # check if the order exists
-                if order:
+                # initialize message variable
+                msg, msg_type = '', ''
+        
+                # extract form data
+                order_id = request.form.get('order-id-delete')
 
-                    # fetch the order items from the database
-                    order_items = OrderItem.query.filter_by(order_id=order_id).all()
+                # ensure all fields are filled
+                if order_id:
+        
+                    # fetch the order from the database
+                    order = Order.query.get(order_id)
+        
+                    # check if the order exists
+                    if order:
 
-                    # iterate through the order items
-                    for order_item in order_items:
+                        # fetch the order items from the database
+                        order_items = OrderItem.query.filter_by(order_id=order_id).all()
 
-                        # fetch the product allocation from the database
-                        product_allocation = ProductAllocation.query.get(order_item.allocation[0].id)
+                        # iterate through the order items
+                        for order_item in order_items:
 
-                        if product_allocation:
-                            
-                            # update the product allocation & product quantities
-                            product_allocation.adjust_quantity(-product_allocation.quantity_allocated)
+                            if order_item.allocation:
 
-                            # delete the product allocation
-                            db.session.delete(product_allocation)
+                                # fetch the product allocation from the database
+                                product_allocation = ProductAllocation.query.get(order_item.allocation[0].id)
 
-                        else:
-                            print("Product allocation not found")
-                            return redirect(url_for('orders.orders_home', msg="Product allocation not found"))
-    
-                    # delete the order from the database
-                    db.session.delete(order)
-                    db.session.commit()
-    
-                    # redirect back to the order form
-                    msg = "Order deleted successfully"
-                    return redirect(url_for('orders.orders_home', msg=msg, msg_type='success'))
-    
+                                if product_allocation:
+                                    
+                                    # update the product allocation & product quantities
+                                    product_allocation.adjust_quantity(-product_allocation.quantity_allocated)
+
+                                    # delete the product allocation
+                                    db.session.delete(product_allocation)
+
+                                else:
+                                    print("Product allocation not found")
+                                    return redirect(url_for('orders.orders_home', msg="Product allocation not found"))
+        
+                        # delete the order from the database
+                        db.session.delete(order)
+                        db.session.commit()
+        
+                        # redirect back to the order form
+                        msg = "Order deleted successfully"
+                        return redirect(url_for('orders.orders_home', msg=msg, msg_type='success'))
+        
+                    else:
+                        msg = "Order not found"
+        
                 else:
-                    msg = "Order not found"
-    
-            else:
-                msg = "Missing fields"
+                    msg = "Missing fields"
+
+            except Exception as e:
+                print(e)
+                msg = e
+                db.session.rollback()
     
         return redirect(url_for('orders.orders_home', msg=msg))
 
@@ -457,6 +487,9 @@ def orders_cancel_order():
                         
                         # update the product allocation & product quantities
                         product_allocation.adjust_quantity(-product_allocation.quantity_allocated)
+
+                        # subtract the line item cost from the order total cost
+                        order.total_cost -= order_item.line_item_cost
 
                         # delete the product allocation
                         db.session.delete(product_allocation)
@@ -610,20 +643,20 @@ def orders_fetch_order_info():
 
     # check if the order exists
     if order:
+
+        # parse the order data into a dictionary
         order_dict = parse_order_data([order])[0]
 
-        # format date attributes
-        date_attributes = ['order_creation_date', 'expected_shipping_date', 'desired_receipt_date']
-
-        # parse the order items into dictionaries
-        if order.order_items and len(order.order_items) > 0:
+        # parse the order items into a list of dictionaries
+        if order.order_items[0].allocation and len(order.order_items[0].allocation) > 0:
             order_dict['line_items'] = parse_order_item_data(order.order_items)
-            for date_attribute in date_attributes:
-                order_dict[date_attribute] = order_dict[date_attribute].strftime("%m/%d/%Y")
         else:
             order_dict['line_items'] = []
 
-        # print(order_dict)
+        # format the date attributes
+        date_attributes = ['order_creation_date', 'expected_shipping_date', 'desired_receipt_date']
+        for date_attribute in date_attributes:
+            order_dict[date_attribute] = order_dict[date_attribute].strftime("%m/%d/%Y")
 
         return jsonify(order_dict)
     else:

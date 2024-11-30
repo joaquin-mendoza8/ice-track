@@ -61,7 +61,7 @@
            name="{{ name }}" 
            {% if min is not none %} min={{ min }} {% endif %}
            {% if max is not none %} max={{ max }} {% endif %}
-           {% if value %}value="{{ value }}"{% endif %}
+           {% if value %}value="{{ value | safe }}"{% endif %}
             {% if is_required %}required{% endif %}
             {% if is_readonly %}readonly{% endif %}
             {% if pattern %}pattern="{{ pattern }}"{% endif %}
