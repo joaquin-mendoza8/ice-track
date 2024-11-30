@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Status Report{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <!-- Banner header -->
+        <h1>Status Report</h1>
+    </div>
+        <table class="table table-hover table-borderless">
+            <thead>
+                <tr>
+                    <th scope="col">Date Shipped</th>
+                    <th scope="col">Boxes</th>
+                    <th scope="col">Partial Delivery</th>
+                    <th scope="col">Delivery Date</th>
+                    <th scope="col">Shipping Type</th>
+                    <th scope="col">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for shipment in shipments %}
+                    <tr>
+                        <td>{{ shipment.date_shipped }}</td>
+                        <td>{{ shipment.shipment_boxes }}</td>
+                        <td>{{ shipment.partial_delivery }}</td>
+                        <td>{{ shipment.delivery_date }}</td>
+                        <td>{{ shipment.shippment_type }}</td>
+                        <td>{{ shipment.status }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6">No shipments found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    <button onclick="window.print()">Print Status Report</button>
+</div>
+{% endblock %}

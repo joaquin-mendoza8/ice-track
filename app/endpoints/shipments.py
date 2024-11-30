@@ -20,14 +20,42 @@ def shipments_home():
 
     # fetch all shipments from database
     shipments = Shipment.query.all()
+    # shipments = [
+    #     {
+    #         "date_shipped": "2024-11-20",
+    #         "shipment_boxes": 5,
+    #         "partial_delivery": "No",
+    #         "delivery_date": "2024-11-22",
+    #         "shippment_type": "Ground",
+    #         "status": "Delivery Pending"
+    #     },
+    #     {
+    #         "date_shipped": "2024-11-21",
+    #         "shipment_boxes": 2,
+    #         "partial_delivery": "Yes",
+    #         "delivery_date": "2024-11-23",
+    #         "shippment_type": "Air",
+    #         "status": "Ready for Shipping"
+    #     },
+    #     {
+    #         "date_shipped": "2024-11-20",
+    #         "shipment_boxes": 1,
+    #         "partial_delivery": "No",
+    #         "delivery_date": "N/A",
+    #         "shippment_type": "Ground",
+    #         "status": "Lost in Transit"
+    #     }
+    # ]
+
+
 
     # parse the shipment data into a dictionary
     shipments_dict = parse_shipment_data(shipments)
 
     # dictionary of items to pass to the template
     jinja_vars = {
-        #'orders': orders_dict,
-        'shipments': shipments_dict
+        # 'orders': orders_dict,
+       'shipments': shipments_dict
     }
 
     # add order_id to dictionary from shipment_id if it exists
@@ -90,6 +118,17 @@ def shipments_update_shipment():
 
         # redirect back to order form
         return redirect(url_for('shipments.shipments_home'))
+        
+@shipments.route('/status_report', methods=['GET'])
+@login_required
+def status_report():
+
+    # fetch all shipments from database
+    shipments = Shipment.query.all()
+    
+    # Logic for preparing the status report (if needed)
+    return render_template('shipments/status_report.html', shipments=shipments)
+
 
 def create_shipment(order_id):
     # TODO: add user relationship to shipment (to display customer name in shipment view)

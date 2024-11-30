@@ -13,8 +13,30 @@
 
     <div class="container-md">
 
-        {{ macros.section_header("Shipments") }}
+        <div class="d-flex justify-content-between">
+            <h1>Outgoing Orders</h1>
+            <a href="{{ url_for('shipments.status_report') }}" class="btn btn-primary">View Status Report</a>
+        </div>
+        <!-- Dropdown for 'Filter By' functionality -->
+        <div class="dropdown mt-3">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                Filter By
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
 
+                {% if shipment %}
+                    {% for key in shipments[0].keys() %}
+                        {% if key not in ['id', 'disposition', 'deleted_at'] %}
+                            <li><a class="dropdown-item" href="/inventory?filter={{ key }}">{{ key | attribute }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+
+            </ul>
+        </div>        
+        
+        {{ macros.section_header("Shipments") }}
+        
         <!-- Message Display Container -->
         {% if msg %}
             {{ macros.message(msg, msg_type or "danger", "/shipment") }}

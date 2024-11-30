@@ -4,14 +4,20 @@
 
 {% block content %}
 <div class="container">
-    <h1>Invoice Details</h1>
+    <div class="align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <!-- Banner header -->
+        <h1>Current Invoice</h1>
+    </div>
     <!-- Display basic invoice information -->
     <p><strong>Order ID:</strong> {{ invoice.id }}</p>
     <p><strong>Customer Name:</strong> {{ invoice.customer_name }}</p>
     <p><strong>Due Date:</strong> {{ invoice.due_date }}</p>
 
     <!-- Display the list of items in the invoice -->
-    <h2>Items</h2>
+    <div class="align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <!-- Banner header -->
+        <h2>Items</h2>
+    </div>
     <table class="table table-hover table-borderless">
         <thead>
             <tr>

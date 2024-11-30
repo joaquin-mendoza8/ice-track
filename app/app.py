@@ -35,6 +35,7 @@ def create_app(config_class=Config):
     from app.endpoints.tickets import tickets
     from app.endpoints.admin import admin
     from app.endpoints.home import home
+    from app.endpoints.invoices import invoices
 
     app.register_blueprint(auth)
     app.register_blueprint(admin)
@@ -43,6 +44,7 @@ def create_app(config_class=Config):
     app.register_blueprint(shipments)
     app.register_blueprint(tickets)
     app.register_blueprint(home)
+    app.register_blueprint(invoices)
 
     # register all custom Jinja filters
     from app.utils.filters import format_currency, format_currency_list, format_datetime, \
