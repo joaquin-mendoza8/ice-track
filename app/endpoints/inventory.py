@@ -3,7 +3,7 @@ from flask_login import login_required
 from app.utils.data import *
 from app.utils.fetch_settings import fetch_autosignoff_interval, \
     fetch_supported_container_sizes, fetch_supported_flavors
-from app.models import Product, User , Log
+from app.models import Product, User , Log, ProductAllocation
 from app.extensions import db
 from datetime import datetime
 
@@ -29,6 +29,9 @@ def inventory_home():
     # get all products from the database
     products = Product.query.filter_by(deleted_at=None).all()
 
+    # get all product allocations from the database
+    allocations = ProductAllocation.query.all()
+
     # if filter key is passed, sort by that key
     if filter_key:
         products = sorted(products, key=lambda x: getattr(x, filter_key))
@@ -41,6 +44,9 @@ def inventory_home():
 
     # parse the product data into a dictionary
     products_dict = parse_product_data(products)
+
+    # parse the product allocations into a dictionary
+    allocations_dict = parse_product_allocation_data(allocations)
     
     # fetch all logs from the database
     logs = Log.query.order_by(Log.timestamp.desc()).all()
@@ -50,7 +56,8 @@ def inventory_home():
         'products': products_dict,
         'logs' : logs,
         'supported_container_sizes': container_sizes,
-        'supported_flavors': supported_flavors
+        'supported_flavors': supported_flavors,
+        'allocations': allocations_dict
     }
 
     if msg:

@@ -14,6 +14,10 @@ auth = Blueprint('auth', __name__)
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
 
+    # get message from query string
+    msg = request.args.get('msg')
+    msg_type = request.args.get('msg_type')
+
     if request.method == 'POST':
 
         # get username/pw from form
@@ -38,7 +42,7 @@ def login():
     else:
 
         # render the login page (GET request)
-        return render_template('auth/login.html'), 200
+        return render_template('auth/login.html', msg=msg, msg_type=msg_type), 200
     
 
 # create the logout endpoint
@@ -55,6 +59,8 @@ def register():
 
     if request.method == 'POST':
 
+        msg, msg_type = None, None
+
         # extract form data
         first_name = request.form.get('first-name')
         last_name = request.form.get('last-name')
@@ -66,9 +72,34 @@ def register():
         # confirm password
         confirm_password = request.form.get('confirm-password')
 
+        # package the data into a dictionary to pass back to the form
+        data = {
+            'first_name': first_name,
+            'last_name': last_name,
+            'username': username,
+            'shipping_address': shipping_address,
+            'billing_address': billing_address
+        }
+
         # check if passwords match
         if password != confirm_password:
-            return render_template('auth/register.html', msg="Passwords do not match.")
+            msg = "Passwords do not match."
+        
+        # check if all password criteria are met
+        if len(password) < 8: # password must be at least 8 characters long
+            msg = "Password must be at least 8 characters long."
+        if len(password) > 20: # password must be less than 20 characters long
+            msg = "Password must be less than 20 characters long."
+        allowed_chars = ['!', '@', '#', '$', '%', '^', '&', '*', '-', '_', '+', '=']
+        for char in password: # password can only contain allowed characters, numbers, and letters
+            if (char not in allowed_chars and
+                not char.isnumeric() and 
+                not char.isalpha()):
+                msg = (f"Password can only contain numbers, letters, and special characters ({''.join(allowed_chars)}).")
+
+        # return error message if any
+        if msg:
+            return render_template('auth/register.html', msg=msg, **data)
 
         # check if user exists
         user = User.query.filter_by(username=username).first()
@@ -85,8 +116,12 @@ def register():
             db.session.add(new_user)
             db.session.commit()
 
+            # log the successful registration
+            print(f"User {username} successfully registered.")
+            msg = (f"User {username} successfully registered.")
+
             # redirect to login
-            return redirect(url_for('auth.login'))
+            return redirect(url_for('auth.login', msg=msg, msg_type='success'))
 
         else:
 
@@ -94,4 +129,4 @@ def register():
             return render_template('auth/register.html', msg="User already exists."), 400
 
     # render the register page (GET request)
-    return render_template('auth/register.html'), 200
+    return render_template('auth/register.html')

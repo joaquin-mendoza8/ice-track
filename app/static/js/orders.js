@@ -109,6 +109,8 @@ function addLineItem(isUpdateModal) {
     const lineItemCount = document.querySelectorAll(isUpdateModal ? '.update-line-item' : '.line-item').length;
     const firstLineItem = document.getElementById(isUpdateModal ? "update-first-line-item" : "first-line-item");
 
+    console.log("begin", document.querySelectorAll(isUpdateModal ? '.update-line-item' : '.line-item'));
+
     // replace all instances of the number 0 with the current line item count
     lineItem.innerHTML = firstLineItem.innerHTML.replace(/(id|name|for)="([^"]*?)0([^"]*?)"/g, function(match, p1, p2, p3) {
         return `${p1}="${p2}${lineItemCount}${p3}"`;
@@ -136,6 +138,8 @@ function addLineItem(isUpdateModal) {
     // Call the handleSize and handleCost functions to populate the size dropdown and set the cost
     handleMaxQuantity(newFlavorSelect);
     handleCost(newFlavorSelect);
+
+    console.log(lineItemCount);
 }
 
 
@@ -161,6 +165,8 @@ function deleteMostRecentLineItem(isUpdateModal) {
     if (lineItemCount === 1) {
         deleteLineItemButton.hidden = true;
     }
+
+    console.log(lineItemCount);
 }
 
 
@@ -352,6 +358,9 @@ function openOrderUpdateModal(order_id) {
             document.getElementById('shipping-address-update').value = orderContent.shipping_address;
             document.getElementById('billing-address-update').value = orderContent.billing_address;
 
+            // set the hidden order id for the update form
+            document.getElementById('order-status-update-hidden').value = orderContent.status;
+
             // set the order status
             const orderStatusSelect = document.getElementById('order-status-update');
             if (orderContent.status === 'cancelled') {
@@ -360,8 +369,18 @@ function openOrderUpdateModal(order_id) {
                 cancelledOption.textContent = 'Cancelled';
                 cancelledOption.selected = true;
                 orderStatusSelect.disabled = true;
-                orderStatusSelect.required = true;
+                // orderStatusSelect.required = true;
                 orderStatusSelect.appendChild(cancelledOption);
+
+                // disable the add/delete line item buttons
+                const lineItems = document.querySelectorAll('.update-line-item');
+                lineItems.forEach(lineItemBtn => {
+                    lineItemBtn.disabled = true;
+                });
+
+                // disable the cancel order button
+                const cancelOrderButton = document.getElementById('cancel-order-btn');
+                cancelOrderButton.disabled = true;
             } else {
                 const orderStatusOption = Array.from(orderStatusSelect.options).find(option => option.value === orderContent.status);
                 if (orderStatusOption) {
@@ -477,6 +496,11 @@ function openOrderUpdateModal(order_id) {
 // function to change all inputs in the view/edit order modal from readonly to editable
 function toggleEdit(toEditMode) {
 
+    // get the order status
+    const orderStatusSelect = document.getElementById('order-status-update');
+    const orderStatus = orderStatusSelect.options[orderStatusSelect.selectedIndex].value;
+
+    // get the update button
     const updateButton = document.getElementById('updateOrderButton');
 
     // if the update button is hidden and the toEditMode is false, don't toggle the edit mode
@@ -499,6 +523,12 @@ function toggleEdit(toEditMode) {
     // toggle the disabled attribute for select elements and the readonly attribute for input elements
     updateInputs.forEach(input => {
 
+        // don't allow editing of desired receipt date if order is cancelled
+        if (orderStatus === 'cancelled' && 
+            (input.id === 'desired-receipt-date-update' || input.id === 'order-status-update')) {
+            return;
+        }
+
         // toggle disabled attribute for select elements
         if (!inputsFixedReadOnly.includes(input.id)) {
             if (input.tagName === 'SELECT') {
@@ -516,29 +546,34 @@ function toggleEdit(toEditMode) {
 
     });
 
-    // toggle the add/delete line-item buttons to show/hide
-    const lineItemButtonsContainer = document.getElementById('update-line-item-buttons-container');
-    lineItemButtonsContainer.hidden = !lineItemButtonsContainer.hidden;
 
-    // show the deleteLineItem button if there are more than one line items
-    const deleteLineItemButton = document.getElementById('update-delete-line-item');
-    const lineItemLength = document.querySelectorAll('.update-line-item').length;
-    if (lineItemLength > 1) {
-        deleteLineItemButton.hidden = false;
-    } else {
-        deleteLineItemButton.hidden = true;
+    if (orderStatus !== 'cancelled') {
+
+        // toggle the add/delete line-item buttons to show/hide
+        const lineItemButtonsContainer = document.getElementById('update-line-item-buttons-container');
+        lineItemButtonsContainer.hidden = !lineItemButtonsContainer.hidden;
+
+        // show the deleteLineItem button if there are more than one line items
+        const deleteLineItemButton = document.getElementById('update-delete-line-item');
+        const lineItemLength = document.querySelectorAll('.update-line-item').length;
+        if (lineItemLength > 1) {
+            deleteLineItemButton.hidden = false;
+        } else {
+            deleteLineItemButton.hidden = true;
+        }
+
+        // update the max quantity of the container size input
+        const flavorSelects = document.querySelectorAll(".flavor")
+
+        flavorSelects.forEach(flavorSelect => {
+            const sizeSelect = flavorSelect.parentElement.parentElement.nextElementSibling.querySelector('.container-size');
+            const quantityInput = sizeSelect.parentElement.parentElement.nextElementSibling.querySelector('.quantity');
+            const quantityLabel = quantityInput.parentElement.querySelector('label');
+        
+            updateMaxQuantity(flavorSelect, sizeSelect, quantityInput, quantityLabel);
+        })
+
     }
-
-    // update the max quantity of the container size input
-    const flavorSelects = document.querySelectorAll(".flavor")
-
-    flavorSelects.forEach(flavorSelect => {
-        const sizeSelect = flavorSelect.parentElement.parentElement.nextElementSibling.querySelector('.container-size');
-        const quantityInput = sizeSelect.parentElement.parentElement.nextElementSibling.querySelector('.quantity');
-        const quantityLabel = quantityInput.parentElement.querySelector('label');
-    
-        updateMaxQuantity(flavorSelect, sizeSelect, quantityInput, quantityLabel);
-    })
 
     // toggle the hidden attribute of the "Save Changes" button
     // const saveChangesButton = document.getElementById('save-changes');
