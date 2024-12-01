@@ -1,5 +1,13 @@
 document.addEventListener('DOMContentLoaded', function() {
 
+    // open the update order modal if the order_id is in the url
+    const urlParams = new URLSearchParams(window.location.search);
+    const shipment_id = urlParams.get('shipment_id');
+    if (shipment_id) {
+        console.log('shipment_id:', shipment_id);
+        document.getElementById(`shipment-${shipment_id}`).click();
+    }
+
     // Add event listener to the "Add Line Item" button
     const addLineItemButton = document.getElementById('add-line-item');
     addLineItemButton.addEventListener('click', () => addLineItem(false));
@@ -325,6 +333,15 @@ function updateTotalCost(isUpdateModal) {
 
 // function to open the view/edit order modal
 function openOrderUpdateModal(order_id) {
+
+    // update the shipment details navigation button
+    const navShipmentBtn = document.getElementById('nav-shipment-btn');
+    navShipmentBtn.href = `/shipments?order_id=${order_id}`;
+
+    // reset the url params
+    window.history.replaceState({}, document.title, "/orders");
+
+    // set the order id in the hidden input fields
     const orderIdInput = document.getElementById('order-id-update');
     const orderIdInputHidden = document.getElementById('order-id-update-hidden');
 
@@ -339,6 +356,11 @@ function openOrderUpdateModal(order_id) {
         .then(response => response.json())
         .then(data => {
             const orderContent = data;
+
+            if ('error' in orderContent) {
+                alert(`Failed to load order. ${orderContent}. Please contact support.`);
+                return;
+            }
 
             // Set the customer name
             const customerNameInput = document.getElementById('customer-update');
@@ -369,7 +391,6 @@ function openOrderUpdateModal(order_id) {
                 cancelledOption.textContent = 'Cancelled';
                 cancelledOption.selected = true;
                 orderStatusSelect.disabled = true;
-                // orderStatusSelect.required = true;
                 orderStatusSelect.appendChild(cancelledOption);
 
                 // disable the add/delete line item buttons
@@ -446,6 +467,11 @@ function openOrderUpdateModal(order_id) {
                     quantityInput.required = true;
                     quantityInput.readOnly = true;
 
+                    // replace the payment date input
+                    const paymentDateInput = document.getElementById('payment-date-update');
+                    paymentDateInput.value = orderContent.payment_date;
+                    console.log(orderContent);
+
                     // event listener to clear line item inputs when flavor is changed
                     flavorSelect.addEventListener('change', () => {
                         sizeSelect.innerHTML = '<option value="" disabled selected>Choose...</option>';
@@ -480,18 +506,22 @@ function openOrderUpdateModal(order_id) {
             const hiddenOrderCancelInput = document.getElementById('order-id-cancel');
             hiddenOrderCancelInput.value = order_id;
 
+            // nav to the shipment details if the order has a shipment
+            // const shipment_id = orderContent.shipment_id;
+            // const navShipmentBtn = document.getElementById('nav-shipment-btn');
+            // navShipmentBtn.href = `/shipments?shipment_id=${shipment_id}`;
+
             // trigger the cost display update
             updateTotalCost(true);
 
         })
         .catch(error => {
             console.error('Error fetching order:', error);
-            alert('Failed to load order. Please try again.');
+            alert(`Failed to load order. ${error}.`);
         });
 
     $('#ordersUpdateModal').modal('show');
 }
-
 
 // function to change all inputs in the view/edit order modal from readonly to editable
 function toggleEdit(toEditMode) {
@@ -503,7 +533,7 @@ function toggleEdit(toEditMode) {
     // get the update button
     const updateButton = document.getElementById('updateOrderButton');
 
-    // if the update button is hidden and the toEditMode is false, don't toggle the edit mode
+    // if the update button is disabled and the toEditMode is false, don't toggle the edit mode
     if (!toEditMode && updateButton.disabled) {
         return;
     }

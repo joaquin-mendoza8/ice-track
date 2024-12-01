@@ -67,7 +67,13 @@
                 <!-- inline container for title and modal button -->
                 <div class="d-flex justify-content-between">
                     <h1>Orders</h1>
-                    <button type="button" class="btn modal-btn" data-bs-toggle="modal" data-bs-target="#ordersModal">+ New</button>
+                    <button 
+                        type="button" 
+                        class="btn btn-outline-secondary modal-btn" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#ordersModal">
+                        + New
+                    </button>
                 </div>
 
                 <!-- Message Display Container -->
@@ -79,7 +85,7 @@
                     {% if orders %}
                     {% set excluded_attribs = ['id', 'order_creation_date', 'line_item_costs', 
                                                'line_items', 'desired_receipt_date', 'billing_address',
-                                               'shipping_cost'] 
+                                               'shipping_cost', 'shipment_id'] 
                     %}
                     <thead class="table-dark">
                         {% for key in orders[0].keys() %}
@@ -102,7 +108,7 @@
                             {% elif order.status == 'delivered' %}
                                 {% set tr_map = 'table-success' %}
                             {% endif %}
-                            <tr onclick="openOrderUpdateModal({{ order.id }})" id="row-{{ order.id }}"
+                            <tr onclick="openOrderUpdateModal({{ order.id }})" id="shipment-{{ order.shipment_id }}"
                                 class="{% if tr_map %}{{ tr_map }}{% endif %}" style="cursor: pointer;">
                                 {% for key, value in order.items() %}
                                     {% if key not in excluded_attribs %}

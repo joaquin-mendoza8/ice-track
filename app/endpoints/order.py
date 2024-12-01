@@ -2,9 +2,10 @@ from flask import Blueprint, request, redirect, url_for, render_template, jsonif
 from flask_login import login_required
 from datetime import datetime
 from app.utils.data import *
-from app.models import Product, User, Order, OrderItem, AdminConfig, ProductAllocation
+from app.models import Product, User, Order, OrderItem, AdminConfig, ProductAllocation, Shipment
 from app.extensions import db
 from app.utils.order_items import extract_order_items, compare_order_items, create_order_item
+from app.utils.checks import check_customer_order_limit
 from app.utils.admin_decorator import admin_required
 from pprint import pprint
 
@@ -19,6 +20,7 @@ def orders_home():
     # fetch any messages from the query string
     msg = request.args.get('msg')
     msg_type = request.args.get('msg_type')
+    shipment_id = request.args.get('shipment_id')
 
     # fetch all orders from the database
     orders = Order.query.all()
@@ -37,6 +39,18 @@ def orders_home():
     orders_dict = parse_order_data(orders)
     customers_dict = parse_customer_data(customers)
 
+    # format the date attribute
+    for order in orders_dict:
+        if order['payment_date']:
+            order['payment_date'] = order['payment_date'].strftime("%m/%d/%Y")
+        else:
+            order['payment_date'] = '-'
+
+        # include the shipment ID
+        shipment = Order.query.get(int(order['id'])).shipment
+        if shipment:
+            order['shipment_id'] = shipment.id
+
     # dictionary of items to pass to the template
     jinja_vars = {
         'unique_flavors': list(set([product.flavor for product in products])),
@@ -45,6 +59,14 @@ def orders_home():
         'shipping_types': shipping_types.value.split(',') if shipping_types else None,
         'shipping_costs': shipping_costs.value.split(',') if shipping_costs else None
     }
+
+    # add order_id to dictionary from shipment_id if it exists
+    if shipment_id:
+        shipment = Shipment.query.get(shipment_id)
+        if shipment:
+            jinja_vars['shipment_id'] = shipment.id
+        else:
+            msg = "Shipment not found"
 
     # if a message was passed, add it to the dictionary
     if msg:
@@ -71,11 +93,12 @@ def orders_update_order():
             pprint(request.form)
 
             # extract form data
-            # print(request.form)
+            user_id = request.form.get("order-user-id-update-hidden")
             order_id = request.form.get('order-id-update-hidden')
             shipping_type = request.form.get('shipping-type-update')
             shipping_cost = request.form.get('shipping-cost-update')
             desired_receipt_date = request.form.get("desired-receipt-date-update")
+            payment_date = request.form.get('payment-date-update')
             billing_address = request.form.get('billing-address-update')
             order_status = request.form.get('order-status-update')
             order_status_hidden = request.form.get('order-status-update-hidden')
@@ -90,20 +113,25 @@ def orders_update_order():
             if not all([ order_id, order_status, shipping_type, shipping_cost, desired_receipt_date, 
                     billing_address, total_cost ]):
                 return redirect(url_for('orders.orders_home', msg="Missing fields"))
+            
+            # if the payment date is not empty, convert it to a datetime object
+            if payment_date:
+                payment_date = datetime.strptime(payment_date, "%Y-%m-%d").strftime("%m/%d/%Y")
+
+            # check if the user has exceeded their order limit
+            user = User.query.get(user_id)
+            if user:
+                customer_limit = check_customer_order_limit(user.status)
+                print(f"Customer limit: {customer_limit}")
+                if customer_limit < float(total_cost):
+                    msg = (f"Order exceeds customer limit (${customer_limit})")
+                    return redirect(url_for('orders.orders_home', msg=msg))
+            else:
+                msg = "User not found"
+                return redirect(url_for('orders.orders_home', msg=msg))
 
             # fetch the order from the database
             order = Order.query.get(order_id)
-
-            print(
-                order.status != (request.form.get('order-status-update') or order_status),
-                order.shipping_type != request.form.get('shipping-type-update').lower(),
-                order.shipping_cost != float(request.form.get('shipping-cost-update')),
-                order.desired_receipt_date.strftime("%m/%d/%Y") != \
-                    datetime.strptime(request.form.get('desired-receipt-date-update'), "%m/%d/%Y").strftime("%m/%d/%Y"),
-                order.billing_address != request.form.get('billing-address-update'),
-                order.total_cost != float(request.form.get('order-total-cost-hidden'))
-            )
-            print(order.total_cost, float(request.form.get('order-total-cost-hidden')))
 
             # display a message if any of the order attributes have changed
             if any( [
@@ -113,7 +141,8 @@ def orders_update_order():
                 order.desired_receipt_date.strftime("%m/%d/%Y") != \
                     datetime.strptime(request.form.get('desired-receipt-date-update'), "%m/%d/%Y").strftime("%m/%d/%Y"),
                 order.billing_address != request.form.get('billing-address-update'),
-                order.total_cost != float(request.form.get('order-total-cost-hidden'))
+                order.total_cost != float(request.form.get('order-total-cost-hidden')),
+                payment_date
             ] ):
                 msg = "Order updated successfully"
                 msg_type = "success"
@@ -128,6 +157,7 @@ def orders_update_order():
             order.shipping_type = shipping_type.lower()
             order.shipping_cost = shipping_cost
             order.desired_receipt_date = datetime.strptime(desired_receipt_date, "%m/%d/%Y")
+            order.payment_date = datetime.strptime(payment_date, "%m/%d/%Y") if payment_date else None
             order.billing_address = billing_address
             order.total_cost = total_cost
 
@@ -266,6 +296,7 @@ def orders_add_order():
 
         # extract form data
         user_id = request.form.get('user-id')
+        customer_status = request.form.get('customer-status')
         shipping_type = request.form.get('shipping-type')
         shipping_cost = request.form.get('shipping-cost')
         expected_shipping_date = request.form.get('expected-shipping-date')
@@ -312,6 +343,12 @@ def orders_add_order():
             total_cost = float(total_cost)
         except ValueError:
             msg = "Error with input types"
+            return redirect(url_for('orders.orders_home', msg=msg))
+        
+        # check if the user has exceeded their order limit
+        customer_limit = check_customer_order_limit(customer_status)
+        if customer_limit < total_cost:
+            msg = (f"Order exceeds customer limit (${customer_limit})")
             return redirect(url_for('orders.orders_home', msg=msg))
 
         # initialize the order object
@@ -636,7 +673,7 @@ def orders_fetch_order_info():
     if order_id:
         order_id = int(order_id)
     else:
-        return jsonify({})
+        return jsonify({'error': 'Order not found (missing ID)'})
 
     # fetch the order from the database
     order = Order.query.get(order_id)
@@ -656,8 +693,20 @@ def orders_fetch_order_info():
         # format the date attributes
         date_attributes = ['order_creation_date', 'expected_shipping_date', 'desired_receipt_date']
         for date_attribute in date_attributes:
-            order_dict[date_attribute] = order_dict[date_attribute].strftime("%m/%d/%Y")
+            if order_dict[date_attribute]:
+                order_dict[date_attribute] = order_dict[date_attribute].strftime("%m/%d/%Y")
+
+        # special format for payment date (YYYY-MM-DD)
+        if order_dict['payment_date']:
+            order_dict['payment_date'] = order_dict['payment_date'].strftime("%Y-%m-%d")
+
+        # get the associated shipment from the database
+        shipment = Shipment.query.filter_by(order_id=order_id).first()
+
+        if shipment:
+            order_dict['shipment_id'] = shipment.id
 
         return jsonify(order_dict)
     else:
         print("Order not found")
+        return jsonify({'error': 'Order not found'})

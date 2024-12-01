@@ -87,7 +87,7 @@ def inventory_update_product():
             product_price = request.form.get('product-price')
             product_quantity = request.form.get('product-quantity')
             product_status = request.form.get('product-status')
-            product_dock_date = request.form.get('product-dock-date')
+            product_dock_date = datetime.strptime(request.form.get('product-dock-date'), '%Y-%m-%d').strftime('%m/%d/%Y')
 
             # ensure all fields are filled
             if all([product_id, product_flavor, product_container_size,
@@ -190,7 +190,7 @@ def inventory_add_product():
                 # convert the types of price, quantity and dock date
                 product_price = float(product_price)
                 product_quantity = int(product_quantity)
-                product_dock_date = datetime.strptime(product_dock_date, '%m/%d/%Y')
+                product_dock_date = datetime.strptime(product_dock_date, "%m/%d/%Y") if product_dock_date else None
 
                 # update existing product if it exists (removed this)
                 # check if product already exists

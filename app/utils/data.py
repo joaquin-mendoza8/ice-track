@@ -1,4 +1,10 @@
 
+def format_date(date):
+    """Converts a date to a more readable string."""
+    
+    return date.strftime('%m/%d/%Y') if date else None
+
+
 def parse_product_data(products):
     """Converts a SQLAlchemy list of objects to a dictionary."""
     
@@ -29,6 +35,7 @@ def parse_order_data(orders):
             "shipping_type": order.shipping_type, 
             "expected_shipping_date": order.expected_shipping_date,
             "desired_receipt_date": order.desired_receipt_date,
+            "payment_date": order.payment_date or None,
             "shipping_cost": order.shipping_cost, 
             "billing_address": order.billing_address,
             "status": order.status,
@@ -131,11 +138,12 @@ def parse_shipment_data(shipments):
         {
             "id": shipment.id,
             "order_id": shipment.order_id,
-            "date_shipped": shipment.date_shipped,
+            "order": shipment.order,
+            "date_shipped": format_date(shipment.date_shipped),
+            "estimated_date": format_date(shipment.estimated_delivery_date),
+            "actual_delivery_date": format_date(shipment.actual_delivery_date),
             "shipment_boxes": shipment.shipment_boxes,
             "partial_delivery": shipment.partial_delivery,
-            "estimated_date": shipment.estimated_date,
-            "delivery_date": shipment.delivery_date,
             "shipment_type": shipment.shipment_type,
         }
         for shipment in shipments

@@ -9,59 +9,72 @@
 
 {% block content %}
 
-    <!-- add include for modal here -->
+    {% include 'shipments/modals/shipment_update_modal.html' %}
 
-    <!-- Main content container -->
     <div class="container-md">
 
-        <!-- Offcanvas sidebar -->
-        {% include 'components/navbar.html' %}
+        {{ macros.section_header("Shipments") }}
 
-        <!-- Main content -->
-        <main class="ms-sm-auto px-md-4 pt-md-3">
-            <div class="align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <!-- Banner header -->
-                <h1>Shipments</h1>
-            </div>
+        <!-- Message Display Container -->
+        {% if msg %}
+            {{ macros.message(msg, msg_type or "danger", "/shipment") }}
+        {% endif %}
 
-            <!-- Inventory Add Modal -->
-            <!-- include here -->
+        {% if shipments %}
+        {% set hidden_attributes = ['id', 'partial_delivery', 'order'] %}
+        <table class="table table-hover table-borderless table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <!-- Dynamically generate table headers from the shipment dictionary keys -->
+                    {% for key in shipments[0].keys() %}
+                        {% if key not in hidden_attributes %}
+                            {% if key == 'order_id' %}
+                                <th scope="col">Order ID</th>
+                            {% else %}
+                                <th scope="col">{{ key | attribute }}</th>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dynamically generate table rows for each shipment -->
+                {% for shipment in shipments %}
 
-            <!-- Inventory Table -->
-            <div class="mt-5">
-                <!-- inline container for title and modal button -->
-                <div class="d-flex justify-content-between">
-                    <h1>Shipment History</h1>
-                    <button type="button" class="btn modal-btn" data-bs-toggle="modal" data-bs-target="#exampleModal">+ New</button>
-                </div>
-                <table class="table table-hover table-borderless">
-                    {% if products %}
-                    <thead>
-                        {% for key in products[0].keys() %}
-                            {% if key not in ['id'] %}
-                                <th scope="col">{{ key.capitalize() }}</th>
+                    {# Set the table row color based on the order status #}
+                    {% set tr_map = '' %}
+                    {% if shipment.order.status == 'pending' %}
+                        {% set tr_map = 'table-warning' %}
+                    {% elif shipment.order.status == 'cancelled' %}
+                        {% set tr_map = 'table-danger' %}
+                    {% elif shipment.order.status == 'shipped' %}
+                        {% set tr_map = 'table-info' %}
+                    {% elif shipment.order.status == 'delivered' %}
+                        {% set tr_map = 'table-success' %}
+                    {% endif %}
+                    <tr onclick="openShipmentUpdateModal({{ shipment.id }})" id="order-{{ shipment.order.id }}"
+                        class="{% if tr_map %}{{ tr_map }}{% endif %}" style="cursor: pointer;">
+                        {% for key, value in shipment.items() %}
+                            {% if key not in hidden_attributes %}
+                                <td>
+                                    {{ value | title }}
+                                </td>
                             {% endif %}
                         {% endfor %}
-                    </thead>
-                    <tbody>
-                        {% for product in products %}
-                            {% set outer_index = loop.index - 1 %}
-                            <tr onclick="openModal({{ product }}, {{ product['id'] }})" id="row-{{ outer_index }}">
-                                <td>{{ product.flavor }}</td>
-                                <td>{{ product.price }}</td>
-                                <td>{{ product.quantity }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                    {% else %}
-                        No products found.
-                    {% endif %}
-                </table>
-            </div>
-        </main>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="alert alert-info" role="alert">
+            No shipments found. Create an order to generate shipments automatically.
+        </div>
+        {% endif %}
     </div>
+
 {% endblock %}
 
 {% block scripts %}
-    <script src="{{ url_for('static', filename='js/inventory.js') }}"></script>
+    <!-- <script src="{{ url_for('static', filename='js/orders.js') }}"></script> -->
+    <script src="{{ url_for('static', filename='js/shipments.js') }}"></script>
 {% endblock %}
