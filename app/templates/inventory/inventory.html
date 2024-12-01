@@ -143,7 +143,22 @@
                                 style="cursor: pointer;">
                                 {% for key, value in allocation.items() %}
                                     {% if key not in hidden_attributes %}
-                                        {% if key == 'price' %}
+                                        {% if key == 'disposition' %}
+                                            {% set options = ('committed', 'Committed'),
+                                                             ('shipped', 'Shipped'),
+                                                             ('defective', 'Defective'),
+                                                             ('spoiled', 'Spoiled') %}
+                                            <td>
+                                                {{ macros.select_group_floating(
+                                                    label='Current',
+                                                    id='disposition',
+                                                    name='disposition',
+                                                    options=options,
+                                                    classes='disposition-input',
+                                                    selected=value,
+                                                ) }}
+                                            </td>
+                                        {% elif key == 'price' %}
                                             <td>{{ value | currency }}</td>
                                         {% else %}
                                             <td>{{ value | capitalize }}</td>

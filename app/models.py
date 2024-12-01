@@ -3,7 +3,6 @@
 from app.extensions import db
 from sqlalchemy.sql import func
 from flask_login import UserMixin
-from datetime import datetime
 
 # User class
 class User(db.Model, UserMixin):
@@ -91,6 +90,7 @@ class ProductAllocation(db.Model):
     quantity_allocated = db.Column(db.Integer, nullable=False)
     disposition = db.Column(db.String(150), nullable=True)
     allocated_at = db.Column(db.DateTime, nullable=False, default=func.now())
+
 
     # 1:1 relationship between product_allocation and order_item
     # order_item = db.relationship('OrderItem', backref='allocation', lazy=True, uselist=False)
@@ -189,11 +189,11 @@ class Shipment(db.Model):
 
     # shipment attributes
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
-    date_shipped = db.Column(db.Date, nullable=False)
+    date_shipped = db.Column(db.Date, nullable=False, default=func.now())
     shipment_boxes = db.Column(db.Integer, nullable=False)
     partial_delivery = db.Column(db.Boolean, nullable=False, default=False)
-    estimated_date = db.Column(db.Date, nullable=False)
-    delivery_date = db.Column(db.Date, nullable=False)
+    estimated_delivery_date = db.Column(db.Date, nullable=False)
+    actual_delivery_date = db.Column(db.Date, nullable=True)
     shipment_type = db.Column(db.String(150), nullable=False)
 
     # print the shipment
