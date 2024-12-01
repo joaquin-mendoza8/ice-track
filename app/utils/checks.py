@@ -74,3 +74,21 @@ def check_shipping_types_in_use(supported_shipping_types_list):
             shipping_types_in_use.append(shipping_type)
 
     return shipping_types_in_use
+
+def check_customer_order_limit(customer_status):
+    """
+    Check what the customer's order limit is.
+
+    Args:
+        customer_status (str): Customer status.
+
+    Returns:
+        int: Customer's order limit ($).
+    """
+
+    if customer_status == "preferred":
+         return None
+    elif customer_status == "ok":
+        return 3000
+    else:
+        return 500

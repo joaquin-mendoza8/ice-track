@@ -1,0 +1,191 @@
+<div class="modal" id="shipmentUpdateModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Shipment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body" id="modalBody">
+
+            <form action="/shipments_update" method="post" id="updateShipmentForm">
+            
+                {% set vertical_margin = 3 %}
+                <div class="row justify-content-left mb-{{ vertical_margin }}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="me-auto">Shipment Info</h5>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-secondary" onclick="toggleEdit(true)">Edit</button>
+                            <button type="button" class="btn btn-primary" id="updateShipmentButton" onclick="updateShipmentForm.submit()" disabled>Update</button>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <!-- shipment id value to be populated by js -->
+                        <input type="hidden" id="shipment-id-update-hidden" name="shipment-id-update-hidden" value="{{ shipment_id }}">
+                        <input type="hidden" id="shipment-total-cost-hidden" name="shipment-total-cost-hidden">
+                        <input type="hidden" id="shipment-status-update-hidden" name="shipment-status-update-hidden">
+
+                        <!-- Shipment ID -->
+                        {{ macros.input_group_floating(
+                            label='Shipment ID', 
+                            id='shipment-id-update', 
+                            name='shipment-id-update', 
+                            type='text',
+                            plaintext=true,
+                            is_readonly=true,
+                            tooltip='The unique identifier for the shipment (read-only)') 
+                        }}
+                    
+                    </div>
+
+                    <!-- Order ID -->
+                    <div class="col-md-3">
+
+                        {{ macros.input_group_floating(
+                            label='Order ID', 
+                            id='order-id-update', 
+                            name='order-id-update', 
+                            type='text',
+                            is_readonly=true,
+                            tooltip='The unique identifier for the order (read-only)') 
+                        }}
+                    
+                    </div>
+
+                    <!-- Date Shipped -->
+                    <div class="col-md-3">
+
+                        {{ macros.input_group_floating(
+                            label='Shipment Date', 
+                            id='date-shipped-update', 
+                            name='date-shipped-update', 
+                            type='text',
+                            is_readonly=true,
+                            tooltip='The date the shipment was shipped (read-only)') 
+                        }}
+
+                    </div>
+
+                    <!-- # Shipment Boxes -->
+                    <div class="col-md-3">
+
+                        {{ macros.input_group_floating(
+                            label='Shipment Boxes', 
+                            id='shipment-boxes-update', 
+                            name='shipment-boxes-update', 
+                            type='number',
+                            is_readonly=true,
+                            tooltip='The number of boxes in the shipment (read-only)') 
+                        }}
+
+                    </div>
+
+                </div>
+
+                <div class="row justify-content-left mb-{{ vertical_margin }}">
+
+                    <!-- Partial Delivery -->
+                    <div class="col-md-3">
+
+                        {{ macros.input_group_floating(
+                            label='Partial Delivery', 
+                            id='partial-delivery-update', 
+                            name='partial-delivery-update', 
+                            type='text',
+                            is_readonly=true,
+                            tooltip='Whether the shipment is a partial delivery (read-only)') 
+                        }}
+
+                    </div>
+
+                    <!-- Estimated Delivery Date -->
+                    <div class="col-md-3">
+
+                        {{ macros.input_group_floating(
+                            label='Estimated Delivery Date', 
+                            id='estimated-delivery-date-update', 
+                            name='estimated-delivery-date-update', 
+                            type='text',
+                            is_readonly=true,
+                            tooltip='The estimated delivery date for the shipment (read-only)') 
+                        }}
+
+                    </div>
+
+                    <!-- Actual Delivery Date -->
+                    <div class="col-md-3">
+
+                        {{ macros.input_group_floating(
+                            label='Actual Delivery Date', 
+                            id='actual-delivery-date-update', 
+                            name='actual-delivery-date-update', 
+                            type='date',
+                            is_readonly=true,
+                            tooltip='The actual delivery date for the shipment (read-only)') 
+                        }}
+
+                    </div>
+
+                    <!-- Shipment Type -->
+                    <div class="col-md-3">
+
+                        {{ macros.input_group_floating(
+                            label='Shipment Type', 
+                            id='shipment-type-update', 
+                            name='shipment-type-update', 
+                            type='text',
+                            is_readonly=True,
+                            tooltip='The type of shipment (read-only)') 
+                        }}
+
+                    </div>
+
+                </div>
+
+                <div class="row justify-content-left mb-{{ vertical_margin }}">
+
+                    <div class="col-md-3">
+
+                        <!-- Order Status -->
+                        <!-- TODO: Pull from AdminConfig -->
+                        {% set _options = [
+                            ('pending', 'Pending'), 
+                            ('shipped', 'Shipped'), 
+                            ('delivered', 'Delivered')
+                        ] %}
+
+                        {{ macros.select_group_floating(
+                            label='Shipment Status', 
+                            id='order-status-update', 
+                            name='order-status-update',
+                            options=_options,
+                            is_disabled=True,
+                            tooltip='The status of the order') 
+                        }}
+                    </div>
+
+                </div>
+
+            </form>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer align-items-right">
+
+                <!-- Push buttons to right side of footer -->
+                <div class="ml-auto">
+                    <!-- Cancel/Delete shipment buttons -->
+                    <a 
+                        type="button" 
+                        class="btn btn-outline-secondary"
+                        id="nav-order-btn"
+                        href="#">
+                        Go To Order
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
