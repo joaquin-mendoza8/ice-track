@@ -2,7 +2,7 @@ from flask import Blueprint, request, redirect, url_for, render_template, jsonif
 from flask_login import login_required
 from datetime import datetime
 from app.utils.data import *
-from app.models import Product, User, Order, OrderItem, AdminConfig, ProductAllocation
+from app.models import Product, User, Order, OrderItem, AdminConfig, ProductAllocation, Shipment
 from app.extensions import db
 from app.utils.order_items import extract_order_items, compare_order_items, create_order_item
 from app.utils.checks import check_customer_order_limit
