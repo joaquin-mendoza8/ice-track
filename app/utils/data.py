@@ -145,6 +145,10 @@ def parse_shipment_data(shipments):
             "shipment_boxes": shipment.shipment_boxes,
             "partial_delivery": shipment.partial_delivery,
             "shipment_type": shipment.shipment_type,
+            "lost_or_damaged": shipment.lost_or_damaged,
+            "problem_description": shipment.problem_description,
+            "shipping_vendor": shipment.shipping_vendor,
+            "damage_cost": shipment.damage_cost
         }
         for shipment in shipments
     ]

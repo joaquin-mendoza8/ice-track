@@ -62,6 +62,10 @@ def shipments_update_shipment():
             estimated_delivery_date = request.form.get("estimated-delivery-date")
             actual_delivery_date = request.form.get("actual-delivery-date")
             shipment_type = request.form.get("shipment-type")
+            lost_or_damaged = request.form.get("lost_or_damaged")
+            problem_description = request.form.get("problem_description")
+            shipping_vendor = request.form.get("shipping_vendor")
+            damage_cost = request.form.get("damage_cost")
 
             if all([shipment_id, date_shipped, shipment_boxes, partial_delivery, 
                     estimated_delivery_date, actual_delivery_date, shipment_type]):
@@ -79,7 +83,11 @@ def shipments_update_shipment():
                 shipment.estimated_delivery_date = estimated_delivery_date
                 shipment.actual_delivery_date = actual_delivery_date
                 shipment.shipment_type = shipment_type
-                
+                shipment.lost_or_damaged = lost_or_damaged
+                shipment.problem_description = problem_description
+                shipment.shipping_vendor = shipping_vendor
+                shipment.damage_cost = damage_cost
+            
                 # commit changes to database
                 db.session.commit()
 

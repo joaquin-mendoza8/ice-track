@@ -196,6 +196,12 @@ class Shipment(db.Model):
     actual_delivery_date = db.Column(db.Date, nullable=True)
     shipment_type = db.Column(db.String(150), nullable=False)
 
+    # loss and damage shipment attributes
+    lost_or_damaged = db.Column(db.Boolean, nullable=False, default=False)
+    problem_description = db.Column(db.String(500), nullable=False, default="No issues")
+    shipping_vendor = db.Column(db.String(150), nullable=False, default="Unknown Vendor")
+    damage_cost = db.Column(db.Float, nullable=False, default=0.0)
+
     # print the shipment
     def __repr__(self):
         return f'<Shipment {self.id}>'
