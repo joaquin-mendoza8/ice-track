@@ -8,6 +8,7 @@ from app.utils.order_items import extract_order_items, compare_order_items, crea
 from app.utils.checks import check_customer_order_limit
 from app.utils.admin_decorator import admin_required
 from pprint import pprint
+from app.endpoints.shipments import create_shipment
 
 # create the order entry form blueprint
 orders = Blueprint('orders', __name__)
@@ -123,7 +124,7 @@ def orders_update_order():
             if user:
                 customer_limit = check_customer_order_limit(user.status)
                 print(f"Customer limit: {customer_limit}")
-                if customer_limit < float(total_cost):
+                if customer_limit and (customer_limit < float(total_cost)):
                     msg = (f"Order exceeds customer limit (${customer_limit})")
                     return redirect(url_for('orders.orders_home', msg=msg))
             else:
@@ -208,7 +209,8 @@ def orders_update_order():
 
                 # check if the order items are the same
                 relevant_features = ['flavor', 'container_size', 'quantity', 'line_item_cost']
-                if not compare_order_items(order_item_request, order_item_db, relevant_features):
+                if (not compare_order_items(order_item_request, order_item_db, relevant_features)
+                    or order_status == 'shipped'):
                     print("Order items do not match")
 
                     # fetch the order item from the database
@@ -233,6 +235,12 @@ def orders_update_order():
                             # update the product/allocation quantity & committed quantity
                             quantity_diff = order_item_request['quantity'] - order_item_db['quantity']
                             product_allocation.adjust_quantity(quantity_diff)
+
+                            # update the product allocation attributes
+                            if order_status == 'shipped':
+                                product_allocation.disposition = 'shipped'
+                                product_allocation.shipment_id = order.shipment.id
+                                product_allocation.order_id = order.id
 
                             print("Order item updated")
                             msg = "Order item updated"
@@ -347,7 +355,7 @@ def orders_add_order():
         
         # check if the user has exceeded their order limit
         customer_limit = check_customer_order_limit(customer_status)
-        if customer_limit < total_cost:
+        if customer_limit and (customer_limit < total_cost):
             msg = (f"Order exceeds customer limit (${customer_limit})")
             return redirect(url_for('orders.orders_home', msg=msg))
 
@@ -404,6 +412,12 @@ def orders_add_order():
         else:
             print("New Item Created")
 
+    # create a new shipment for the order
+    shipment = create_shipment(order_id)
+
+    if not shipment:
+        return redirect(url_for('orders.orders_home', msg="Error creating shipment"))
+
     # commit the transaction
     db.session.commit()
 
@@ -441,6 +455,9 @@ def orders_delete_order():
                         # fetch the order items from the database
                         order_items = OrderItem.query.filter_by(order_id=order_id).all()
 
+                        # fetch the shipment from the database
+                        shipment = Shipment.query.filter_by(order_id=order_id).first()
+
                         # iterate through the order items
                         for order_item in order_items:
 
@@ -460,6 +477,12 @@ def orders_delete_order():
                                 else:
                                     print("Product allocation not found")
                                     return redirect(url_for('orders.orders_home', msg="Product allocation not found"))
+                                
+                            # delete the order item from the database
+                            db.session.delete(order_item)
+
+                            # delete the shipment from the database
+                            db.session.delete(shipment)
         
                         # delete the order from the database
                         db.session.delete(order)

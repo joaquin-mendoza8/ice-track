@@ -46,7 +46,7 @@ def create_app(config_class=Config):
 
     # register all custom Jinja filters
     from app.utils.filters import format_currency, format_currency_list, format_datetime, \
-        format_date, format_attribute, format_address
+        format_date, format_attribute, format_address, format_id
 
     app.jinja_env.filters['currency'] = format_currency
     app.jinja_env.filters['currency_list'] = format_currency_list
@@ -54,6 +54,7 @@ def create_app(config_class=Config):
     app.jinja_env.filters['datetime'] = format_datetime
     app.jinja_env.filters['attribute'] = format_attribute
     app.jinja_env.filters['address'] = format_address
+    app.jinja_env.filters['id'] = format_id
 
     # create the database tables
     with app.app_context():

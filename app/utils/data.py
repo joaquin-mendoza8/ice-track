@@ -28,6 +28,7 @@ def parse_order_data(orders):
     return [
         {
             "id": order.id,
+            "user_id": order.user_id,
             "customer": f'{order.user.first_name} {order.user.last_name}',
             "order_creation_date": order.created_at,
             "shipping_address": order.shipping_address, 
@@ -91,6 +92,7 @@ def parse_product_allocation_data(product_allocations):
     return [
         {
             "product": product_allocation.product,
+            "order_item": product_allocation.order_item,
             "flavor": product_allocation.product.flavor,
             "container_size": product_allocation.product.container_size,
             "price": product_allocation.product.price,
@@ -98,6 +100,8 @@ def parse_product_allocation_data(product_allocations):
             "product_id": product_allocation.product_id,
             "order_item_id": product_allocation.order_item_id,
             "quantity_allocated": product_allocation.quantity_allocated,
+            "shipment_id": product_allocation.shipment_id,
+            "order_id": product_allocation.order_id,
             "disposition": product_allocation.disposition,
             "allocated_at": product_allocation.allocated_at.strftime('%m/%d/%Y') if product_allocation.allocated_at else None,
         }
@@ -137,6 +141,7 @@ def parse_shipment_data(shipments):
     return [
         {
             "id": shipment.id,
+            "user_id": shipment.user_id,
             "order_id": shipment.order_id,
             "order": shipment.order,
             "date_shipped": format_date(shipment.date_shipped),

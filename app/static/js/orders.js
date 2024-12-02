@@ -550,6 +550,21 @@ function toggleEdit(toEditMode) {
         'shipping-address-update', 'order-id-update', 'customer-update', 'update-line-items-container'
     ]
 
+    if (orderStatus !== 'pending') {
+        inputsFixedReadOnly.push('order-status-update');
+        // get all inputs in the update-line-items-container
+        const lineItemInputs = updateModal.querySelectorAll('.update-line-item input');
+        const lineItemSelects = updateModal.querySelectorAll('.update-line-item select');
+        console.log(lineItemInputs, lineItemSelects);
+        lineItemInputs.forEach(input => {
+            inputsFixedReadOnly.push(input.id);
+        });
+
+        lineItemSelects.forEach(select => {
+            inputsFixedReadOnly.push(select.id);
+        });
+    }
+
     // toggle the disabled attribute for select elements and the readonly attribute for input elements
     updateInputs.forEach(input => {
 

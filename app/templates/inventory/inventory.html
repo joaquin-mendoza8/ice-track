@@ -117,12 +117,19 @@
                 <!-- Table for product allocations -->
                 <table class="table table-hover table-borderless table-striped mb-5">
                     {% if allocations %}
-                    {% set hidden_attributes = ['id', 'product'] %}
+                    {% set hidden_attributes = ['id', 'product', 'order_item', 'product_id', 'order_item_id', 'shipment_id'] %}
                     <thead class="table-dark">
                         {% for key in allocations[0].keys() %}
                             {% if key not in hidden_attributes %}
+                                
                                 <th class="inventory-header" scope="col">
-                                    <a class="table-header-link" href="/inventory?filter={{ key }}">{{ key | attribute }}</a>
+                                    <a class="table-header-link" href="/inventory?filter={{ key }}">
+                                        {% if key == 'order_id' %}
+                                            {{ key | id }}
+                                        {% else %}
+                                            {{ key | attribute }}
+                                        {% endif %}
+                                    </a>
                                 </th>
                             {% endif %}
                         {% endfor %}
@@ -132,32 +139,44 @@
 
                             {# Set the table row color based on the order status #}
                             {% set tr_map = '' %}
-                            {% if allocation.status == 'planned' %}
-                                {% set tr_map = 'table-warning' %}
-                            {% elif allocation.status == 'actual' %}
+                            {% if allocation.disposition == 'committed' %}
+                                {% set tr_map = 'table-info' %}
+                            {% elif allocation.disposition == 'shipped' %}
                                 {% set tr_map = 'table-success' %}
+                            {% elif allocation.disposition == 'defective' %}
+                                {% set tr_map = 'table-warning' %}
+                            {% elif allocation.disposition == 'spoiled' %}
+                                {% set tr_map = 'table-danger' %}
                             {% endif %}
 
-                            <tr onclick="openModal({{ allocation }}, {{ allocation['id'] }}, {{ current_user.is_admin | tojson | safe }})" 
+                            {% set options = ('committed', 'Committed'),
+                                             ('shipped', 'Shipped'),
+                                             ('defective', 'Defective'),
+                                             ('spoiled', 'Spoiled') %}
+
+                            <tr onclick="openModal({{ allocation }}, {{ allocation['id'] }})" 
                                 class="{% if tr_map %}{{ tr_map }}{% endif %}" id="row-{{ loop.index - 1 }}"
                                 style="cursor: pointer;">
                                 {% for key, value in allocation.items() %}
                                     {% if key not in hidden_attributes %}
                                         {% if key == 'disposition' %}
-                                            {% set options = ('committed', 'Committed'),
-                                                             ('shipped', 'Shipped'),
-                                                             ('defective', 'Defective'),
-                                                             ('spoiled', 'Spoiled') %}
+                                            {% set input_id = 'disposition-' ~ allocation.id %}
                                             <td>
                                                 {{ macros.select_group_floating(
                                                     label='Current',
-                                                    id='disposition',
-                                                    name='disposition',
+                                                    id=input_id,
+                                                    name=input_id,
                                                     options=options,
                                                     classes='disposition-input',
                                                     selected=value,
                                                 ) }}
                                             </td>
+                                        {% elif key == 'shipment_id' %}
+                                            {% if allocation.shipment_id %}
+                                                <td>{{ value }} </td>
+                                            {% else %}
+                                                <td>-</td>
+                                            {% endif %}
                                         {% elif key == 'price' %}
                                             <td>{{ value | currency }}</td>
                                         {% else %}

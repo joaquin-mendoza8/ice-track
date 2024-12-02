@@ -42,3 +42,7 @@ def format_address(value):
 
     # rejoin the parts
     return " ".join(parsed.values())
+
+def format_id(value):
+    """Format ID attribute names in the format 'Order ID'."""
+    return format_attribute(value).replace("Id", " ID")

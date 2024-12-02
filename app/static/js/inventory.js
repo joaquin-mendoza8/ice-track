@@ -13,6 +13,31 @@ document.addEventListener('DOMContentLoaded', function() {
     // const statusSelect = document.getElementById('product-status-add');
     // statusSelect.addEventListener('change', updateDockDropdown);
 
+    // get all "disposition-" elements
+    const dispositionElements = document.querySelectorAll('[id^="disposition-"]');
+
+    // attach event listener to navigate to disposition page when select is changed
+    dispositionElements.forEach(element => {
+        element.addEventListener('change', function() {
+            const allocationId = element.id.split('-')[1];
+            const dispositionValue = element.value;
+
+            // fetch disposition update
+            fetch(`/inventory_update_allocation?id=${allocationId}&disposition=${encodeURIComponent(dispositionValue)}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Disposition updated:', data);
+
+                    // reload page and move back to element
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error updating disposition:', error);
+                    alert('Failed to update disposition. Please try again.');
+                });
+        });
+    });
+
     // TODO: finish dock date js
 
 });

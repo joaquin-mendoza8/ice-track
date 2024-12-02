@@ -92,6 +92,7 @@ def shipments_update_shipment():
         return redirect(url_for('shipments.shipments_home'))
 
 def create_shipment(order_id):
+    # TODO: add user relationship to shipment (to display customer name in shipment view)
 
     try:
 
@@ -115,6 +116,7 @@ def create_shipment(order_id):
         # create a new shipment object
         new_shipment = Shipment(
             order_id=order.id,
+            user_id=order.user_id,
             date_shipped=order.expected_shipping_date,
             shipment_boxes=shipment_boxes,
             partial_delivery=False,
@@ -125,11 +127,6 @@ def create_shipment(order_id):
 
         # add the shipment to the database
         db.session.add(new_shipment)
-        db.session.commit()
-        shipments = Shipment.query.all()
-
-        # print the shipments
-        print(shipments)
 
     except Exception as e:
         print(f"Error creating shipment: {e}")

@@ -1,9 +1,9 @@
-from flask import Blueprint, request, redirect, url_for, render_template
+from flask import Blueprint, request, redirect, url_for, render_template, jsonify
 from flask_login import login_required
 from app.utils.data import *
 from app.utils.fetch_settings import fetch_autosignoff_interval, \
     fetch_supported_container_sizes, fetch_supported_flavors
-from app.models import Product, User , Log, ProductAllocation
+from app.models import Product, User , Log, ProductAllocation, Shipment
 from app.extensions import db
 from datetime import datetime
 
@@ -60,6 +60,7 @@ def inventory_home():
         'allocations': allocations_dict
     }
 
+    # add the message and message type to the dictionary if they exist
     if msg:
         jinja_vars.update({"msg": msg})
     if msg_type:
@@ -312,3 +313,55 @@ def inventory_delete_product():
 
     # redirect to the inventory page
     return redirect(url_for('inventory.inventory_home', msg=msg, msg_type=msg_type))
+
+
+@inventory.route('/inventory_update_allocation', methods=['GET'])
+@login_required
+def inventory_update_allocation():
+
+    try:
+
+        msg, msg_type = '', ''
+
+        # extract the allocation data from the form
+        allocation_id = request.args.get('id')
+        allocation_disposition = request.args.get('disposition')
+
+        # ensure all fields are filled
+        if allocation_id and allocation_disposition:
+
+            # find the allocation in the database
+            allocation = ProductAllocation.query.get(allocation_id)
+
+            # check if the allocation exists
+            if allocation:
+
+                # update the allocation disposition
+                allocation.disposition = allocation_disposition
+
+                # commit the changes
+                db.session.commit()
+
+                # return the success message
+                msg = "Allocation updated successfully"
+                return jsonify({"msg": msg, "msg_type": "success"})
+
+            else:
+
+                # log the error
+                print("Allocation not found")
+                msg = "Allocation not found"
+
+        else:
+
+            # log the error
+            print("Missing fields")
+            msg = "Missing fields"
+
+    except Exception as e:
+        print(e)
+        msg = e
+        db.session.rollback()
+
+    # return the error message
+    return jsonify({"msg": msg, "msg_type": "error"})

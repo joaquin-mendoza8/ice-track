@@ -67,10 +67,16 @@ def create_order_item(order_item_request, order_id):
     db.session.add(order_item)
     db.session.flush()
 
+    # get the shipment id from the order
+    order = Order.query.filter_by(id=order_id).first()
+    shipment_id = order.shipment.id
+
     # create a product allocation
     product_allocation = ProductAllocation(
         product_id=product_id,
         order_item_id=order_item.id,
+        order_id=order_id,
+        shipment_id=shipment_id,
         quantity_allocated=0,
         disposition='committed',
         allocated_at=datetime.now()
