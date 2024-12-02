@@ -27,6 +27,10 @@ class User(db.Model, UserMixin):
     products_added = db.relationship('Product', foreign_keys='Product.user_id_add', backref='added_by', lazy=True)
     products_deleted = db.relationship('Product', foreign_keys='Product.user_id_delete', backref='deleted_by', lazy=True)
 
+    # relationship to Product (1-to-many)
+    products_added = db.relationship('Product', foreign_keys='Product.user_id_add', backref='added_by', lazy=True)
+    products_deleted = db.relationship('Product', foreign_keys='Product.user_id_delete', backref='deleted_by', lazy=True)
+
     # print the user
     def __repr__(self):
         return f'<User {self.username}>'
@@ -40,7 +44,8 @@ class Product(db.Model):
 
     # composite primary key (id, container_size) to reflect unique product per container size
     id=db.Column(db.Integer, primary_key=True, autoincrement=True)
-    container_size=db.Column(db.String(50))
+    container_size=db.Column(db.String(50), primary_key=True) # a composite primary key for container sizes (small, medium, large)
+    
     flavor=db.Column(db.String(150), nullable=False)
     price=db.Column(db.Float, nullable=False)
     quantity=db.Column(db.Integer, nullable=False)
@@ -122,8 +127,11 @@ class Order(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     # order shipment attributes
+    # order shipment attributes
     shipping_type = db.Column(db.String(100), nullable=False)
     shipping_cost = db.Column(db.Float, nullable=False)
+    expected_shipping_date = db.Column(db.Date, nullable=False) # expected date of shipping
+    desired_receipt_date = db.Column(db.Date, nullable=False) # customer's desired date of receipt
     expected_shipping_date = db.Column(db.Date, nullable=False) # expected date of shipping
     desired_receipt_date = db.Column(db.Date, nullable=False) # customer's desired date of receipt
     shipping_address = db.Column(db.String(250), nullable=False)
@@ -133,11 +141,19 @@ class Order(db.Model):
     created_at = db.Column(db.Date, nullable=False, default=func.now()) # date of order creation
     status = db.Column(db.String(150), nullable=False) # status of the order (e.g., "pending", "shipped", "delivered") TODO: maybe support cancelled
     payment_date = db.Column(db.Date, nullable=True) # date of payment
+
+    # order status/cost attributes
+    created_at = db.Column(db.Date, nullable=False, default=func.now()) # date of order creation
+    status = db.Column(db.String(150), nullable=False) # status of the order (e.g., "pending", "shipped", "delivered") TODO: maybe support cancelled
+    payment_date = db.Column(db.Date, nullable=True) # date of payment
     total_cost = db.Column(db.Float, nullable=False)
 
     # sets a one to many relationship with Order(one) and OrderItem(many)
     order_items = db.relationship('OrderItem', backref='parent_order', lazy=True, cascade="all, delete-orphan")
+    order_items = db.relationship('OrderItem', backref='parent_order', lazy=True, cascade="all, delete-orphan")
 
+    # 1:1 relationship with Shipment
+    shipment = db.relationship('Shipment', backref='order', uselist=False, lazy=True)
     # 1:1 relationship with Shipment
     shipment = db.relationship('Shipment', backref='order', uselist=False, lazy=True)
 
@@ -156,10 +172,24 @@ class OrderItem(db.Model):
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
 
     # order item data attributes
+
+    # foreign keys
+    # product_allocation_id = db.Column(db.Integer, db.ForeignKey('product_allocation.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+
+    # order item data attributes
     quantity = db.Column(db.Integer, nullable=False)
     line_item_cost = db.Column(db.Float, nullable=False)
 
     # foreign keys to Order and Product models
+    # parent_order = db.relationship('Order', backref='order_item', lazy=True)
+    product = db.relationship('Product', backref='order_items', lazy=True)
+    allocation = db.relationship('ProductAllocation', backref='order_item', lazy=True, cascade="all, delete-orphan")
+
+    # print the order item
+    def __repr__(self):
+        return f'<OrderItem {self.id}, {self.product_id}, {self.order_id}, {self.quantity}, {self.line_item_cost}, {self.allocation}>'
     # parent_order = db.relationship('Order', backref='order_item', lazy=True)
     product = db.relationship('Product', backref='order_items', lazy=True)
     allocation = db.relationship('ProductAllocation', backref='order_item', lazy=True, cascade="all, delete-orphan")
@@ -172,7 +202,10 @@ class OrderItem(db.Model):
 # Admin Configuration Settings data model
 class AdminConfig(db.Model):
 
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+    # configuration attributes
 
     # configuration attributes
     key = db.Column(db.String(50), nullable=False) # e.g., "supported_container_sizes"
@@ -205,6 +238,23 @@ class Shipment(db.Model):
     # print the shipment
     def __repr__(self):
         return f'<Shipment {self.id}>'
+    
+# Logging Data Model
+class Log(db.Model):
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+    # foreign key
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    # log attributes
+    action = db.Column(db.String(50), nullable=False)
+    product = db.Column(db.String(100), nullable=False)
+    container_size = db.Column(db.String(50), nullable=True)
+    timestamp = db.Column(db.DateTime, default=func.now())
+
+    # Many:1 relationship with User
+    user = db.relationship('User', backref='logs', lazy=True)
     
 # Logging Data Model
 class Log(db.Model):

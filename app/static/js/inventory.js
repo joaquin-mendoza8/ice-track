@@ -88,6 +88,8 @@ function openModal(product_content, productId, isAdmin) {
         return;
     }
 
+    console.log(product_content);
+
     // set transaction id to hidden input fields
     const hiddenInput = document.getElementById('product-id');
     const hiddenInput2 = document.getElementById('product-id-delete');

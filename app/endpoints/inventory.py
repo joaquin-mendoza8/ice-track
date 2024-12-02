@@ -4,10 +4,12 @@ from app.utils.data import *
 from app.utils.fetch_settings import fetch_autosignoff_interval, \
     fetch_supported_container_sizes, fetch_supported_flavors
 from app.models import Product, User , Log, ProductAllocation
+from app.models import Product, User , Log, ProductAllocation
 from app.extensions import db
 from datetime import datetime
 
 # create the inventory management blueprint
+inventory = Blueprint('inventory', __name__) # TOO: set prefix to '/inventory'
 inventory = Blueprint('inventory', __name__) # TOO: set prefix to '/inventory'
 
 # template paths
@@ -18,6 +20,10 @@ inventory = Blueprint('inventory', __name__) # TOO: set prefix to '/inventory'
 @inventory.route('/inventory', methods=['GET'])
 @login_required
 def inventory_home():
+
+    # check if msg/msg_type were passed
+    msg = request.args.get('msg')
+    msg_type = request.args.get('msg_type')
 
     # check if msg/msg_type were passed
     msg = request.args.get('msg')
