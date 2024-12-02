@@ -1,0 +1,32 @@
+<div class="modal" id="logModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Inventory Log</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {% if logs %}
+                    <div class="list-group">
+                        {% for log in logs %}
+                            {% if log.action == 'deleted' %}
+                                {% set log_type = 'danger' %}
+                            {% else %}
+                                {% set log_type = 'success' %}
+                            {% endif %}
+                            <div class="list-group-item list-group-item-{{ log_type }}" aria-current="true">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ log.product | capitalize }} ({{ log.container_size | capitalize }})</h5>
+                                    <small>{{ log.timestamp | datetime }}</small>
+                                </div>
+                                <small>{{ log.action | capitalize }} by {{ log.user.first_name }} {{ log.user.last_name }}</small>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>No logs available at this time.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>``

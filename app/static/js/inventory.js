@@ -1,3 +1,86 @@
+// DOM content loaded event listener
+document.addEventListener('DOMContentLoaded', function() {
+
+    // set product price, quantity, and status inputs to current values when dropdowns are changed
+    const flavorSelect = document.getElementById('product-flavor-add');
+    const sizeSelect = document.getElementById('product-container-size-add');
+
+    // set event listeners for flavor and container size dropdowns
+    // flavorSelect.addEventListener('change', updateModalInputs);
+    // sizeSelect.addEventListener('change', updateModalInputs);
+
+    // // set event listener for status dropdown
+    // const statusSelect = document.getElementById('product-status-add');
+    // statusSelect.addEventListener('change', updateDockDropdown);
+
+    // TODO: finish dock date js
+
+});
+
+
+// Function to update product price and quantity inputs based on flavor and container size dropdowns
+function updateModalInputs() {
+
+    // get flavor and container size dropdown values
+    const flavorSelect = document.getElementById('product-flavor-add');
+    const sizeSelect = document.getElementById('product-container-size-add');
+
+    // get product price and quantity inputs
+    const priceInput = document.getElementById('product-price-add');
+    const quantityInput = document.getElementById('product-quantity-add');
+    const selectedFlavor = flavorSelect.value;
+    const selectedSize = sizeSelect.value;
+
+    if (selectedFlavor && selectedSize && (sizeSelect.value !== 'Choose...')) {
+        
+        // fetch stock of selected product
+        fetch(`/orders/fetch_stock?flavor=${encodeURIComponent(selectedFlavor)}&container-size=${encodeURIComponent(selectedSize)}`)
+            .then(response => response.json())
+            .then(data => {
+
+                quantityInput.value = data.stock;
+
+            })
+            .catch(error => {
+                console.error('Error fetching stock:', error);
+                alert('Failed to load stock. Please try again.');
+            });
+        
+        // fetch price of selected product
+        fetch(`/orders/fetch_cost?flavor=${encodeURIComponent(selectedFlavor)}&container-size=${encodeURIComponent(selectedSize)}&quantity=1`)
+            .then(response => response.json())
+            .then(data => {
+
+                if (data.cost != 0.0) {
+                    priceInput.value = data.cost.toFixed(2);
+                }
+
+            })
+            .catch(error => {
+                console.error('Error fetching price:', error);
+                alert('Failed to load price. Please try again.');
+            });
+
+        // fetch status of selected product
+        fetch(`/orders/fetch_product_status?flavor=${encodeURIComponent(selectedFlavor)}&container-size=${encodeURIComponent(selectedSize)}`)
+            .then(response => response.json())
+            .then(data => {
+
+                if (data.status) {
+                    const statusInput = document.getElementById('product-status-add');
+                    statusInput.value = data.status;
+                }
+
+
+            })
+            .catch(error => {
+                console.error('Error fetching status:', error);
+                alert('Failed to load status. Please try again.');
+            });
+    }
+}
+
+
 function openModal(product_content, productId, isAdmin) {
 
     // don't allow editing of product if not admin
@@ -14,11 +97,11 @@ function openModal(product_content, productId, isAdmin) {
         hiddenInput2.value = parseInt(productId);
     }
 
-    // set product id display value
-    const productIdDisplay = document.getElementById('product-id-display');
+    // set product id input field to current product id
+    const productIdInput = document.getElementById('product-id');
 
-    if (productIdDisplay) {
-        productIdDisplay.innerHTML = productId;
+    if (productIdInput) {
+        productIdInput.value = productId;
     }
 
     // set product status selection to current status
@@ -34,10 +117,25 @@ function openModal(product_content, productId, isAdmin) {
 
     // set flavor, price, and quantity inputs
     productAttributes.forEach(attribute => {
-        const inputField = document.getElementById(`product-${attribute}`);
 
+        // skip non-modifiable attributes
+        const inputField = document.getElementById(`product-${attribute.replace('_', '-')}`);
+
+        // set input field value to current product attribute value
         if (inputField) {
-            inputField.value = product_content[attribute];
+            if (inputField.id === 'product-price') {
+
+                // format price to 2 decimal places
+                inputField.value = parseFloat(product_content[attribute]).toFixed(2);
+            } else if (inputField.id === 'product-dock-date') {
+
+                // format date for input field
+                const dbDate = product_content[attribute.replace('-', '_')]
+                const formattedDate = dbDate.split('/').reverse().join('-');
+                inputField.value = formattedDate;
+            } else {
+                inputField.value = product_content[attribute];
+            }
         }
     });
 

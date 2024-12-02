@@ -1,5 +1,5 @@
 <div class="modal" id="addModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Add Item</h5>
@@ -15,62 +15,112 @@
 
                     <div class="modal-body">
 
-                        <!-- Product Flavor -->
-                        <div class="mb-3">
-                            <label for="product-flavor" class="form-label">Flavor</label>
-                            <select class="form-select" 
-                                    name="product-flavor"
-                                    id="product-flavor" required>
-                                    <option disabled selected>Select flavor</option>
-                                    {% for flavor in supported_flavors %}
-                                        <option value="{{ flavor }}">{{ flavor.capitalize() }}</option>
-                                    {% endfor %}
-                            </select>
-                        </div>
+                        <div class="row mb-3">
 
-                        <!-- Product Container Size -->
-                        <div class="mb-3">
-                            <label for="product-container-size" class="form-label">Container Size</label>
-                            <select class="form-select" id="product-container-size" name="product-container-size" required>
-                                <option disabled selected>Select size</option>
-                                {% for size in supported_container_sizes %}
-                                    <option value="{{ size }}">{{ size.capitalize() }}</option>
+                            <!-- Product Flavor -->
+                            <div class="col-md-3">
+
+                                {% set options = [] %}
+                                {% for flavor in supported_flavors %}
+                                    {% set _ = options.append((flavor, flavor)) %}
                                 {% endfor %}
-                            </select>
-                        </div>
 
-                        <!-- Product Price -->
-                        <div class="mb-3">
-                            <label for="product-price" class="form-label">Price</label>
-                            <div class="input-group">
-                                <div class="input-group-text" id="btnGroupAddon">$</div>
-                                <input type="number" step="0.01"
-                                    class="form-control"
-                                    id="product-price"
-                                    name="product-price" 
-                                    min="0" pattern="^\d+(\.\d{1,2})?$" required>
+                                {{ macros.select_group_floating(
+                                    label='Flavor',
+                                    id='product-flavor-add',
+                                    name='product-flavor-add',
+                                    options=options,
+                                    tooltip='Select the flavor of the product.'
+                                ) }}
+                            
                             </div>
+
+                            <!-- Product Container Size -->
+                            <div class="col-md-3">
+
+                                {% set options = [] %}
+                                {% for size in supported_container_sizes %}
+                                    {% set _ = options.append((size, size)) %}
+                                {% endfor %}
+
+                                {{ macros.select_group_floating(
+                                    label='Container Size',
+                                    id='product-container-size-add',
+                                    name='product-container-size-add',
+                                    options=options,
+                                    tooltip='Select the container size of the product.'
+                                ) }}
+
+                            </div>
+
+                            <!-- Product Price -->
+                            <div class="col-md-3">
+
+                                {{ macros.input_group_floating(
+                                    label='Price ($)',
+                                    id='product-price-add',
+                                    name='product-price-add',
+                                    type='number',
+                                    min='1',
+                                    max='50',
+                                    pattern='^\d+(\.\d{1,2})?$',
+                                    is_required=true,
+                                    tooltip='Enter the price of the product.'
+                                ) }}
+
+                            </div>
+
+                            <!-- Product Quantity -->
+                            <div class="col-md-3">
+
+                                {{ macros.input_group_floating(
+                                    label='Quantity',
+                                    id='product-quantity-add',
+                                    name='product-quantity-add',
+                                    type='number',
+                                    min='1',
+                                    max='1000',
+                                    is_required=true,
+                                    tooltip='Enter the quantity of the product.'
+                                ) }}
+
+                            </div>
+
                         </div>
 
-                        <!-- Product Quantity -->
-                        <div class="mb-3">
-                            <label for="product-quantity" class="form-label">Quantity</label>
-                            <input type="number"
-                                class="form-control"
-                                id="product-quantity"
-                                name="product-quantity" required>
+                        <div class="row mb-3">
+
+                            <div class="col-md-3">
+
+                                <!-- Product Status -->
+                                {% set options = [('planned', 'Planned'), ('actual', 'Actual')] %}
+                                {{ macros.select_group_floating(
+                                    label='Status',
+                                    id='product-status-add',
+                                    name='product-status-add',
+                                    options=[('planned', 'Planned'), ('actual', 'Actual')],
+                                    tooltip='Select the status of the product.'
+                                ) }}
+
+                            </div>
+
+                            <div class="col-md-3">
+
+                                <!-- Product Dock Date -->
+                                {{ macros.input_group_floating(
+                                    label='Dock Date',
+                                    id='product-dock-date-add',
+                                    name='product-dock-date-add',
+                                    type='text',
+                                    pattern='^(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])/\d{4}$',
+                                    classes='product-dock-date-add',
+                                    tooltip='Enter the dock date of the product in the form MM/DD/YYYY.'
+                                ) }}
+
+                            </div>
+
                         </div>
 
-                        <!-- Product Status -->
-                        <div class="mb-3">
-                            <label for="product-status" class="form-label">Status</label>
-                            <select class="form-select" id="product-status" name="product-status" required>
-                                <option disabled selected>Select status</option>
-                                <option value="planned">Planned</option>
-                                <!-- <option value="committed">Committed</option> -->
-                                <option value="actual">Actual</option>
-                            </select>
-                        </div>
                     </div>
 
                     <div class="modal-footer">

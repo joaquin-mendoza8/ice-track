@@ -1,3 +1,18 @@
+<!-- Section Header -->
+{% macro section_header(title, subtitle='', extra_html='') %}
+    <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <div>
+            <h1>{{ title }}</h1>
+            {% if subtitle %}
+                <p>{{ subtitle }}</p>
+            {% endif %}
+        </div>
+        <div class="ms-auto">
+            {{ extra_html | safe }}
+        </div>
+    </div>
+{% endmacro %}
+
 
 <!-- Metrics Card -->
 {% macro metrics_card(title, text, tooltip='') %}
@@ -9,8 +24,8 @@
     </div>
 {% endmacro %}
 
-<!-- Message -->
-{% macro message(text, type, redirect, tooltip='') %}
+<!-- Message (Default timeout is 15 seconds) -->
+{% macro message(text, type, redirect, tooltip='', timeout=5) %}
     <!-- define the accepted message types -->
     {% set valid_types = ["success", "info", "warning", "danger"] %}
     {% set selected_type = "" %}
@@ -23,7 +38,8 @@
     {% endif %}
 
     <!-- apply the message type, display the message -->
-    <div class="alert alert-{{ type }} alert-dismissible fade show" role="alert" {% if tooltip %} data-bs-toggle="tooltip" title="{{ tooltip }}" {% endif %}>
+    <div class="alert alert-{{ selected_type }} alert-dismissible fade show" 
+         role="alert" data-timeout="{{ timeout }}" {% if tooltip %} data-bs-toggle="tooltip" title="{{ tooltip }}" {% endif %}>
         {{ text }}
 
         <!-- if a redirect is passed, navigate to it to clear the URL parameters -->
@@ -36,16 +52,22 @@
 {% endmacro %}
 
 <!-- Floating Input -->
-{% macro input_group_floating(label, id, name, value='', min='', max='', type='text', unit='', is_required=true, tooltip='') %}
+{% macro input_group_floating(label, id, name, value='', min=None, max=None, type='text', unit='', pattern='', extra='', classes='',
+                              oninput='', placeholder='', plaintext=false, is_required=true, is_readonly=false, tooltip='') %}
 <div class="{% if unit %}input-group {% endif %}form-floating" {% if tooltip %} data-bs-toggle="tooltip" title="{{ tooltip }}" {% endif %}>
     <input type="{{ type }}" 
-           class="form-control"
+           class="form-control{% if plaintext %}-plaintext{% endif %} {{ classes }}"
            id="{{ id }}"
            name="{{ name }}" 
-           {% if min %} min="{{ min }}" {% endif %}
-           {% if max %} max="{{ max }}" {% endif %}
-           value="{{ value }}"
-           {% if is_required %}required{% endif %}>
+           {% if min is not none %} min={{ min }} {% endif %}
+           {% if max is not none %} max={{ max }} {% endif %}
+           {% if value %}value="{{ value | safe }}"{% endif %}
+            {% if is_required %}required{% endif %}
+            {% if is_readonly %}readonly{% endif %}
+            {% if pattern %}pattern="{{ pattern }}"{% endif %}
+            {% if placeholder %}placeholder="{{ placeholder }}"{%endif%}
+            {% if extra %}{{ extra }}{% endif %}
+            {% if oninput %}oninput="{{ oninput }}"{% endif %}>
     <label for="{{ id }}">{{ label }}</label>
     {% if unit %}
     <span class="input-group-text" id="basic-addon2">{{ unit }}</span>
@@ -54,11 +76,19 @@
 {% endmacro %}
 
 <!-- Select Input with Floating Label -->
-{% macro select_group_floating(label, id, name, options, selected='', is_required=true, tooltip='') %}
+{% macro select_group_floating(label, id, name, options, extra_data, selected='', classes='', 
+                               is_disabled=False, is_required=True, tooltip='') %}
 <div class="form-floating" {% if tooltip %} data-bs-toggle="tooltip" title="{{ tooltip }}" {% endif %}>
-    <select class="form-control" id="{{ id }}" name="{{ name }}" {% if is_required %}required{% endif %}>
+    <select class="form-control {{ classes }}" id="{{ id }}" name="{{ name }}"
+        {% if is_required %}required{% endif %}
+        {% if is_disabled %}disabled{% endif %}>
+        {% if not selected %}<option value="" selected>Choose...</option>{% endif %}
         {% for value, text in options %}
-            <option value="{{ value }}" {% if value == selected %}selected{% endif %}>{{ text }}</option>
+            <option value="{{ value }}"
+                {% if extra_data %}data-{{ extra_data[loop.index0][0] }}="{{ extra_data[loop.index0][1] }}"{% endif %}
+                {% if value == selected %}selected{% endif %}>
+                {{ text | title }}
+            </option>
         {% endfor %}
     </select>
     <label for="{{ id }}">{{ label }}</label>

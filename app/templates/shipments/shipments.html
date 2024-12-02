@@ -8,43 +8,73 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1 class="mb-4">Shipments</h1>
 
-    {% if shipments %}
-    <table class="table table-hover table-borderless">
-        <thead>
-            <tr>
-                <!-- Dynamically generate table headers from the shipment dictionary keys -->
-                {% for key in shipments[0].keys() %}
-                    <th scope="col">{{ key.replace('_', ' ').capitalize() }}</th>
+    {% include 'shipments/modals/shipment_update_modal.html' %}
+
+    <div class="container-md">
+
+        {{ macros.section_header("Shipments") }}
+
+        <!-- Message Display Container -->
+        {% if msg %}
+            {{ macros.message(msg, msg_type or "danger", "/shipment") }}
+        {% endif %}
+
+        {% if shipments %}
+        {% set hidden_attributes = ['id', 'partial_delivery', 'order'] %}
+        <table class="table table-hover table-borderless table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <!-- Dynamically generate table headers from the shipment dictionary keys -->
+                    {% for key in shipments[0].keys() %}
+                        {% if key not in hidden_attributes %}
+                            {% if key == 'order_id' %}
+                                <th scope="col">Order ID</th>
+                            {% else %}
+                                <th scope="col">{{ key | attribute }}</th>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dynamically generate table rows for each shipment -->
+                {% for shipment in shipments %}
+
+                    {# Set the table row color based on the order status #}
+                    {% set tr_map = '' %}
+                    {% if shipment.order.status == 'pending' %}
+                        {% set tr_map = 'table-warning' %}
+                    {% elif shipment.order.status == 'cancelled' %}
+                        {% set tr_map = 'table-danger' %}
+                    {% elif shipment.order.status == 'shipped' %}
+                        {% set tr_map = 'table-info' %}
+                    {% elif shipment.order.status == 'delivered' %}
+                        {% set tr_map = 'table-success' %}
+                    {% endif %}
+                    <tr onclick="openShipmentUpdateModal({{ shipment.id }})" id="order-{{ shipment.order.id }}"
+                        class="{% if tr_map %}{{ tr_map }}{% endif %}" style="cursor: pointer;">
+                        {% for key, value in shipment.items() %}
+                            {% if key not in hidden_attributes %}
+                                <td>
+                                    {{ value | title }}
+                                </td>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
                 {% endfor %}
-                <th scope="col">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Dynamically generate table rows for each shipment -->
-            {% for shipment in shipments %}
-            <tr>
-                {% for value in shipment.values() %}
-                    <td>{{ value }}</td>
-                {% endfor %}
-                <td>
-                    <!-- Provide an edit link for each shipment -->
-                    <a href="{{ url_for('shipments.shipments_update_shipment') }}?shipment-id={{ shipment['id'] }}" class="btn btn-sm btn-primary">Edit</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <div class="alert alert-info" role="alert">
-        No shipments found. Create an order to generate shipments automatically.
+            </tbody>
+        </table>
+        {% else %}
+        <div class="alert alert-info" role="alert">
+            No shipments found. Create an order to generate shipments automatically.
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
-</div>
+
 {% endblock %}
 
 {% block scripts %}
+    <!-- <script src="{{ url_for('static', filename='js/orders.js') }}"></script> -->
     <script src="{{ url_for('static', filename='js/shipments.js') }}"></script>
 {% endblock %}

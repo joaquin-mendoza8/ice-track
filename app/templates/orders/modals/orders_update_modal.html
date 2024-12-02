@@ -5,96 +5,289 @@
                 <h5 class="modal-title">Edit Item</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+
             <div class="modal-body" id="modalBody">
-                <!-- Product content will be inserted dynamically here -->
-                <div class="product-edit-container">
 
-                    <!-- Product ID -->
-                    <p>Product ID: <span id="product-id-display"></span></p>
-
-                    <!-- Form of modifiable inputs (preset to current product attributes)-->
-                    <form id="updateForm" method="POST" action="/inventory_update">
-                        <input type="hidden" name="product-id" class="product-id" id="product-id">
-
-                        <!-- Flavors dropdown -->
-                        <div class="form-group">
-                            <label for="product-flavor">Flavor</label>
-                            <select class="form-control product-flavor-input" 
-                                id="product-flavor" 
-                                name="product-flavor" required>
-                                    {% for flavor in supported_flavors %}
-                                        <option value="{{ flavor }}">{{ flavor.capitalize() }}</option>
-                                    {% endfor %}
-                            </select>
+            <form action="/orders_update" method="post" id="updateOrderForm">
+            
+                {% set vertical_margin = 3 %}
+                <div class="row justify-content-left mb-{{ vertical_margin }}">
+                    <!-- <h5>Order Info</h5> -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="me-auto">Order Info</h5>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-secondary" onclick="toggleEdit(true)">Edit</button>
+                            <button type="button" class="btn btn-primary" id="updateOrderButton" onclick="updateOrderForm.submit()" disabled>Update</button>
                         </div>
+                    </div>
 
-                        <!-- Price input -->
-                        <div class="form-group">
-                            <label for="product-price">Price <em>($ USD)</em></label>
-                            <input type="number" step="0.01"
-                                class="form-control product-price-input"
-                                id="product-price"
-                                name="product-price"
-                                min="0" pattern="^\d+(\.\d{1,2})?$" required>
-                        </div>
+                    <div class="col-md-3">
 
-                        <!-- Quantity input -->
-                        <div class="form-group">
-                            <label for="product-quantity">Quantity</label>
-                            <input type="number"
-                                class="form-control product-quantity-input"
-                                id="product-quantity"
-                                name="product-quantity" required>
-                        </div>
+                        <!-- order id value to be populated by js -->
+                        <input type="hidden" id="order-user-id-update-hidden" name="order-user-id-update-hidden" value="{{ current_user.id }}">
+                        <input type="hidden" id="order-id-update-hidden" name="order-id-update-hidden" value="{{ order_id }}">
+                        <input type="hidden" id="order-total-cost-hidden" name="order-total-cost-hidden">
+                        <input type="hidden" id="order-status-update-hidden" name="order-status-update-hidden">
 
-                        <!-- Container Size dropdown -->
-                        <div class="form-group">
-                            <label for="product-status">Container Size</label>
-                            <select class="form-control product-container-size-input" 
-                                    id="product-container-size" 
-                                    name="product-container-size" required>
-                                {% for size in supported_container_sizes %}
-                                    <option value="{{ size }}">{{ size.capitalize() }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+                        <!-- Order ID -->
+                        {{ macros.input_group_floating(
+                            label='Order ID', 
+                            id='order-id-update', 
+                            name='order-id-update', 
+                            type='text',
+                            plaintext=true,
+                            is_readonly=true,
+                            tooltip='The unique identifier for the order (read-only)') 
+                        }}
+                    
+                    </div>
 
-                        <!-- Status dropdown -->
-                        <div class="form-group">
-                            <label for="product-status">Status</label>
-                            <select class="form-control product-status-input" 
-                                    id="product-status" 
-                                    name="product-status" required>
-                                <option value="actual">Actual</option>
-                                <!-- <option value="committed">Committed</option> -->
-                                <option value="planned">Planned</option>
-                            </select>
-                        </div>
-                    </form>
+                    <div class="col-md-3">
+                        
+                        <!-- Customer -->
+                        {{ macros.input_group_floating(
+                            label='Customer', 
+                            id='customer-update', 
+                            name='customer-update',
+                            type='text',
+                            plaintext=true,
+                            is_readonly=true,
+                            tooltip='The customer who placed the order (read-only)') 
+                        }}
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <!-- Shipping Type -->
+                        {{ macros.input_group_floating(
+                            label='Shipping Type', 
+                            id='shipping-type-update', 
+                            name='shipping-type-update',
+                            type='text',
+                            plaintext=true,
+                            is_readonly=true,
+                            tooltip='The type of shipping selected for the order (read-only)') 
+                        }}
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <!-- Shipping Cost -->
+                        {{ macros.input_group_floating(
+                            label='Shipping Cost', 
+                            id='shipping-cost-update', 
+                            name='shipping-cost-update',
+                            classes='cost-input-update',
+                            type='int',
+                            plaintext=true,
+                            is_readonly=true,
+                            tooltip='The cost of shipping for the order (read-only)') 
+                        }}
+
+                    </div>
+
                 </div>
+
+                <div class="row justify-content-left mb-{{ vertical_margin }}">
+
+                    <div class="col-md-3">
+
+                        <!-- Expected Shipping Date -->
+                        {{ macros.input_group_floating(
+                            label='Expected Shipping Date', 
+                            id='expected-shipping-date-update', 
+                            name='expected-shipping-date-update',
+                            type='text',
+                            plaintext=true,
+                            is_readonly=true,
+                            tooltip='The expected shipping date for the order (read-only)') 
+                        }}
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <!-- Desired Receipt Date -->
+                        {{ macros.input_group_floating(
+                            label='Desired Receipt Date', 
+                            id='desired-receipt-date-update', 
+                            name='desired-receipt-date-update',
+                            type='text',
+                            plaintext=true,
+                            is_readonly=true,
+                            tooltip='The desired receipt date for the order') 
+                        }}
+                    
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <!-- Order Creation Date -->
+                        {{ macros.input_group_floating(
+                            label='Order Creation Date', 
+                            id='order-creation-date-update', 
+                            name='order-creation-date-update',
+                            type='text',
+                            plaintext=true,
+                            is_readonly=true,
+                            tooltip='The date the order was created (read-only)') 
+                        }}
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <!-- Shipping Address -->
+                        {{ macros.input_group_floating(
+                            label='Shipping Address', 
+                            id='shipping-address-update', 
+                            name='shipping-address-update',
+                            type='text',
+                            plaintext=true,
+                            is_readonly=true,
+                            tooltip='The shipping address for the order (read-only)') 
+                        }}
+
+                    </div>
+
+                </div>
+
+                <div class="row justify-content-left mb-{{ vertical_margin }}">
+
+                    <div class="col-md-3">
+
+                        <!-- Billing Address -->
+                        {{ macros.input_group_floating(
+                            label='Billing Address', 
+                            id='billing-address-update', 
+                            name='billing-address-update',
+                            type='text',
+                            plaintext=true,
+                            is_readonly=true,
+                            tooltip='The billing address for the order') 
+                        }}
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <!-- Order Status -->
+                        <!-- TODO: Pull from AdminConfig -->
+                        {% set _options = [
+                            ('pending', 'Pending'), 
+                            ('shipped', 'Shipped'), 
+                            ('delivered', 'Delivered')
+                        ] %}
+
+                        {{ macros.select_group_floating(
+                            label='Order Status', 
+                            id='order-status-update', 
+                            name='order-status-update',
+                            options=_options,
+                            is_disabled=True,
+                            tooltip='The status of the order') 
+                        }}
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <!-- Payment Date -->
+                        {{ macros.input_group_floating(
+                            label='Payment Date', 
+                            id='payment-date-update', 
+                            name='payment-date-update',
+                            type='date',
+                            plaintext=true,
+                            is_required=false,
+                            is_readonly=true,
+                            tooltip='The date the order was paid for') 
+                        }}
+
+                    </div>
+
+                </div>
+
+                <div id="update-line-items-container">
+                    <!-- Updated Dynamically w/ JS -->
+                </div>
+
+                <!-- Add/Delete Line Item Buttons -->
+                <div class="btn-group" role="group" id="update-line-item-buttons-container" hidden>
+                    <button type="button" class="btn btn-outline-secondary update-line-item-button" 
+                            id="update-add-line-item">+</button>
+                    <button type="button" class="btn btn-outline-secondary update-line-item-button" 
+                            id="update-delete-line-item" hidden>-</button>
+                </div>
+
+            </form>
             </div>
 
-            <!-- Modal Footer Buttons -->
+            <!-- Modal Footer -->
             <div class="modal-footer d-flex justify-content-between align-items-center">
 
+                <!-- Cost Display and hidden input -->
+                <div class="d-flex align-items-center">
+                    <h4>Total: $<span id="update-cost-display">0.00</span></h4>
+                </div>
+
                 <!-- Form to trigger server call without needing JS -->
-                <form id="deleteForm" method="POST" action="/inventory_delete" class="d-flex align-items-center">
+                <div class="d-flex align-items-center">
+                    <form id="orderDeleteForm" method="POST" action="/orders_delete">
                     
-                    <!-- Hidden inputs -->
-                    <input type="hidden" name="product-id-delete" id="product-id-delete">
-                    <input type="hidden" name="user-id-delete" id="user-id-delete" value="{{ current_user.id }}">
+                        <!-- Hidden inputs -->
+                        <input type="hidden" name="order-id-delete" id="order-id-delete">
+                        <input type="hidden" name="order-user-id-delete" id="order-user-id-delete" value="{{ current_user.id }}">
+                        
+
+                    </form>
+                    <form id="orderCancelForm" method="POST" action="/orders_cancel">
                     
-                    <!-- Button to delete product from inventory -->
-                    <button type="button" class="btn btn-danger" onclick="document.querySelector('#deleteForm').submit();">Delete</button>
-                </form>
+                        <!-- Hidden inputs -->
+                        <input type="hidden" name="order-id-cancel" id="order-id-cancel">
+                        <input type="hidden" name="order-user-id-cancel" id="order-user-id-cancel" value="{{ current_user.id }}">
+                        
+                    </form>
+                </div>
+
 
                 <!-- Push buttons to right side of footer -->
                 <div class="ml-auto">
-                    <!-- Button to close modal -->
-                    <button type="button" class="btn" data-dismiss="modal" onclick="closeModal()">Close</button>
+                    <div class="btn-toolbar" role="toolbar">
+                        <div class="btn-group me-2" role="group">
+                            <!-- Cancel/Delete order buttons -->
+                            <button type="button" 
+                                    class="btn btn-outline-warning" 
+                                    onclick="document.querySelector('#orderCancelForm').submit();"
+                                    id="cancel-order-btn">
+                                    Cancel Order
+                            </button>
 
-                    <!-- Button to submit form -->
-                    <button type="button" class="btn btn-primary" onclick="document.querySelector('#updateForm').submit();">Save Changes</button>
+                            <button 
+                                type="button" 
+                                class="btn btn-outline-danger" 
+                                onclick="document.querySelector('#orderDeleteForm').submit();"
+                                id="delete-order-btn"
+                                {% if not current_user.is_admin %}disabled{% endif %}>
+                                Delete Order
+                            </button>
+                        </div>
+                        <div class="btn-group me-2" role="group">
+                            <!-- Shipment page of associated order -->
+                            <a type="button" 
+                               class="btn btn-outline-secondary"
+                               id="nav-shipment-btn"
+                               href="#">
+                               Go To Shipment
+                            </a>
+                        </div>
+
+                    <!-- Button to close modal -->
+                    <!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button> -->
+
+
+                    </div>
                 </div>
             </div>
         </div>

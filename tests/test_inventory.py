@@ -1,3 +1,5 @@
+# TODO: Stress testing with pytest-benchmark pytest
+
 # test the inventory home endpoint
 def test_inventory_home(client):
 
@@ -6,15 +8,19 @@ def test_inventory_home(client):
     assert response.status_code == 200
 
 # test the inventory add endpoint (POST request)
-def test_inventory_add(client, app_instance):
+def test_inventory_add(client, app_instance, captured_templates):
     response = client.post('/inventory_add', data={
-        "product-flavor": 'test',
-        "product-container-size": 'small',
-        "product-price": 1.00,
-        "product-quantity": 10,
-        "product-status": 'planned',
+        "product-flavor-add": 'test',
+        "product-container-size-add": 'small',
+        "product-price-add": 1.00,
+        "product-quantity-add": 10,
+        "product-status-add": 'planned',
+        "product-dock-date-add": '01/01/2026',
         "user-id": 999
     }, follow_redirects=True)
+    template, context = captured_templates[0]
+    assert template.name == 'inventory/inventory.html'
+    assert context['msg'] == "Added product successfully"
     assert response.status_code == 200
     
     # check if the product was added to the database
