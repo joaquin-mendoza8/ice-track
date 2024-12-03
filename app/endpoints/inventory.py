@@ -47,6 +47,13 @@ def inventory_home():
 
     # parse the product allocations into a dictionary
     allocations_dict = parse_product_allocation_data(allocations)
+
+    # parse the schedule data into a dictionary (planned products)
+    planned_products = [product for product in products if product.status == "planned"]
+    schedule_dict = parse_schedule_data(planned_products)
+
+    # sort the schedule by dock date
+    schedule_dict = sorted(schedule_dict, key=lambda x: x['dock_date'])
     
     # fetch all logs from the database
     logs = Log.query.order_by(Log.timestamp.desc()).all()
@@ -57,7 +64,8 @@ def inventory_home():
         'logs' : logs,
         'supported_container_sizes': container_sizes,
         'supported_flavors': supported_flavors,
-        'allocations': allocations_dict
+        'allocations': allocations_dict,
+        'schedule': schedule_dict,
     }
 
     # add the message and message type to the dictionary if they exist
@@ -184,64 +192,68 @@ def inventory_add_product():
             associated_user = request.form.get('user-id')
 
             # ensure all fields are filled
-            if all([product_flavor, product_container_size, product_price, 
+            if not all([product_flavor, product_container_size, product_price, 
                     product_dock_date, product_quantity, product_status, associated_user
             ]):
-
-                # convert the types of price, quantity and dock date
-                product_price = float(product_price)
-                product_quantity = int(product_quantity)
-                product_dock_date = datetime.strptime(product_dock_date, "%m/%d/%Y") if product_dock_date else None
-
-                # update existing product if it exists (removed this)
-                # check if product already exists
-                existing_product = Product.query.filter_by(flavor=product_flavor, container_size=product_container_size, deleted_at=None).first()
-                if existing_product:
-                    # existing_product.price = product_price
-                    # existing_product.quantity = product_quantity
-                    # existing_product.status = product_status
-                    # existing_product.dock_date = product_dock_date
-
-                    # # log the update
-                    # print(f'Updated product: {existing_product}')
-                    # msg = "Updated product successfully"
-                    # msg_type = "success"
-                    # log the error
-                    print("Product already exists")
-                    msg = "Product already exists"
-            
-                else:
-
-                    # create a new product object
-                    new_product = Product(flavor=product_flavor, container_size=product_container_size, 
-                                        price=product_price, quantity=product_quantity, 
-                                        status=product_status, user_id_add=associated_user, 
-                                        dock_date=product_dock_date, created_at=datetime.now())
-
-                    # add the new product to the database
-                    db.session.add(new_product)
-
-                    # log the addition
-                    print(f'Added product: {new_product}')
-                    msg = "Added product successfully"
-                    msg_type = "success"
-                
-                    # log the action
-                    new_log = Log(
-                        action = "added",
-                        product = product_flavor,
-                        container_size = product_container_size,
-                        user_id = associated_user
-                    )
-                
-                db.session.add(new_log)
-                db.session.commit()
-
-            else:
-
                 # log the error
                 print("Missing fields")
                 msg = "Missing fields"
+
+            # convert the types of price, quantity and dock date
+            product_price = float(product_price)
+            product_quantity = int(product_quantity)
+            product_dock_date = datetime.strptime(product_dock_date, "%m/%d/%Y") if product_dock_date else None
+
+            # update existing product if it exists (removed this)
+            # check if product already exists
+            existing_product = Product.query.filter_by(
+                                            flavor=product_flavor, 
+                                            container_size=product_container_size,
+                                            price=product_price, 
+                                            deleted_at=None).first()
+            
+
+            if existing_product and existing_product.status == "actual":
+                # existing_product.price = product_price
+                # existing_product.quantity = product_quantity
+                # existing_product.status = product_status
+                # existing_product.dock_date = product_dock_date
+
+                # # log the update
+                # print(f'Updated product: {existing_product}')
+                # msg = "Updated product successfully"
+                # msg_type = "success"
+                
+                # log the error
+                print("Product already exists")
+                msg = "Product already exists"
+        
+            else:
+
+                # create a new product object
+                new_product = Product(flavor=product_flavor, container_size=product_container_size, 
+                                    price=product_price, quantity=product_quantity, 
+                                    status=product_status, user_id_add=associated_user, 
+                                    dock_date=product_dock_date, created_at=datetime.now())
+
+                # add the new product to the database
+                db.session.add(new_product)
+
+                # log the addition
+                print(f'Added product: {new_product}')
+                msg = "Added product successfully"
+                msg_type = "success"
+            
+                # log the action
+                new_log = Log(
+                    action = "added",
+                    product = product_flavor,
+                    container_size = product_container_size,
+                    user_id = associated_user
+                )
+            
+                db.session.add(new_log)
+                db.session.commit()
 
         except Exception as e:
             print(e)

@@ -88,14 +88,14 @@
 
                 <table class="table table-hover table-borderless table-striped" id="orders-table">
                     {% if orders %}
-                    {% set excluded_attribs = ['id', 'order_creation_date', 'line_item_costs', 
+                    {% set excluded_attribs = ['order_creation_date', 'line_item_costs', 
                                                'line_items', 'desired_receipt_date', 'billing_address',
                                                'shipping_cost', 'shipment_id', 'user_id'] 
                     %}
                     <thead class="table-dark">
                         {% for key in orders[0].keys() %}
                             {% if key not in excluded_attribs %}
-                                <th scope="col">{{ key | attribute }}</th>
+                                <th scope="col">{{ key | id }}</th>
                             {% endif %}
                         {% endfor %}
                     </thead>

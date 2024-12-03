@@ -3,6 +3,7 @@
 from app.extensions import db
 from sqlalchemy.sql import func
 from flask_login import UserMixin
+from datetime import datetime, timedelta
 
 # User class
 class User(db.Model, UserMixin):
@@ -170,6 +171,38 @@ class OrderItem(db.Model):
     def __repr__(self):
         return f'<OrderItem {self.id}, {self.product_id}, {self.order_id}, {self.quantity}, {self.line_item_cost}, {self.allocation}>'
     
+
+# Invoice data model
+class Invoice(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+    # foreign key to Order model
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    shipment_id = db.Column(db.Integer, db.ForeignKey('shipment.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    # invoice attributes
+    invoice_date = db.Column(db.Date, nullable=False, default=func.now())
+    due_date = db.Column(db.Date, nullable=False)
+    total_cost = db.Column(db.Float, nullable=False)
+    days_overdue = db.Column(db.Integer, nullable=True)
+
+    # 1:1 relationship with Order
+    order = db.relationship('Order', backref='invoice', uselist=False, lazy=True)
+
+    # Many:1 relationship with User
+    user = db.relationship('User', backref='invoices', lazy=True)
+
+    # helper function to compute the days overdue
+    def compute_days_overdue(self):
+        days_overdue = (datetime.now().date() - self.due_date).days
+        return int(days_overdue)
+
+    # print the invoice
+    def __repr__(self):
+        return f'<Invoice {self.id}>'
+
 
 # Admin Configuration Settings data model
 class AdminConfig(db.Model):

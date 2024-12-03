@@ -1,8 +1,8 @@
 <!-- Section Header -->
-{% macro section_header(title, subtitle='', extra_html='') %}
+{% macro section_header(title, popover, subtitle='', extra_html='', size='h1') %}
     <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
         <div>
-            <h1>{{ title }}</h1>
+            <{{ size | safe }}>{{ title }}{% if popover %} {{ popover | safe }}{% endif %}</{{ size | safe }}>
             {% if subtitle %}
                 <p>{{ subtitle }}</p>
             {% endif %}
@@ -22,6 +22,19 @@
             <h2 class="card-text">{{ text }}</h2>
         </div>
     </div>
+{% endmacro %}
+
+<!-- Info Popover -->
+{% macro info_popover(title, content, placement) %}
+    <button 
+        type="button" 
+        class="btn" 
+        data-bs-toggle="popover" 
+        title="{{ title }}" 
+        data-bs-content="{{ content }}" 
+        {% if placement %}data-bs-placement="{{ placement }}"{% endif %}>
+        <i class="bi bi-info-circle"></i>
+    </button>
 {% endmacro %}
 
 <!-- Message (Default timeout is 15 seconds) -->

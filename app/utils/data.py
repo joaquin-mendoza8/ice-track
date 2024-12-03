@@ -29,6 +29,7 @@ def parse_order_data(orders):
         {
             "id": order.id,
             "user_id": order.user_id,
+            "invoice_id": order.invoice[0].id if order.invoice else None,
             "customer": f'{order.user.first_name} {order.user.last_name}',
             "order_creation_date": order.created_at,
             "shipping_address": order.shipping_address, 
@@ -49,20 +50,6 @@ def parse_order_data(orders):
 
 def parse_order_item_data(order_items):
     """Converts a SQLAlchemy list of objects to a dictionary."""
-    
-    # return [
-    #     {
-    #         "id": order_item.id,
-    #         "quantity": order_item.quantity,
-    #         "line_item_cost": order_item.line_item_cost,
-    #         "flavor": order_item.allocation[0].product.flavor,
-    #         "flavor": order_item.allocation[0].product.flavor,
-    #         "container_size": order_item.allocation[0].product.container_size,
-    #         "price": order_item.allocation[0].product.price,
-    #         "order_id": order_item.order_id,
-    #     }
-        
-    # ]
     parsed = []
     for order_item in order_items:
         parsed.append(
@@ -103,7 +90,7 @@ def parse_product_allocation_data(product_allocations):
             "shipment_id": product_allocation.shipment_id,
             "order_id": product_allocation.order_id,
             "disposition": product_allocation.disposition,
-            "allocated_at": product_allocation.allocated_at.strftime('%m/%d/%Y') if product_allocation.allocated_at else None,
+            "allocated_at": product_allocation.allocated_at,
         }
         for product_allocation in product_allocations
     ]
@@ -144,12 +131,46 @@ def parse_shipment_data(shipments):
             "user_id": shipment.user_id,
             "order_id": shipment.order_id,
             "order": shipment.order,
-            "date_shipped": format_date(shipment.date_shipped),
-            "estimated_date": format_date(shipment.estimated_delivery_date),
-            "actual_delivery_date": format_date(shipment.actual_delivery_date),
+            "date_shipped": shipment.date_shipped,
+            "estimated_delivery_date": shipment.estimated_delivery_date,
+            "actual_delivery_date": shipment.actual_delivery_date,
             "shipment_boxes": shipment.shipment_boxes,
             "partial_delivery": shipment.partial_delivery,
             "shipment_type": shipment.shipment_type,
         }
         for shipment in shipments
+    ]
+
+def parse_invoice_data(invoices):
+    """Converts a SQLAlchemy list of objects to a dictionary."""
+    
+    return [
+        {
+            "id": invoice.id,
+            "customer_name": (f"{invoice.user.first_name} {invoice.user.last_name}"),
+            "user_id": invoice.user_id,
+            "order_id": invoice.order_id,
+            "shipment_id": invoice.shipment_id,
+            "total_cost": invoice.total_cost,
+            "invoice_date": invoice.invoice_date,
+            "due_date": invoice.due_date,
+            "overdue": invoice.days_overdue
+        }
+        for invoice in invoices
+    ]
+
+def parse_schedule_data(products):
+    """Converts a SQLAlchemy list of objects to a dictionary."""
+
+    return [
+        {
+            "id": product.id,
+            "flavor": product.flavor,
+            "container_size": product.container_size,
+            "price": product.price,
+            "quantity": product.quantity,
+            "status": product.status,
+            "dock_date": product.dock_date if product.dock_date else None,
+        }
+        for product in products
     ]

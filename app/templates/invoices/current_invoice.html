@@ -1,40 +1,53 @@
 {% extends 'base.html' %}
+{% import 'components/macros.html' as macros %}
 
 {% block title %}Invoice Details{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <!-- Banner header -->
-        <h1>Current Invoice</h1>
+<div class="container-md mb-5">
+
+    {% set return_btn %}
+    <div class="btn-group d-print-none">
+        <a type="button" href="{{ url_for('invoices.invoices_home') }}" class="btn btn-outline-secondary">Return to Invoices</a>
     </div>
+    {% endset %}
+
+    {{ macros.section_header("Invoice (#" ~ invoice.id ~ ")", extra_html=return_btn | safe) }}
+
     <!-- Display basic invoice information -->
-    <p><strong>Order ID:</strong> {{ invoice.id }}</p>
-    <p><strong>Customer Name:</strong> {{ invoice.customer_name }}</p>
-    <p><strong>Due Date:</strong> {{ invoice.due_date }}</p>
+    <p><strong>Order ID:</strong> {{ invoice.order.id }}</p>
+    <p><strong>Customer Name:</strong> {{ invoice.user.first_name }} {{ invoice.user.last_name }}</p>
+    <p><strong>Due Date:</strong> {{ invoice.due_date | date }}</p>
 
     <!-- Display the list of items in the invoice -->
-    <div class="align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <!-- Banner header -->
-        <h2>Items</h2>
-    </div>
-    <table class="table table-hover table-borderless">
+    <!-- <div class="align-items-center pt-3 pb-2 mb-3 border-bottom"> -->
+        {% set print_btn %}
+        <button 
+            type="button"
+            class="btn btn-outline-secondary d-print-none"
+            onclick="window.print()">Print Invoice
+        </button>
+        {% endset %}
+        {{ macros.section_header("Order Items", extra_html=print_btn | safe, size='h3') }}
+    <!-- </div> -->
+
+    <table class="table table-hover table-borderless table-striped">
         <thead>
             <tr>
-                <th scope="col">Item Name</th>
+                <th scope="col">Item Flavor</th>
+                <th scope="col">Item Container Size</th>
                 <th scope="col">Quantity</th>
-                <th scope="col">Unit Price</th>
-                <th scope="col">Total</th>
+                <th scope="col">Line-item Cost</th>
             </tr>
         </thead>
         <tbody>
-            {% if invoice.order_items %}
-                {% for item in invoice.order_items %}
+            {% if invoice.order.order_items %}
+                {% for item in invoice.order.order_items %}
                 <tr>
-                    <td>{{ item.name }}</td>
+                    <td>{{ item.product.flavor | title }}</td>
+                    <td>{{ item.product.container_size | title }}</td>
                     <td>{{ item.quantity }}</td>
-                    <td>{{ item.unit_price | currency }}</td>
-                    <td>{{ item.total | currency }}</td>
+                    <td>{{ item.line_item_cost | currency }}</td>
                 </tr>
                 {% endfor %}
             {% else %}
@@ -44,11 +57,15 @@
             {% endif %}
         </tbody>
     </table>
+    <hr>
 
     <!-- Display the total amount for the invoice -->
-    <p><strong>Total Amount:</strong> {{ invoice.total | currency }}</p>
+    <div style="max-width: fit-content;">
+        <h6>Subtotal: {{ subtotal | currency }}</h6>
+        <h6>Shipping Cost: {{ invoice.order.shipping_cost | currency }} ({{ invoice.order.shipping_type | title }})</h6>
+        <hr style="border-top: 2px dotted #000;">
+    </div>
 
-    <!-- Print Invoice Button -->
-    <button onclick="window.print()">Print Invoice</button>
+    <h4>Total Cost: {{ invoice.order.total_cost | currency }}</h4>
 </div>
 {% endblock %}
