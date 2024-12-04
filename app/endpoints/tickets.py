@@ -129,9 +129,13 @@ def tickets_query_tickets():
         query = Ticket.query
         
         # Apply filters dynamically
-        if customer_name:
-            query = query.filter(Ticket.source.ilike(f"%{customer_name}%"))
-            
+        if current_user.is_admin:
+            if customer_name:
+                query = query.filter(Ticket.source.ilike(f"%{customer_name}%"))
+        else:
+            user_source = current_user.first_name + " " + current_user.last_name
+            query = query.filter(Ticket.source.ilike(f"%{user_source}%"))
+       
         if problem_type:
             query = query.filter(Ticket.problem_type.ilike(f"%{problem_type}%"))
             
@@ -232,8 +236,6 @@ def create_ticket_statistics(tickets, start_date: date = None, end_date: date = 
             and ticket.date_detected <= current_date
             and ticket.problem_status == 'in-progress'
         ]
-        print(tickets)
-        print(in_progress_tickets, current_date, max_date)
         in_progress_tickets_per_day.append(len(in_progress_tickets))
         current_date += timedelta(days=1)
 
