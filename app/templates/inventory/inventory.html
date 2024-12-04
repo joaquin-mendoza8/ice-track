@@ -32,7 +32,8 @@
                         type="button" 
                         class='btn btn-outline-secondary modal-btn' 
                         data-bs-toggle='modal' 
-                        data-bs-target='#scheduleModal'>Schedule
+                        data-bs-target='#scheduleModal'>
+                        <i class="bi bi-calendar-event"></i>&nbsp;&nbsp;Schedule
                     </button>
                 </div>
             {% endset %}
@@ -67,7 +68,13 @@
                     <!-- only displays the add button if user is an admin -->
                     {% if current_user.is_admin %}
                         <div class="btn-group">
-                            <button type='button' class='btn btn-outline-secondary modal-btn' data-bs-toggle='modal' data-bs-target='#logModal'>Log</button>
+                            <button 
+                                type='button' 
+                                class='btn btn-outline-secondary modal-btn' 
+                                data-bs-toggle='modal' 
+                                data-bs-target='#logModal'>
+                                <i class="bi bi-clipboard2"></i>&nbsp;&nbsp;Log
+                            </button>
                             <button type='button' class='btn btn-outline-secondary modal-btn' data-bs-toggle='modal' data-bs-target='#addModal'>+ New</button>
                         </div>
                     {% endif %}

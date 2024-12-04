@@ -15,10 +15,13 @@
 
         <!-- Main content -->
         <main class="ms-sm-auto px-md-4 pt-md-3">
-            <div class="align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <!-- Banner header -->
-                <h1>Admin Dashboard</h1>
-            </div>
+
+
+            {% set admin_popover %}
+                {{ macros.info_popover("Admin Dashboard", "View and manage all admin settings.") }}
+            {% endset %}
+
+            {{ macros.section_header('Admin Dashboard', popover=admin_popover | safe) }}
 
             <!-- Admin-level Configurations Form -->
             <form method="post" action="/admin/update_configs">

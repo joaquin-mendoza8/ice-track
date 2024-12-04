@@ -27,18 +27,22 @@
                     type="button"
                     class="btn btn-outline-secondary d-print-none"
                     onclick="window.print()">
-                    Print Invoice
+                    <i class="bi bi-printer"></i>&nbsp;&nbsp;Print
                 </button>
                 <a 
                     type="button" 
                     href="{{ url_for('orders.orders_home') }}" 
-                    class="btn btn-secondary d-print-none">
-                    Go to Orders
+                    class="btn btn-outline-secondary d-print-none">
+                    Orders &nbsp;<i class="bi bi-arrow-up-right"></i>
                 </a>
             </div>
             {% endset %}
 
-            {{ macros.section_header('Invoices', extra_html=btns | safe) }}
+            {% set invoices_popover %}
+                {{ macros.info_popover("Invoices", "View all invoice information.") }}
+            {% endset %}
+
+            {{ macros.section_header('Invoices', extra_html=btns | safe, popover=invoices_popover | safe) }}
 
             <!-- Message Display Container -->
             {% if msg %}
@@ -47,25 +51,6 @@
 
             <!-- Invoices Table -->
             <div class="mt-5">
-
-                <!-- Dropdown for 'Filter By' functionality -->
-                <!-- <div class="dropdown mt-3">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                        Filter By
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-
-                        {% if invoices %}
-                            {% set hidden_attributes = ['id'] %}
-                            {% for key in invoices[0].keys() %}
-                                {% if key not in hidden_attributes %}
-                                    <li><a class="dropdown-item" href="/inventory?filter={{ key }}">{{ key | attribute }}</a></li>
-                                {% endif %}
-                            {% endfor %}
-                        {% endif %}
-
-                    </ul>
-                </div> -->
 
                 <!-- Table for invoices -->
                 <table class="table table-hover table-borderless table-striped">

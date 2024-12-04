@@ -1,8 +1,15 @@
 <!-- Sticky header -->
 <header class="navbar sticky-top bg-dark flex-md-nowrap p-0 shadow d-print-none">
-    <h2 class="sticky-navbar-header">Ice Track</h2>
+    <a class="navbar-brand text-white ms-3" href="{{ url_for('inventory.inventory_home') }}">
+        <h1 class="mb-0">Ice Track</h1>
+    </a>
     <!-- Button to toggle offcanvas -->
-    <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSidebar" aria-controls="offcanvasSidebar">
+    <button 
+        class="btn btn-light me-3" 
+        type="button" 
+        data-bs-toggle="offcanvas" 
+        data-bs-target="#offcanvasSidebar" 
+        aria-controls="offcanvasSidebar">
         <!-- hamburger icon -->
         <span class="navbar-toggler-icon"></span>
     </button>

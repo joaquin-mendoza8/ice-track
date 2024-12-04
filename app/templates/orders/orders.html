@@ -25,13 +25,17 @@
             {% set customer_btns %}
                 <a type="button" class="btn btn-outline-secondary modal-btn" 
                     href="{{ url_for('auth.register') }}">
-                    + Register New
+                    <i class="bi bi-person-plus"></i>&nbsp;&nbsp;Register
                 </a>
             {% endset %}
             
-            <!-- TODO: ability to delete/edit/search users, change user billing/shipping addresses -->
+            <!-- Customers Table -->
 
-            {{ macros.section_header("Customers", extra_html=customer_btns | safe) }}
+            {% set customer_popover %}
+                {{ macros.info_popover("Customers", "View all customer information.") }}
+            {% endset %}
+
+            {{ macros.section_header("Customers", popover=customer_popover | safe, extra_html=customer_btns | safe) }}
 
             <table class="table table-hover table-borderless table-striped">
                 {% if customers %}
@@ -78,7 +82,11 @@
             <!-- Orders Table -->
             <div class="my-5">
 
-                {{ macros.section_header("Orders", extra_html=order_btns | safe) }}
+                {% set orders_popover %}
+                    {{ macros.info_popover("Orders", "View all order information.") }}
+                {% endset %}
+
+                {{ macros.section_header("Orders", extra_html=order_btns | safe, popover=orders_popover | safe) }}
 
                 <!-- Message Display Container -->
                 {% if msg %}
@@ -131,7 +139,7 @@
                                 </tr>
                             {% endif %}
                         {% endfor %}
-                        {% if is_table_empty %}
+                        {% if not is_table_empty %}
                             <tr>
                                 <td colspan="{{ orders[0] | length }}">No orders found.</td>
                             </tr>

@@ -8,11 +8,17 @@
 
     {% set return_btn %}
     <div class="btn-group d-print-none">
-        <a type="button" href="{{ url_for('invoices.invoices_home') }}" class="btn btn-outline-secondary">Return to Invoices</a>
+        <a type="button" href="{{ url_for('invoices.invoices_home') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-90deg-left"></i>&nbsp;&nbsp;Invoices
+        </a>
     </div>
     {% endset %}
 
-    {{ macros.section_header("Invoice (#" ~ invoice.id ~ ")", extra_html=return_btn | safe) }}
+    {% set current_invoice_popover %}
+        {{ macros.info_popover("Current Invoice", "View current invoice information.") }}
+    {% endset %}
+
+    {{ macros.section_header("Invoice (#" ~ invoice.id ~ ")", extra_html=return_btn | safe, popover=current_invoice_popover | safe) }}
 
     <!-- Display basic invoice information -->
     <p><strong>Order ID:</strong> {{ invoice.order.id }}</p>
@@ -20,16 +26,20 @@
     <p><strong>Due Date:</strong> {{ invoice.due_date | date }}</p>
 
     <!-- Display the list of items in the invoice -->
-    <!-- <div class="align-items-center pt-3 pb-2 mb-3 border-bottom"> -->
-        {% set print_btn %}
-        <button 
-            type="button"
-            class="btn btn-outline-secondary d-print-none"
-            onclick="window.print()">Print Invoice
-        </button>
-        {% endset %}
-        {{ macros.section_header("Order Items", extra_html=print_btn | safe, size='h3') }}
-    <!-- </div> -->
+    {% set print_btn %}
+    <button 
+        type="button"
+        class="btn btn-outline-secondary d-print-none"
+        onclick="window.print()">
+        <i class="bi bi-printer"></i>&nbsp;&nbsp;Print
+    </button>
+    {% endset %}
+
+    {% set order_items_popover %}
+        {{ macros.info_popover("Order Items", "View all order items associated with the order.") }}
+    {% endset %}
+
+    {{ macros.section_header("Order Items", extra_html=print_btn | safe, popover=order_items_popover | safe, size='h3') }}
 
     <table class="table table-hover table-borderless table-striped">
         <thead>

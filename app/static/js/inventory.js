@@ -1,9 +1,6 @@
 // DOM content loaded event listener
 document.addEventListener('DOMContentLoaded', function() {
 
-    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
-    const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
-
     // get all "disposition-" elements
     const dispositionElements = document.querySelectorAll('[id^="disposition-"]');
 

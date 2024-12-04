@@ -17,11 +17,15 @@
             <a 
                 class="btn btn-outline-secondary"
                 href="{{ url_for('shipments.status_report') }}">
-                View Status Report
+                <i class="bi bi-file-earmark-bar-graph"></i>&nbsp;&nbsp;Status Report
             </a>
         {% endset %}
 
-        {{ macros.section_header("Shipments", extra_html=status_report_btn | safe) }}
+        {% set shipments_popover %}
+            {{ macros.info_popover("Shipments", "View and manage your shipments.") }}
+        {% endset %}
+
+        {{ macros.section_header("Shipments", extra_html=status_report_btn | safe, popover=shipments_popover | safe) }}
         
         <!-- Message Display Container -->
         {% if msg %}

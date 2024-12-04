@@ -8,11 +8,26 @@
 
     {% set return_btn %}
         <div class="btn-group d-print-none">
-            <a type="button" href="{{ url_for('shipments.shipments_home') }}" class="btn btn-outline-secondary">Return to Shipments</a>
+            <button 
+                type="button" 
+                class="btn btn-outline-secondary d-print-none" 
+                onclick="window.print()">
+                <i class="bi bi-printer"></i>&nbsp;&nbsp;Print
+            </button>
+            <a 
+                type="button" 
+                href="{{ url_for('shipments.shipments_home') }}" 
+                class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-90deg-left"></i>&nbsp;&nbsp;Shipments
+            </a>
         </div>
     {% endset %}
 
-    {{ macros.section_header("Status Report", extra_html=return_btn | safe) }}
+    {% set status_report_popover %}
+        {{ macros.info_popover("Status Report", "View and print all a report of system-wide shipment information.") }}
+    {% endset %}
+
+    {{ macros.section_header("Status Report", extra_html=return_btn | safe, popover=status_report_popover | safe) }}
 
     <!-- Display general shipment metrics -->
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 gap-4">
@@ -80,12 +95,5 @@
             </tr>
         {% endif %}
     </table>
-
-    <button 
-        type="button" 
-        class="btn btn-outline-secondary d-print-none" 
-        onclick="window.print()">
-        Print Status Report
-    </button>
 </div>
 {% endblock %}
