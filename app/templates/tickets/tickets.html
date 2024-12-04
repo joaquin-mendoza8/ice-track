@@ -21,48 +21,82 @@
 
         <!-- Main content -->
         <main class="ms-sm-auto px-md-4 pt-md-3">
-            <div class="align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <!-- Banner header -->
-                <h1>Customer Support</h1>
-            </div>
+
+            {{ macros.section_header("Customer Support") }}
 
             <!-- Query Search Bar -->
             <div class="query-container mt-4">
-                <form method="GET" action="{{ url_for('tickets.tickets_query_tickets') }}"class="row g-3">
+
+                <!-- Query Search Form -->
+                <form method="GET" action="{{ url_for('tickets.tickets_query_tickets') }}" class="row g-3">
+
                     <!-- Customer Name -->
                     <div class="col-md-3">
-                        <input type="text" class="form-control" name="customer-name" placeholder="Customer Name">
+                        {{ macros.input_group_floating(
+                            label='Customer Name',
+                            id='customer-name',
+                            name='customer-name',
+                            tooltip='Enter the customer name to search for tickets.',
+                        ) }}
                     </div>
             
                     <!-- Type of Problem -->
                     <div class="col-md-3">
-                        <input type="text" class="form-control" name="problem-type" placeholder="Type of Problem">
+
+                        {{ macros.input_group_floating(
+                            label='Type of Problem',
+                            id='problem-type',
+                            name='problem-type',
+                            tooltip='Enter the type of problem to search for tickets.',
+                        ) }}
+
                     </div>
             
                     <!-- Problem Status -->
                     <div class="col-md-2">
-                        <select class="form-select" name="problem-status">
-                            <option value="" selected>Select Problem Status</option>
-                            <option value="open">Open</option>
-                            <option value="in_progress">In Progress</option>
-                            <option value="resolved">Resolved</option>
-                        </select>
+
+                        {% set options = [('open', 'Open'), 
+                                          ('in_progress', 'In Progress'), 
+                                          ('resolved', 'Resolved')] %}
+
+                        {{ macros.select_group_floating(
+                            label='Problem Status',
+                            id='problem-status',
+                            name='problem-status',
+                            options=options,
+                            tooltip='Select the status of the problem to search for tickets.',
+                        ) }}
+
                     </div>
             
                     <!-- Date Reported -->
                     <div class="col-md-2">
-                        <input type="date" class="form-control" name="date-reported" placeholder='Date Reported'>
-                        <label for="date-reported">Date Reported</label>
+
+                        {{ macros.input_group_floating(
+                            label='Date Reported',
+                            id='date-reported',
+                            name='date-reported',
+                            type='date',
+                            tooltip='Enter the date the problem was reported to search for tickets.',
+                        ) }}
+
                     </div>
             
                     <!-- Date Resolved -->
                     <div class="col-md-2">
-                        <input type="date" class="form-control" name="date-resolved" placeholder="Date Resolved">
-                        <label for="date-resolved">Date Resolved</label>
+
+                        {{ macros.input_group_floating(
+                            label='Date Resolved',
+                            id='date-resolved',
+                            name='date-resolved',
+                            type='date',
+                            tooltip='Enter the date the problem was resolved to search for tickets.',
+                        ) }}
+
                     </div>
             
                     <!-- Submit Button -->
-                    <div class="col-md-2">
+                    <div class="col-md-2 ">
                         <button type="submit" class="btn btn-primary w-100">Search</button>
                     </div>
                 </form>
@@ -71,17 +105,20 @@
             <!-- Tickets Table -->
             <div class="mt-5">
                 <!-- inline container for title and modal button -->
-                <div class="d-flex justify-content-between">
-                    <h1>Ticket History</h1>
-                    <button type="button" class="btn modal-btn" data-bs-toggle="modal" data-bs-target="#tickets-add-modal">+ New</button>
-                </div>
+
+                {% set new_btn %}
+                    <button type="button" class="btn btn-outline-secondary modal-btn" data-bs-toggle="modal" data-bs-target="#tickets-add-modal">+ New</button>
+                {% endset %}
+
+                {{ macros.section_header("Ticket History", extra_html=new_btn | safe) }}
+
                 <table class="table table-hover table-borderless">
                     {% if tickets %}
                         <thead>
                             <tr>
                                 {% for key in tickets[0].keys() %}
                                     {% if key not in ['id'] %}
-                                        <th scope="col">{{ key.replace('_', ' ').capitalize() }}</th>
+                                        <th scope="col">{{ key | attribute }}</th>
                                     {% endif %}
                                 {% endfor %}
                             </tr>
@@ -98,7 +135,7 @@
                                         <!-- Only surface update ticket button if the current user is an admin -->
                                         {% if current_user.is_admin %}
                                             <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" 
-                                            data-bs-target="#tickets-update-modal" ticket-id={{ticket['id']}}>
+                                            data-bs-target="#tickets-update-modal" ticket-id={{ ticket['id'] }}>
                                                     Update Ticket
                                             </button>
                                             <form method="POST" action="{{ url_for('tickets.tickets_delete_ticket') }}">
