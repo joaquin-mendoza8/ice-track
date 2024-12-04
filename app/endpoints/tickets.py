@@ -185,9 +185,9 @@ def tickets_summary():
 
 def create_ticket_statistics(tickets, start_date: date = None, end_date: date = None) -> dict:
     statistics = {
-        'average_time_to_close': 'N/A',
-        'average_opened_problems_per_day': 'N/A',
-        'average_problems_worked_per_day': 'N/A'
+        'average_time_to_close': '-',
+        'average_opened_problems_per_day': '-',
+        'average_problems_worked_per_day': '-'
     }
     
     # case if there are no tickets
