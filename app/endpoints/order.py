@@ -248,6 +248,7 @@ def orders_update_order():
                             msg = "Order item updated"
 
                         else:
+                            print(product)
                             print("Product ID mismatch")
                             msg = "Product ID mismatch"
 
@@ -288,7 +289,9 @@ def orders_update_order():
                 db.session.commit()
 
         except Exception as e: # rollback if an error occurs
-            print(e)
+            msg = "Error updating order"
+            msg_type = "danger"
+            print(msg + f': {e}')
             db.session.rollback()
 
         # redirect back to the order form with a message

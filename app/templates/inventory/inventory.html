@@ -74,8 +74,10 @@
                 {% endset %}
 
                 <!-- Info Popover -->
+                {% set popover_msg = "Click on a row to update the product." if current_user.is_admin
+                                  else "View all planned and available products." %}
                 {% set product_popover %}
-                    {{ macros.info_popover('Products', 'Click on a row to update the product.') }}
+                    {{ macros.info_popover('Products', popover_msg) }}
                 {% endset %}
 
                 <!-- Header -->
@@ -86,15 +88,21 @@
                     {{ macros.message(msg, msg_type or "danger", "/inventory") }}
                 {% endif %}
 
-                <!-- Table for inventory products -->
+                <!-- Products section -->
                 <table class="table table-hover table-borderless table-striped mb-5">
                     {% if products %}
-                    {% set hidden_attributes = ['id'] %}
+                    {% set hidden_attributes = ['id', 'dock_date'] %}
                     <thead class="table-dark">
                         {% for key in products[0].keys() %}
                             {% if key not in hidden_attributes %}
                                 <th class="inventory-header" scope="col">
-                                    <a class="table-header-link" href="/inventory?filter={{ key }}">{{ key | attribute }}</a>
+                                    <a class="table-header-link" href="/inventory?filter={{ key }}">
+                                        {% if key == 'dock_date_display' %}
+                                            {{ key | attribute | replace('Display', '') }}
+                                        {% else %}
+                                            {{ key | attribute }}
+                                        {% endif %}
+                                    </a>
                                 </th>
                             {% endif %}
                         {% endfor %}
@@ -117,6 +125,8 @@
                                     {% if key not in hidden_attributes %}
                                         {% if key == 'price' %}
                                             <td>{{ value | currency }}</td>
+                                        {% elif key == 'dock_date' %}
+                                            <td>{{ value | date }}</td>
                                         {% else %}
                                             <td>{{ value | capitalize }}</td>
                                         {% endif %}
@@ -130,20 +140,25 @@
                     {% endif %}
                 </table>
 
+                <!-- Allocations section -->
+                {% set tooltip_msg = "View and add committed, shipped, defective, and spoiled allocations."
+                                      if current_user.is_admin else "View your allocations (reservations of a product)." %}
                 {% set allocations_popover %}
-                    {{ macros.info_popover('Allocations', "View and add committed, shipped, defective, and spoiled allocations.") }}
+                    {{ macros.info_popover('Allocations', tooltip_msg) }}
                 {% endset %}
 
                 {% set new_allocation_btn %}
-                    <div class="btn-group">
-                        <button 
-                            type="button" 
-                            class='btn btn-outline-secondary modal-btn' 
-                            data-bs-toggle='modal' 
-                            data-bs-target='#addAllocationModal'>
-                            + New
-                        </button>
-                    </div>
+                    {% if current_user.is_admin %}
+                        <div class="btn-group">
+                            <button 
+                                type="button" 
+                                class='btn btn-outline-secondary modal-btn' 
+                                data-bs-toggle='modal' 
+                                data-bs-target='#addAllocationModal'>
+                                + New
+                            </button>
+                        </div>
+                    {% endif %}
                 {% endset %}
 
                 <!-- Inventory Allocations Header -->
@@ -171,53 +186,68 @@
                         {% endfor %}
                     </thead>
                     <tbody>
+                        {% set is_table_empty = true %}
                         {% for allocation in allocations %}
 
-                            {# Set the table row color based on the order status #}
-                            {% set tr_map = '' %}
-                            {% if allocation.disposition == 'committed' %}
-                                {% set tr_map = 'table-info' %}
-                            {% elif allocation.disposition == 'shipped' %}
-                                {% set tr_map = 'table-success' %}
-                            {% elif allocation.disposition == 'defective' %}
-                                {% set tr_map = 'table-warning' %}
-                            {% elif allocation.disposition == 'spoiled' %}
-                                {% set tr_map = 'table-danger' %}
-                            {% endif %}
+                            {% if allocation.user_id == current_user.id or current_user.is_admin %}
+                                {% set is_table_empty = false %}
 
-                            {% set options = ('committed', 'Committed'),
-                                             ('shipped', 'Shipped'),
-                                             ('defective', 'Defective'),
-                                             ('spoiled', 'Spoiled') %}
+                                {# Set the table row color based on the order status #}
+                                {% set tr_map = '' %}
+                                {% if allocation.disposition == 'committed' %}
+                                    {% set tr_map = 'table-info' %}
+                                {% elif allocation.disposition == 'shipped' %}
+                                    {% set tr_map = 'table-success' %}
+                                {% elif allocation.disposition == 'defective' %}
+                                    {% set tr_map = 'table-warning' %}
+                                {% elif allocation.disposition == 'spoiled' %}
+                                    {% set tr_map = 'table-danger' %}
+                                {% endif %}
 
-                            <tr onclick="openModal({{ allocation }}, {{ allocation['id'] }})" 
-                                class="{% if tr_map %}{{ tr_map }}{% endif %}" id="row-{{ loop.index - 1 }}">
-                                {% for key, value in allocation.items() %}
-                                    {% if key not in hidden_attributes %}
-                                        {% if key == 'disposition' %}
-                                            {% set input_id = 'disposition-' ~ allocation.id %}
-                                            <td>
-                                                {{ macros.select_group_floating(
-                                                    label='Current',
-                                                    id=input_id,
-                                                    name=input_id,
-                                                    options=options,
-                                                    classes='disposition-input',
-                                                    selected=value,
-                                                    tooltip="Update disposition for this allocation item."
-                                                ) }}
-                                            </td>
-                                        {% elif key == 'price' %}
-                                            <td>{{ value | currency }}</td>
-                                        {% elif 'date' in key or key == 'allocated_at' %}
-                                            <td>{{ value | date }}</td>
-                                        {% else %}
-                                            <td>{{ value | capitalize }}</td>
+                                {% set options = ('committed', 'Committed'),
+                                                ('shipped', 'Shipped'),
+                                                ('defective', 'Defective'),
+                                                ('spoiled', 'Spoiled') %}
+
+                                <tr onclick="openModal({{ allocation }}, {{ allocation['id'] }})" 
+                                    class="{% if tr_map %}{{ tr_map }}{% endif %}" id="row-{{ loop.index - 1 }}">
+                                    {% for key, value in allocation.items() %}
+                                        {% if key not in hidden_attributes %}
+                                            {% if key == 'disposition' %}
+                                                {% set input_id = 'disposition-' ~ allocation.id %}
+                                                <td>
+                                                    {% set tooltip_msg = "Update disposition for this allocation item."
+                                                        if current_user.is_admin else "Only admins can update dispositions." %}
+                                                    {{ macros.select_group_floating(
+                                                        label='Current',
+                                                        id=input_id,
+                                                        name=input_id,
+                                                        options=options,
+                                                        classes='disposition-input',
+                                                        selected=value,
+                                                        is_disabled=not current_user.is_admin,
+                                                        tooltip=tooltip_msg
+                                                    ) }}
+                                                </td>
+                                            {% elif key == 'price' %}
+                                                <td>{{ value | currency }}</td>
+                                            {% elif 'date' in key or key == 'allocated_at' %}
+                                                <td>{{ value | date }}</td>
+                                            {% else %}
+                                                <td>{{ value | capitalize }}</td>
+                                            {% endif %}
                                         {% endif %}
-                                    {% endif %}
-                                {% endfor %}
-                            </tr>
+                                    {% endfor %}
+                                </tr>
+                            {% endif %}
                         {% endfor %}
+                        {% if is_table_empty %}
+                            <tr>
+                                <td colspan="{{ allocations[0] | length }}">
+                                    No allocations found. Create an order/ticket to view allocations.
+                                </td>
+                            </tr>
+                        {% endif %}
                     </tbody>
                     {% else %}
                         No allocations found.

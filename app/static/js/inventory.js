@@ -243,6 +243,7 @@ function openModal(product_content, productId, isAdmin) {
                 const dbDate = product_content[attribute.replace('-', '_')]
                 const formattedDate = dbDate.split('/').reverse().join('-');
                 inputField.value = formattedDate;
+                console.log(formattedDate);
             } else {
                 inputField.value = product_content[attribute];
             }

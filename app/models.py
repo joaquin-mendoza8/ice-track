@@ -55,8 +55,8 @@ class Product(db.Model):
     user_id_add=db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) # user who added the product
     user_id_delete=db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True) # user who deleted the product
 
-    # 1:1 relationship between product & product_allocation
-    allocation = db.relationship('ProductAllocation', backref='product', lazy=True, uselist=False)
+    # 1:Many relationship between product & product_allocation
+    allocations = db.relationship('ProductAllocation', backref='product', lazy=True)
 
     # print the product
     def __repr__(self):
@@ -93,10 +93,6 @@ class ProductAllocation(db.Model):
     quantity_allocated = db.Column(db.Integer, nullable=False)
     disposition = db.Column(db.String(150), nullable=True)
     allocated_at = db.Column(db.DateTime, nullable=False, default=func.now())
-
-
-    # 1:1 relationship between product_allocation and order_item
-    # order_item = db.relationship('OrderItem', backref='allocation', lazy=True, uselist=False)
 
     # print the product allocation
     def __repr__(self):
