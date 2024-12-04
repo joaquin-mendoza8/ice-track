@@ -3,6 +3,7 @@ from flask_login import login_required
 from app.utils.data import *
 from app.utils.fetch_settings import fetch_autosignoff_interval, \
     fetch_supported_container_sizes, fetch_supported_flavors
+from app.utils.checks import update_committed_quantities, check_inventory_update
 from app.models import Product, User , Log, ProductAllocation, Shipment
 from app.extensions import db
 from datetime import datetime
@@ -32,6 +33,9 @@ def inventory_home():
     # get all product allocations from the database
     allocations = ProductAllocation.query.all()
 
+    # update the committed quantity for each product
+    update_committed_quantities_msg = update_committed_quantities(products)
+
     # if filter key is passed, sort by that key
     if filter_key:
         products = sorted(products, key=lambda x: getattr(x, filter_key))
@@ -44,6 +48,11 @@ def inventory_home():
 
     # parse the product data into a dictionary
     products_dict = parse_product_data(products)
+
+    # format product dock dates
+    for product in products_dict:
+        product['dock_date_display'] = product['dock_date'].strftime('%m/%d/%Y') # format for display
+        product['dock_date'] = product['dock_date'].strftime('%Y-%m-%d')    # format for input type=date
 
     # parse the product allocations into a dictionary
     allocations_dict = parse_product_allocation_data(allocations)
@@ -68,11 +77,15 @@ def inventory_home():
         'schedule': schedule_dict,
     }
 
-    # add the message and message type to the dictionary if they exist
-    if msg:
-        jinja_vars.update({"msg": msg})
-    if msg_type:
-        jinja_vars.update({"msg_type": msg_type})
+    # check if update committed quantities message exists
+    if update_committed_quantities_msg:
+        jinja_vars.update({"msg": update_committed_quantities_msg})
+    else:
+        # add the message and message type to the dictionary if they exist
+        if msg:
+            jinja_vars.update({"msg": msg})
+        if msg_type:
+            jinja_vars.update({"msg_type": msg_type})
 
     return render_template('inventory/inventory.html', **jinja_vars)
 
@@ -97,85 +110,85 @@ def inventory_update_product():
             product_quantity = request.form.get('product-quantity')
             product_status = request.form.get('product-status')
             product_dock_date = datetime.strptime(request.form.get('product-dock-date'), '%Y-%m-%d').strftime('%m/%d/%Y')
-
-            # ensure all fields are filled
-            if all([product_id, product_flavor, product_container_size,
-                    product_price, product_quantity, product_status,
-                    product_dock_date]):
                     
-                # find the product in the database
-                product = Product.query.get(product_id)
+            # find the product in the database
+            product = Product.query.get(product_id)
 
-                # if product exists, update it
-                if product:
+            request_data = {
+                "product_id": product_id,
+                "product_flavor": product_flavor,
+                "product_container_size": product_container_size,
+                "product_price": product_price,
+                "product_quantity": product_quantity,
+                "product_status": product_status,
+                "product_dock_date": product_dock_date
+            }
 
-                    # check if none of the fields are different
-                    if not any ([
-                            product.flavor != product_flavor,
-                            product.container_size != product_container_size,
-                            product.price != float(product_price),
-                            product.quantity != int(product_quantity),
-                            product.status != product_status,
-                            product.dock_date != datetime.strptime(product_dock_date, '%m/%d/%Y')
-                    ]):
-                        
-                        # log the error
-                        print("No changes detected")
-                        msg = "No changes detected"
-                        msg_type = "info"
-                        return redirect(url_for('inventory.inventory_home', msg=msg, msg_type=msg_type))
-                    
-                    # check if any of the fields are less than or equal to zero
-                    if any([
-                            float(product_price) <= 0,
-                            int(product_quantity) <= 0
-                    ]):
-                        
-                        # log the error
-                        print("Price and quantity must be greater than zero")
-                        msg = "Price and quantity must be greater than zero"
-                        return redirect(url_for('inventory.inventory_home', msg=msg, msg_type=msg_type))
+            # run checks on the product fields and update if necessary
+            check_msg, check_msg_type = check_inventory_update(product, request_data)
 
-                    # update the product fields
-                    product.flavor = product_flavor
-                    product.container_size = product_container_size
-                    product.price = product_price
-                    product.quantity = product_quantity
-                    product.status = product_status
-                    product.dock_date = datetime.strptime(product_dock_date, '%m/%d/%Y')
+            # if check message exists, set it as the message
+            if check_msg and check_msg_type:
+                msg = check_msg
+                msg_type = check_msg_type
+                print(msg, msg_type)
+                return redirect(url_for('inventory.inventory_home', msg=msg, msg_type=msg_type))
+            
+            # if the status is changed to actual, check if the product already exists
+            if product.status != product_status and product_status == "actual":
+
+                # check if there's an existing product with an 'actual' status
+                existing_product = Product.query.filter_by(
+                    flavor=product_flavor,
+                    container_size=product_container_size,
+                    price=product_price,
+                    status="actual",
+                    deleted_at=None).first()
+                
+                # check if the product exists
+                if existing_product:
+
+                    # add the planned product quantity to the existing product
+                    existing_product.quantity += int(product_quantity)
+
+                    # delete the planned product
+                    db.session.delete(product)
+
+                    # log the success
+                    msg = "Planned product(s) added to existing product successfully"
+                    msg_type = "success"
 
                     # commit the changes
                     db.session.commit()
+                    return redirect(url_for('inventory.inventory_home', msg=msg, msg_type=msg_type))
 
-                    # log the success
-                    msg = "Product updated successfully"
-                    msg_type = "success"
+            # update the product fields
+            product.flavor = product_flavor
+            product.container_size = product_container_size
+            product.price = product_price
+            product.quantity = product_quantity
+            product.status = product_status
+            product.dock_date = datetime.strptime(product_dock_date, '%m/%d/%Y')
 
-                else:
+            # commit the changes
+            db.session.commit()
 
-                    # log the error
-                    print("Product not found")
-                    msg = "Product not found"
-
-            else:
-
-                # log the error
-                print("Missing fields")
-                msg = "Missing fields"
+            # log the success
+            msg = "Product updated successfully"
+            msg_type = "success"
+            return redirect(url_for('inventory.inventory_home', msg=msg, msg_type=msg_type))
 
         except Exception as e:
             print(e)
             msg = e
             db.session.rollback()
 
-    # redirect to the inventory page
-    return redirect(url_for('inventory.inventory_home', msg=msg, msg_type=msg_type))
-
 
 # inventory add endpoint
-@inventory.route('/inventory_add', methods=['GET', 'POST'])
+@inventory.route('/inventory_add', methods=['POST'])
 @login_required
 def inventory_add_product():
+
     if request.method == 'POST':
 
         try:
@@ -200,51 +213,46 @@ def inventory_add_product():
                 msg = "Missing fields"
 
             # convert the types of price, quantity and dock date
-            product_price = float(product_price)
-            product_quantity = int(product_quantity)
-            product_dock_date = datetime.strptime(product_dock_date, "%m/%d/%Y") if product_dock_date else None
+            try:
+                product_price = float(product_price)
+                product_quantity = int(product_quantity)
+                product_dock_date = datetime.strptime(product_dock_date, "%Y-%m-%d") if product_dock_date else None
+            except Exception as e:
+                msg = e
+                print("Error converting types")
+                return redirect(url_for('inventory.inventory_home', msg=msg))
 
-            # update existing product if it exists (removed this)
             # check if product already exists
             existing_product = Product.query.filter_by(
                                             flavor=product_flavor, 
                                             container_size=product_container_size,
                                             price=product_price, 
                                             deleted_at=None).first()
-            
 
-            if existing_product and existing_product.status == "actual":
-                # existing_product.price = product_price
-                # existing_product.quantity = product_quantity
-                # existing_product.status = product_status
-                # existing_product.dock_date = product_dock_date
-
-                # # log the update
-                # print(f'Updated product: {existing_product}')
-                # msg = "Updated product successfully"
-                # msg_type = "success"
+            # if product exists and the status is actual, log the error
+            if existing_product and existing_product.status == product_status:
                 
                 # log the error
                 print("Product already exists")
                 msg = "Product already exists"
+                return redirect(url_for('inventory.inventory_home', msg=msg))
+
+            # create a new product object
+            new_product = Product(flavor=product_flavor, container_size=product_container_size, 
+                                price=product_price, quantity=product_quantity, 
+                                status=product_status, user_id_add=associated_user, 
+                                dock_date=product_dock_date, created_at=datetime.now())
+
+            # add the new product to the database
+            db.session.add(new_product)
+
+            # log the addition
+            print(f'Added product: {new_product}')
+            msg = "Added product successfully"
+            msg_type = "success"
         
-            else:
-
-                # create a new product object
-                new_product = Product(flavor=product_flavor, container_size=product_container_size, 
-                                    price=product_price, quantity=product_quantity, 
-                                    status=product_status, user_id_add=associated_user, 
-                                    dock_date=product_dock_date, created_at=datetime.now())
-
-                # add the new product to the database
-                db.session.add(new_product)
-
-                # log the addition
-                print(f'Added product: {new_product}')
-                msg = "Added product successfully"
-                msg_type = "success"
-            
-                # log the action
+            # log the action (unless product is from a test user)
+            if not (int(associated_user) == 999 or product_flavor == "test"):
                 new_log = Log(
                     action = "added",
                     product = product_flavor,
@@ -253,15 +261,15 @@ def inventory_add_product():
                 )
             
                 db.session.add(new_log)
-                db.session.commit()
+
+            db.session.commit()
+
+            return redirect(url_for('inventory.inventory_home', msg=msg, msg_type=msg_type))
 
         except Exception as e:
             print(e)
             msg = e
             db.session.rollback()
-            
-    return redirect(url_for('inventory.inventory_home', msg=msg, msg_type=msg_type))
-
 
 
 # inventory delete endpoint >> TODO: implement disposition!
@@ -296,15 +304,16 @@ def inventory_delete_product():
                     msg = "Deleted product successfully"
                     msg_type = "success"
                     
-                    # log the action
-                    new_log = Log(
-                        action =  "deleted",
-                        product = product.flavor,
-                        container_size = product.container_size,
-                        user_id = associated_user
-                    )
-                    
-                    db.session.add(new_log)
+                    # log the action (unless product is from a test user)
+                    if not (int(associated_user) == 999 or product.flavor == "test"):
+                        new_log = Log(
+                            action =  "deleted",
+                            product = product.flavor,
+                            container_size = product.container_size,
+                            user_id = associated_user
+                        )
+                        
+                        db.session.add(new_log)
                     db.session.commit()
 
                 else:

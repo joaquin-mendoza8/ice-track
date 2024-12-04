@@ -17,7 +17,7 @@ def parse_product_data(products):
             "quantity": product.quantity,
             "committed_quantity": product.committed_quantity,
             "status": product.status,
-            "dock_date": product.dock_date.strftime('%m/%d/%Y') if product.dock_date else None,
+            "dock_date": product.dock_date,
         }
         for product in products
     ]

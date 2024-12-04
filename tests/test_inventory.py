@@ -15,7 +15,7 @@ def test_inventory_add(client, app_instance, captured_templates):
         "product-price-add": 1.00,
         "product-quantity-add": 10,
         "product-status-add": 'planned',
-        "product-dock-date-add": '01/01/2026',
+        "product-dock-date-add": '2026-01-01',
         "user-id": 999
     }, follow_redirects=True)
     template, context = captured_templates[0]
@@ -44,10 +44,11 @@ def test_inventory_update(client, app_instance):
     response = client.post('/inventory_update', data={
         "product-id": product_id,
         "product-flavor": 'test',
-        "product-container-size": 'medium',
+        "product-container-size": 'small',
         "product-price": 1.10,
         "product-quantity": 1,
-        "product-status":'actual'
+        "product-status": 'planned',
+        "product-dock-date": '2026-01-01',
     }, follow_redirects=True)
 
     # check if the product was updated

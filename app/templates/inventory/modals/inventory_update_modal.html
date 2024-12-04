@@ -46,6 +46,24 @@
 
                         </div>
 
+                        <!-- Container Size dropdown -->
+                        <div class="col-md-3">
+
+                            {% set options = [] %}
+                            {% for size in supported_container_sizes %}
+                                {% set _ = options.append((size, size)) %}
+                            {% endfor %}
+                            {{ macros.select_group_floating(
+                                label='Container Size',
+                                id='product-container-size',
+                                name='product-container-size',
+                                options=options,
+                                classes='product-container-size-input',
+                                tooltip='Select the container size of the product.'
+                            ) }}
+
+                        </div>
+
                         <!-- Price input -->
                         <div class="col-md-3">
 
@@ -63,6 +81,10 @@
 
                         </div>
 
+                    </div>
+
+                    <div class="row mb-3">
+
                         <!-- Quantity input -->
                         <div class="col-md-3">
 
@@ -76,28 +98,6 @@
                                 tooltip='Enter the quantity of the product.'
                             ) }}
                         
-                        </div>
-
-                    </div>
-
-                    <div class="row mb-3">
-
-                        <!-- Container Size dropdown -->
-                        <div class="col-md-3">
-
-                            {% set options = [] %}
-                            {% for size in supported_container_sizes %}
-                                {% set _ = options.append((size, size)) %}
-                            {% endfor %}
-                            {{ macros.select_group_floating(
-                                label='Container Size',
-                                id='product-container-size',
-                                name='product-container-size',
-                                options=options,
-                                classes='product-container-size-input',
-                                tooltip='Select the container size of the product.'
-                            ) }}
-
                         </div>
 
                         <!-- Status dropdown -->

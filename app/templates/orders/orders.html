@@ -9,7 +9,7 @@
 
 {% block content %}
 
-    {% include 'orders/modals/customers_update_modal.html' %}
+    {#{% include 'orders/modals/customers_update_modal.html' %}#}
     {% include 'orders/modals/orders_add_modal.html' %}
     {% include 'orders/modals/orders_update_modal.html' %}
 
@@ -25,7 +25,7 @@
             {% set customer_btns %}
                 <a type="button" class="btn btn-outline-secondary modal-btn" 
                     href="{{ url_for('auth.register') }}">
-                    + New
+                    + Register New
                 </a>
             {% endset %}
             
@@ -45,8 +45,7 @@
                 <tbody>
                     {% for customer in customers %}
                         {% if (customer.id == current_user.id) or current_user.is_admin %}
-                            <tr onclick="openModal({{ customer }}, {{ customer['id'] }})" 
-                                id="row-{{ loop.index - 1 }}">
+                            <tr id="row-{{ loop.index0 }}">
                                 {% for key, value in customer.items() %}
                                     {% if key not in ['id'] %}
                                         {% if key in ['shipping_address', 'billing_address'] %}
@@ -86,6 +85,7 @@
                     {{ macros.message(msg, msg_type or "danger", "/orders") }}
                 {% endif %}
 
+                {% set is_table_empty = true %}
                 <table class="table table-hover table-borderless table-striped" id="orders-table">
                     {% if orders %}
                     {% set excluded_attribs = ['order_creation_date', 'line_item_costs', 
@@ -101,8 +101,8 @@
                     </thead>
                     <tbody>
                         {% for order in orders %}
-
                             {% if (order.user_id == current_user.id) or current_user.is_admin %}
+                                {% set is_table_empty = false %}
                         
                                 {# Set the table row color based on the order status #}
                                 {% set tr_map = '' %}
@@ -131,6 +131,11 @@
                                 </tr>
                             {% endif %}
                         {% endfor %}
+                        {% if is_table_empty %}
+                            <tr>
+                                <td colspan="{{ orders[0] | length }}">No orders found.</td>
+                            </tr>
+                        {% endif %}
                     </tbody>
                     {% else %}
                         No outstanding orders.
