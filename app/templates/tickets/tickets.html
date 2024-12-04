@@ -4,52 +4,192 @@
 {% block title %}Trouble Tickets{% endblock %}
 
 {% block head %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/inventory.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tickets.css') }}" type="text/css">
 {% endblock %}
 
 {% block content %}
 
     <!-- include here for modal -->
+    {% include 'tickets/modals/tickets_add_modal.html' %}
+    {% include 'tickets/modals/tickets_update_modal.html' %}
+    {% include 'tickets/modals/tickets_summary_modal.html' %}
 
     <!-- Main content container -->
     <div class="container-md">
-
         <!-- Offcanvas sidebar -->
         {% include 'components/navbar.html' %}
 
         <!-- Main content -->
         <main class="ms-sm-auto px-md-4 pt-md-3">
-            <div class="align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <!-- Banner header -->
-                <h1>Customer Support</h1>
+            <!-- inline container for title and modal button -->
+            <div class="d-flex justify-content-between border-bottom ">
+                <h1>Ticket History</h1>
+                <div>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tickets-add-modal">Create New Ticket</button>
+                    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#tickets-summary-modal" >Ticket Summary</button>
+                </div>
             </div>
 
-            <!-- Inventory Add Modal -->
-            <!-- include here -->
+            <!-- Query Search Bar-->
+            <div class="query-container mt-4">
 
-            <!-- Inventory Table -->
-            <div class="mt-5">
-                <!-- inline container for title and modal button -->
-                <div class="d-flex justify-content-between">
-                    <h1>Ticket History</h1>
-                    <button type="button" class="btn modal-btn" data-bs-toggle="modal" data-bs-target="#exampleModal">+ New</button>
-                </div>
-                <table class="table table-hover table-borderless">
-                    {% if products %}
-                    <thead>
-                        {% for key in products[0].keys() %}
-                            {% if key not in ['id'] %}
-                                <th scope="col">{{ key.capitalize() }}</th>
-                            {% endif %}
-                        {% endfor %}
+                <!-- Query Search Form -->
+                <form method="GET" action="{{ url_for('tickets.tickets_query_tickets') }}" class="row g-3">
+
+                    <div class="row mb-3">
+
+                        <!-- Customer Name -->
+                        <div class="col-md-3">
+                            {{ macros.input_group_floating(
+                                label='Customer Name',
+                                id='customer-name',
+                                name='customer-name',
+                                tooltip='Enter the customer name to search for tickets.',
+                                is_required=false,
+                            ) }}
+                        </div>
+                
+                        <!-- Type of Problem -->
+                        <div class="col-md-3">
+
+                            {{ macros.input_group_floating(
+                                label='Type of Problem',
+                                id='problem-type',
+                                name='problem-type',
+                                tooltip='Enter the type of problem to search for tickets.',
+                                is_required=false,
+                            ) }}
+
+                        </div>
+                
+                        <!-- Problem Status -->
+                        <div class="col-md-2">
+
+                            {% set options = [('open', 'Open'), 
+                                            ('in_progress', 'In Progress'), 
+                                            ('resolved', 'Resolved')] %}
+
+                            {{ macros.select_group_floating(
+                                label='Problem Status',
+                                id='problem-status',
+                                name='problem-status',
+                                options=options,
+                                tooltip='Select the status of the problem to search for tickets.',
+                                is_required=false,
+                            ) }}
+
+                        </div>
+
+                    </div>
+
+                    <div class="row mb-3">
+                
+                        <!-- Date Reported -->
+                        <div class="col-md-4">
+
+                            <div class="input-group">
+
+                                {{ macros.input_group_floating(
+                                    label='Date Reported (Start)',
+                                    id='date-reported-start',
+                                    name='date-reported-start',
+                                    type='date',
+                                    tooltip='Enter the start date the problem was reported.',
+                                    is_required=false,
+                                ) }}
+
+                                {{ macros.input_group_floating(
+                                    label='Date Reported (End)',
+                                    id='date-reported-end',
+                                    name='date-reported-end',
+                                    type='date',
+                                    tooltip='Enter the end date the problem was reported.',
+                                    is_required=false,
+                                ) }}
+
+                            </div>
+
+                        </div>
+
+                        <!-- Date Resolved -->
+                        <div class="col-md-4">
+
+                            <div class="input-group">
+
+                                {{ macros.input_group_floating(
+                                    label='Date Resolved (Start)',
+                                    id='date-resolved-start',
+                                    name='date-resolved-start',
+                                    type='date',
+                                    tooltip='Enter the start date the problem was resolved.',
+                                    is_required=false,
+                                ) }}
+
+                                {{ macros.input_group_floating(
+                                    label='Date Resolved (End)',
+                                    id='date-resolved-end',
+                                    name='date-resolved-end',
+                                    type='date',
+                                    tooltip='Enter the end date the problem was resolved.',
+                                    is_required=false,
+                                ) }}
+                            
+                            </div>
+
+                        </div>
+                
+                        <!-- Submit Button -->
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">Search</button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+                
+            <table class="table table-hover table-borderless">
+                {% if tickets %}
+                    <thead class="table-dark">
+                        <tr>
+                            {% for key in tickets[0].keys() %}
+                                {% if key not in ['id'] %}
+                                    <th scope="col">{{ key | attribute }}</th>
+                                {% endif %}
+                            {% endfor %}
+                            <th scope="col">Action</th>
+                        </tr>
                     </thead>
                     <tbody>
-                        {% for product in products %}
-                            {% set outer_index = loop.index - 1 %}
-                            <tr onclick="openModal({{ product }}, {{ product['id'] }})" id="row-{{ outer_index }}">
-                                <td>{{ product.flavor }}</td>
-                                <td>{{ product.price }}</td>
-                                <td>{{ product.quantity }}</td>
+                        {% for ticket in tickets %}
+                            <tr onclick="openModal({{ ticket }}, {{ ticket['id'] }})">
+                                {% for key, value in ticket.items() %}
+                                    {% if key not in ['id'] %}
+                                        {% if key == 'source' %}
+                                            <td>{{ value | title }}</td>
+                                        {% elif 'date' in key %}
+                                            <td>{{ value | date if value else '-' }}</td>
+                                        {% elif key == 'problem_resolution' %}
+                                            <td>{{ value.capitalize() if value else '-'}}</td>
+                                        {% else %}
+                                            <td>{{ value | capitalize }}</td>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                                <td>
+                                    <!-- Only surface update ticket button if the current user is an admin -->
+                                    {% if current_user.is_admin %}
+                                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" 
+                                        data-bs-target="#tickets-update-modal" ticket-id={{ticket['id']}}>
+                                                Update Ticket
+                                        </button>
+                                        <!-- Hiding this delete button for now 
+                                        <form method="POST" action="{{ url_for('tickets.tickets_delete_ticket') }}">
+                                            <input type="hidden" name="ticket-id" value="{{ ticket['id'] }}">
+                                            <button type="submit" class="btn btn-sm btn-danger">Delete Ticket</button>
+                                        </form>
+                                        -->
+                                    {% endif %}
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -63,5 +203,5 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="{{ url_for('static', filename='js/inventory.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/tickets.js') }}"></script>
 {% endblock %}

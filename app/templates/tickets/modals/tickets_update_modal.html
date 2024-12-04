@@ -1,0 +1,82 @@
+<div class="modal" id="tickets-update-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Trouble Ticket</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Form to allow admin to update a ticket -->
+                <form action="{{ url_for('tickets.tickets_update_ticket') }}" method="POST">
+
+                    <div class="row mb-3">
+
+                        <!-- Hidden ticket id field to retrieve current ticket from the JS function -->
+                        <input type="hidden" id="ticket-id" name="ticket-id">
+
+                        <!-- Date Detected (default value is at time of click)-->
+                        <div class="col-md-4">
+                            {{ macros.input_group_floating(
+                                label='Date Detected',
+                                id='date-detected',
+                                name='date-detected',
+                                type='date',
+                                tooltip='Enter the date the problem was detected.',
+                            ) }}
+                        </div>
+
+                        <!-- Date Resolved -->
+                        <div class="col-md-4">
+                            {{ macros.input_group_floating(
+                                label='Date Resolved',
+                                id='date-resolved',
+                                name='date-resolved',
+                                type='date',
+                                tooltip='Enter the date the problem was resolved.',
+                            ) }}
+                        </div>
+
+                        <!-- Problem Status -->
+                        <div class="col-md-3">
+                            {% set options = [('open', 'Open'), ('in-progress', 'In Progress'), ('resolved', 'Resolved')] %}
+                            {{ macros.select_group_floating(
+                                label='Problem Status',
+                                id='problem-status',
+                                name='problem-status',
+                                options=options,
+                                tooltip='Enter the status of the problem.',
+                            ) }}
+                        </div>
+
+                    </div>
+
+                    <div class="row mb-3">
+                        
+                        <!-- Problem Resolution -->
+                        <div class="col-md-8">
+                        {{ macros.input_group_floating(
+                            label='Problem Resolution',
+                            id='problem-resolution',
+                            name='problem-resolution',
+                            type='textarea',
+                            tooltip='Enter the resolution to the problem.',
+                        ) }}
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- Modal Footer -->
+                    <div class="modal-footer d-flex justify-content-between align-items-center">
+                        
+                        <!-- Push buttons to right side of footer -->
+                        <div class="ml-auto">
+                            <button type="submit" class="btn btn-primary">Update Ticket</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

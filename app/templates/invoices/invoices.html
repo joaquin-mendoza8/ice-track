@@ -20,13 +20,25 @@
         <!-- Main content -->
         <main class="ms-sm-auto px-md-4 pt-md-3">
 
-            {% set return_btn %}
+            {% set btns %}
             <div class="btn-group">
-                <a type="button" href="{{ url_for('orders.orders_home') }}" class="btn btn-outline-secondary">Go to Orders</a>
+                <!-- print -->
+                <button 
+                    type="button"
+                    class="btn btn-outline-secondary d-print-none"
+                    onclick="window.print()">
+                    Print Invoice
+                </button>
+                <a 
+                    type="button" 
+                    href="{{ url_for('orders.orders_home') }}" 
+                    class="btn btn-secondary d-print-none">
+                    Go to Orders
+                </a>
             </div>
             {% endset %}
 
-            {{ macros.section_header('Invoices', extra_html=return_btn | safe) }}
+            {{ macros.section_header('Invoices', extra_html=btns | safe) }}
 
             <!-- Message Display Container -->
             {% if msg %}
@@ -35,13 +47,9 @@
 
             <!-- Invoices Table -->
             <div class="mt-5">
-                <!-- inline container for title and modal button -->
-                <div class="d-flex justify-content-between">
-                    <h1>Recent Orders</h1>
-                </div>
 
                 <!-- Dropdown for 'Filter By' functionality -->
-                <div class="dropdown mt-3">
+                <!-- <div class="dropdown mt-3">
                     <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                         Filter By
                     </button>
@@ -57,13 +65,13 @@
                         {% endif %}
 
                     </ul>
-                </div>
+                </div> -->
 
                 <!-- Table for invoices -->
-                <table class="table table-hover table-borderless">
+                <table class="table table-hover table-borderless table-striped">
                     {% if invoices %}
                     {% set hidden_attributes = ['user_id'] %}
-                    <thead>
+                    <thead class="table-dark">
                         <tr>
                             {% for key in invoices[0].keys() %}
                                 {% if key not in hidden_attributes %}

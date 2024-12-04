@@ -1,0 +1,68 @@
+<div class="modal" id="tickets-add-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Trouble Ticket</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Form to allow user to create a new trouble ticket -->
+                <form action="{{ url_for('tickets.tickets_add_ticket') }}" method="POST">
+                    <div class="colums">
+                        <div class="column">
+                            <h3>Trouble Ticket Info</h3>
+                            <!-- Source -->
+                            <!-- TODO: if user is not an admin, lets make this default to their username, as of now, just leave it as an input -->
+                            <div class="mb-3">
+                                <label for="problem-type" class="form-label">Source (Customer Name)</label>
+                                <select class="form-control" id="source" name="source" required>
+                                    <option value="{{ current_user.first_name ~ ' ' ~ current_user.last_name }}" selected>
+                                        {{ current_user.first_name ~ ' ' ~ current_user.last_name }}
+                                    </option>
+
+                                    <!-- If the current user is an admin, then other customers can be picked -->
+                                    {% if current_user.is_admin %}
+                                        {% for customer in customers %}
+                                            <option value="{{ customer.name }}">{{ customer.name }}</option>
+                                        {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+
+                            <!-- Problem Type -->
+                            <div class="mb-3">
+                                <label for="problem-type" class="form-label">Type of Problem</label>
+                                <input
+                                   class="form-control"
+                                   id="problem-type"
+                                   name="problem-type"
+                                   required>
+                            </div>
+
+                            <!-- Problem Description -->
+                            <div class="mb-3">
+                                <label for="problem-description" class="form-label">Description of Problem</label>
+                                <textarea
+                                   class="form-control"
+                                   id="problem-description"
+                                   name="problem-description"
+                                   required></textarea>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <div class="modal-footer d-flex justify-content-between align-items-center">
+                        
+                        <!-- Push buttons to right side of footer -->
+                        <div class="ml-auto">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Add Ticket</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

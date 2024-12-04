@@ -3,7 +3,7 @@
 from app.extensions import db
 from sqlalchemy.sql import func
 from flask_login import UserMixin
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 # User class
 class User(db.Model, UserMixin):
@@ -250,3 +250,29 @@ class Log(db.Model):
 
     # Many:1 relationship with User
     user = db.relationship('User', backref='logs', lazy=True)
+# Trouble Ticket model 
+class Ticket(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    # Customer / Admin Name
+    source = db.Column(db.String(150), nullable=False)
+
+    date_reported = db.Column(db.Date, nullable=False, default=datetime.now(timezone.utc).date())
+    date_detected = db.Column(db.Date, nullable=True)
+    date_resolved = db.Column(db.Date, nullable=True)
+
+    problem_type = db.Column(db.String(150), nullable=False)
+    problem_description = db.Column(db.Text, nullable=False)
+    problem_status = db.Column(db.String(20), nullable=False, default="open")
+    problem_resolution = db.Column(db.Text, nullable=True)
+    
+    
+    # A ticket will be initialized when the customer creates a new ticket
+    def __init__(self, source, problem_type, problem_description):
+        self.source = source
+        self.problem_type = problem_type
+        self.problem_description = problem_description
+
+    def __repr__(self):
+        return f"<Ticket {self.id} - {self.problem_type} - Status: {self.problem_status}>"
+        

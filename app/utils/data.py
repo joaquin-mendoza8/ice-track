@@ -174,3 +174,19 @@ def parse_schedule_data(products):
         }
         for product in products
     ]
+    
+def parse_ticket_data(tickets):    
+    return [
+        {
+            "id": ticket.id,
+            "source": ticket.source,
+            "date_reported": ticket.date_reported,
+            "date_detected": ticket.date_detected,
+            "date_resolved": ticket.date_resolved,
+            "problem_type": ticket.problem_type,
+            "problem_description": ticket.problem_description,
+            "problem_status": ticket.problem_status,
+            "problem_resolution": ticket.problem_resolution
+        }
+        for ticket in tickets
+    ]

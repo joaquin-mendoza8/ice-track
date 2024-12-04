@@ -15,10 +15,11 @@
 
 
 <!-- Metrics Card -->
-{% macro metrics_card(title, text, tooltip='') %}
+{% macro metrics_card(title, text, popover, subtitle='', tooltip='') %}
     <div class="metrics-card card flex-grow-1 mx-1" style="max-width: 300px;" {% if tooltip %} data-bs-toggle="tooltip" title="{{ tooltip }}" {% endif %}>
         <div class="card-body">
-            <h5 class="card-title">{{ title }}</h5>
+            <h5 class="card-title">{{ title }}{% if popover %} {{ popover | safe }}{% endif %}</h5>
+            <h6 class="card-subtitle mb-2 text-muted">{{ subtitle }}</h6>
             <h2 class="card-text">{{ text }}</h2>
         </div>
     </div>
@@ -106,4 +107,13 @@
     </select>
     <label for="{{ id }}">{{ label }}</label>
 </div>
+{% endmacro %}
+
+<!-- Nav element -->
+{% macro nav_element(link, label, icon='') %}
+<li class="nav-item pb-md-2 pb-lg-3">
+    <a class="sidebar-nav-link nav-link" href="{{ url_for(link) }}">
+        {% if icon %}<i class="bi {{ icon }}"></i>{% endif %}&nbsp;&nbsp;{{ label }}
+    </a>
+</li>
 {% endmacro %}
