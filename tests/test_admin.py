@@ -26,8 +26,8 @@ def admin_configs():
 def test_admin_get(client):
     response = client.get('/admin')
     print(response.data)
-    assert response.status_code == 200
     assert response.request.path == '/admin'
+    assert response.status_code == 200
     assert b'<title>Admin</title>' in response.data
 
 @pytest.mark.skip(reason="Needs to be fixed")
@@ -39,15 +39,7 @@ def test_admin_get(client):
     ('supported_shipping_costs', '5.00,10.00')
 ])
 def test_admin_config_update(client, app_instance, captured_templates, admin_configs, config_key, new_value):
-    print(admin_configs)
-    # assert admin_configs['auto_signoff_interval'] == 60
     with app_instance.app_context():
-        # Ensure the configuration exists
-        # config = AdminConfig.query.filter_by(key=config_key).first()
-        # if not config:
-        #     config = AdminConfig(key=config_key, value='')
-        #     db.session.add(config)
-        #     db.session.commit()
 
         # get a snapshot of the current configuration
         original_config = AdminConfig.query.filter_by(key=config_key).first().value

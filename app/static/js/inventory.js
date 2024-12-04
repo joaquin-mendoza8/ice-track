@@ -1,21 +1,131 @@
 // DOM content loaded event listener
 document.addEventListener('DOMContentLoaded', function() {
 
-    // set product price, quantity, and status inputs to current values when dropdowns are changed
-    const flavorSelect = document.getElementById('product-flavor-add');
-    const sizeSelect = document.getElementById('product-container-size-add');
+    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+    const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
 
-    // set event listeners for flavor and container size dropdowns
-    // flavorSelect.addEventListener('change', updateModalInputs);
-    // sizeSelect.addEventListener('change', updateModalInputs);
+    // get all "disposition-" elements
+    const dispositionElements = document.querySelectorAll('[id^="disposition-"]');
 
-    // // set event listener for status dropdown
-    // const statusSelect = document.getElementById('product-status-add');
-    // statusSelect.addEventListener('change', updateDockDropdown);
+    // disable "shipped" option in disposition dropdowns
+    const dispositionOptions = document.querySelectorAll('[id^="disposition-"] option');
+    dispositionOptions.forEach(option => {
+        if (option.value === 'shipped') {
+            option.disabled = true;
+        }
+    });
 
-    // TODO: finish dock date js
+    // attach event listener to navigate to disposition page when select is changed
+    dispositionElements.forEach(element => {
+        element.addEventListener('change', function() {
+            const allocationId = element.id.split('-')[1];
+            const dispositionValue = element.value;
+
+            // fetch disposition update
+            fetch(`/inventory_update_allocation?id=${allocationId}&disposition=${encodeURIComponent(dispositionValue)}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Disposition updated:', data);
+
+                    // reload page and move back to element
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error updating disposition:', error);
+                    alert('Failed to update disposition. Please try again.');
+                });
+        });
+    });
+
+    // add event listener to dropdowns to populate size dropdowns if allocation modal is open
+    const flavorSelects = document.querySelectorAll('[id^="allocation-flavor"]');
+    // check if allocation modal is open
+    flavorSelects.forEach(select => {
+        select.addEventListener('change', handleSize);
+        select.addEventListener('change', () => { handleCheckAvailability(select); });
+    });
 
 });
+
+// Function to populate the size dropdown based on the selected flavor
+function handleSize(event) {
+    const flavorSelect = event.target;
+    const selectedFlavor = flavorSelect.value;
+    const flavorSelectId = flavorSelect.id;
+    const sizeSelectId = flavorSelectId.replace('flavor', 'container-size');
+    const sizeSelect = document.getElementById(sizeSelectId);
+
+    // Clear the size dropdown
+    sizeSelect.innerHTML = '<option value="" disabled selected>Choose...</option>';
+
+    // If a flavor is selected, fetch the sizes for that flavor
+    if (selectedFlavor) {
+        fetch(`/orders/fetch_sizes?flavor=${encodeURIComponent(selectedFlavor)}`)
+            .then(response => response.json())
+            .then(data => {
+                data.sizes.forEach(size => {
+                    const option = document.createElement('option');
+                    option.value = size;
+                    option.textContent = capitalize(size);
+                    sizeSelect.appendChild(option);
+                });
+            });
+    }
+}
+
+// Function to handle the max quantity input based on available stock
+function handleCheckAvailability(flavorSelect) {
+    const sizeSelect = flavorSelect.parentElement.parentElement.nextElementSibling.querySelector('.allocation-container-size');
+    const quantityInput = sizeSelect.parentElement.parentElement.nextElementSibling.querySelector('.allocation-quantity');
+    const quantityLabel = quantityInput.parentElement.querySelector('label');
+
+    sizeSelect.addEventListener('change', () => {
+        checkAvailable(flavorSelect, sizeSelect, quantityInput, quantityLabel);
+    });
+}
+
+// Function to update the max quantity input based on flavor and size
+function checkAvailable(flavorSelect, sizeSelect, quantityInput, quantityLabel) {
+    const selectedFlavor = flavorSelect.value;
+    const selectedSize = sizeSelect.value;
+
+    console.log(flavorSelect, sizeSelect, quantityInput, quantityLabel);
+
+    if (selectedFlavor && selectedSize && (sizeSelect.value !== 'Choose...')) {
+        fetch(`/orders/fetch_stock?flavor=${encodeURIComponent(selectedFlavor)}&container-size=${encodeURIComponent(selectedSize)}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+
+                // Display and set the max quantity for the selected flavor and size
+                if (data.status === 'planned' && flavorSelect.value !== 'Choose...') {
+                    msg = `Next batch for ${selectedFlavor} (${selectedSize}) available on ${data.dock_date}. Please select a different flavor or size.`;
+                    alert(msg);
+
+                    // clear the flavor and size select inputs
+                    flavorSelect.options[0].selected = true;
+                    sizeSelect.options[0].selected = true;
+
+                    // remove event listener to prevent re-alerting
+                    sizeSelect.removeEventListener('change', () => {
+                        checkAvailable(flavorSelect, sizeSelect, quantityInput, quantityLabel);
+                    });
+                } else {
+                    quantityLabel.textContent = `Quantity (max: ${data.stock})`;
+                    quantityInput.max = data.stock;
+                }
+
+            })
+            .catch(error => {
+                console.error('Error checking available stock:', error);
+                alert('Failed to load available stock. Please try again.');
+
+                // clear the flavor and size select inputs
+                flavorSelect.options[0].selected = true;
+                sizeSelect.options[0].selected = true;
+            });
+    }
+}
 
 
 // Function to update product price and quantity inputs based on flavor and container size dropdowns
@@ -144,4 +254,8 @@ function openModal(product_content, productId, isAdmin) {
 
 function closeModal() {
     $('#productModal').modal('hide'); // Hide the modal
+}
+
+function capitalize(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
 }

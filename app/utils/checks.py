@@ -1,5 +1,7 @@
 
-from app.models import Product, Order
+from app.models import Product, Order, Shipment
+from datetime import datetime, timedelta
+from app.extensions import db
 
 
 def check_container_sizes_in_use(container_sizes_list):
@@ -92,3 +94,35 @@ def check_customer_order_limit(customer_status):
         return 3000
     else:
         return 500
+    
+def remove_expired_shipments():
+    """Remove any shipments with delivery/payment date > 30 days"""
+
+    try:
+
+        shipments = Shipment.query.all()
+
+        # delete any old shipments TODO: finish comparing actual/now date, payment/now date
+        for shipment in shipments:
+            delivery_date_diff, payment_date_diff = None, None
+
+            # compute date diffs
+            if shipment.actual_delivery_date:
+                delivery_date_diff = shipment.actual_delivery_date - datetime.now().date()
+            if shipment.order.payment_date:
+                payment_date_diff = shipment.order.payment_date - datetime.now().date()
+
+            # both diffs present
+            if (
+                (delivery_date_diff and delivery_date_diff > timedelta(days=30)) or
+                (payment_date_diff and payment_date_diff > timedelta(days=30))
+            ):
+                db.session.delete(shipment)
+
+        # commit any changes
+        if db.session.dirty:
+            db.session.commit()
+
+    except Exception as e:
+        print(e)
+        db.session.rollback()

@@ -3,6 +3,7 @@
 from app.extensions import db
 from sqlalchemy.sql import func
 from flask_login import UserMixin
+from datetime import datetime, timedelta
 
 # User class
 class User(db.Model, UserMixin):
@@ -85,6 +86,8 @@ class ProductAllocation(db.Model):
     # foreign keys to Product and Order Item models
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     order_item_id = db.Column(db.Integer, db.ForeignKey('order_item.id'), nullable=False)
+    shipment_id = db.Column(db.Integer, db.ForeignKey('shipment.id'), nullable=True)
+    order_id = db.Column(db.Integer, nullable=True)
 
     # allocation attributes
     quantity_allocated = db.Column(db.Integer, nullable=False)
@@ -139,7 +142,7 @@ class Order(db.Model):
     order_items = db.relationship('OrderItem', backref='parent_order', lazy=True, cascade="all, delete-orphan")
 
     # 1:1 relationship with Shipment
-    shipment = db.relationship('Shipment', backref='order', uselist=False, lazy=True)
+    shipment = db.relationship('Shipment', backref='order', uselist=False, lazy=True, cascade="all, delete-orphan")
 
     # print the order
     def __repr__(self):
@@ -169,6 +172,38 @@ class OrderItem(db.Model):
         return f'<OrderItem {self.id}, {self.product_id}, {self.order_id}, {self.quantity}, {self.line_item_cost}, {self.allocation}>'
     
 
+# Invoice data model
+class Invoice(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+    # foreign key to Order model
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    shipment_id = db.Column(db.Integer, db.ForeignKey('shipment.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    # invoice attributes
+    invoice_date = db.Column(db.Date, nullable=False, default=func.now())
+    due_date = db.Column(db.Date, nullable=False)
+    total_cost = db.Column(db.Float, nullable=False)
+    days_overdue = db.Column(db.Integer, nullable=True)
+
+    # 1:1 relationship with Order
+    order = db.relationship('Order', backref='invoice', uselist=False, lazy=True)
+
+    # Many:1 relationship with User
+    user = db.relationship('User', backref='invoices', lazy=True)
+
+    # helper function to compute the days overdue
+    def compute_days_overdue(self):
+        days_overdue = (datetime.now().date() - self.due_date).days
+        return int(days_overdue)
+
+    # print the invoice
+    def __repr__(self):
+        return f'<Invoice {self.id}>'
+
+
 # Admin Configuration Settings data model
 class AdminConfig(db.Model):
 
@@ -187,8 +222,11 @@ class Shipment(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
-    # shipment attributes
+    # foreign keys
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+
+    # shipment attributes
     date_shipped = db.Column(db.Date, nullable=False, default=func.now())
     shipment_boxes = db.Column(db.Integer, nullable=False)
     partial_delivery = db.Column(db.Boolean, nullable=False, default=False)

@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // add event listener to toggle the edit mode
     $('#shipmentUpdateModal').on('hidden.bs.modal', function (event) {
         // check if the modal was closed by clicking the close button
+        const orderUpdateModal = document.getElementById('ordersUpdateModal');
         if (event.target === orderUpdateModal) {
             toggleEdit(false);
         }
@@ -55,6 +56,8 @@ function openShipmentUpdateModal(shipment_id) {
 
             const shipmentContent = data;
 
+            console.log('shipmentContent:', shipmentContent);
+
             // check if there is an error
             if ('error' in shipmentContent) {
                 alert(`Failed to load shipment info. ${shipmentContent.error}. Please contact support.`);
@@ -63,7 +66,9 @@ function openShipmentUpdateModal(shipment_id) {
 
             // dynamically set the shipment details in the form
             Object.keys(shipmentContent).forEach(key => {
-                const fieldId = `#${key.replace('_', '-')}-update`;
+                const fieldId = `#${key.replace(/_/g, '-')}-update`;
+
+                console.log('fieldId:', fieldId, 'value:', shipmentContent[key]);
 
                 // check if the field exists
                 if ($(fieldId).length) {
@@ -83,15 +88,10 @@ function openShipmentUpdateModal(shipment_id) {
 
                         // set the value of the field
                         $(fieldId).val(shipmentContent[key]);
+                        // console.log('fieldId:', fieldId, 'value:', shipmentContent[key]);
                     }
                 }
             });
-
-            // nav to the order page when the order id is clicked
-            // const order_id = shipmentContent['order_id'];
-            // const navOrderBtn = document.getElementById('nav-order-btn');
-            // navOrderBtn.href = `/orders?order_id=${order_id}`;
-
         });
 
     // open modal

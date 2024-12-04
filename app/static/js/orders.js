@@ -230,10 +230,20 @@ function updateMaxQuantity(flavorSelect, sizeSelect, quantityInput, quantityLabe
         fetch(`/orders/fetch_stock?flavor=${encodeURIComponent(selectedFlavor)}&container-size=${encodeURIComponent(selectedSize)}`)
             .then(response => response.json())
             .then(data => {
+                console.log(data);
 
                 // Display and set the max quantity for the selected flavor and size
-                quantityLabel.textContent = `Quantity (max: ${data.stock})`;
-                quantityInput.max = data.stock;
+                if (data.status === 'planned') {
+                    msg = `Next batch for ${selectedFlavor} (${selectedSize}) available on ${data.dock_date}. Please select a different flavor or size.`;
+                    alert(msg);
+
+                    // clear the flavor and size select inputs
+                    flavorSelect.options[0].selected = true;
+                    sizeSelect.options[0].selected = true;
+                } else {
+                    quantityLabel.textContent = `Quantity (max: ${data.stock})`;
+                    quantityInput.max = data.stock;
+                }
 
             })
             .catch(error => {
@@ -357,6 +367,11 @@ function openOrderUpdateModal(order_id) {
         .then(data => {
             const orderContent = data;
 
+            // update the invoice details navigation button
+            const navInvoiceBtn = document.getElementById('nav-invoice-btn');
+            navInvoiceBtn.href = `/current-invoice/${data['invoice_id']}`;
+            console.log(data);
+
             if ('error' in orderContent) {
                 alert(`Failed to load order. ${orderContent}. Please contact support.`);
                 return;
@@ -379,6 +394,11 @@ function openOrderUpdateModal(order_id) {
             // set the shipping/billing addresses
             document.getElementById('shipping-address-update').value = orderContent.shipping_address;
             document.getElementById('billing-address-update').value = orderContent.billing_address;
+
+            // set the payment date if it exists
+            if (orderContent.payment_date) {
+                document.getElementById('payment-date-update').value = orderContent.payment_date;
+            }
 
             // set the hidden order id for the update form
             document.getElementById('order-status-update-hidden').value = orderContent.status;
@@ -446,6 +466,7 @@ function openOrderUpdateModal(order_id) {
                         flavorSelect.value = flavorOption.value;
                     }
                     flavorSelect.disabled = true;
+                    flavorSelect.required = true;
                     flavorSelect.id = `flavor-${index}-update`;
 
                     // append the lineItem size to the sizeSelect options
@@ -549,6 +570,21 @@ function toggleEdit(toEditMode) {
         'expected-shipping-date-update', 'shipping-cost-update',
         'shipping-address-update', 'order-id-update', 'customer-update', 'update-line-items-container'
     ]
+
+    if (orderStatus !== 'pending') {
+        inputsFixedReadOnly.push('order-status-update');
+        // get all inputs in the update-line-items-container
+        const lineItemInputs = updateModal.querySelectorAll('.update-line-item input');
+        const lineItemSelects = updateModal.querySelectorAll('.update-line-item select');
+        console.log(lineItemInputs, lineItemSelects);
+        lineItemInputs.forEach(input => {
+            inputsFixedReadOnly.push(input.id);
+        });
+
+        lineItemSelects.forEach(select => {
+            inputsFixedReadOnly.push(select.id);
+        });
+    }
 
     // toggle the disabled attribute for select elements and the readonly attribute for input elements
     updateInputs.forEach(input => {

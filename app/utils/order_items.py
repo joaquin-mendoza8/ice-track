@@ -1,5 +1,5 @@
 from app.extensions import db
-from app.models import Product, ProductAllocation, Order, OrderItem
+from app.models import Product, ProductAllocation, Order, OrderItem, Invoice
 from datetime import datetime
 
 
@@ -67,10 +67,21 @@ def create_order_item(order_item_request, order_id):
     db.session.add(order_item)
     db.session.flush()
 
+    # get the shipment id from the order
+    order = Order.query.filter_by(id=order_id).first()
+    if not order:
+        return "Order not found"
+    if not order.shipment:
+        return "Shipment not found"
+    
+    shipment_id = order.shipment.id
+
     # create a product allocation
     product_allocation = ProductAllocation(
         product_id=product_id,
         order_item_id=order_item.id,
+        order_id=order_id,
+        shipment_id=shipment_id,
         quantity_allocated=0,
         disposition='committed',
         allocated_at=datetime.now()

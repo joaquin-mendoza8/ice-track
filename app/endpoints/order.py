@@ -2,12 +2,14 @@ from flask import Blueprint, request, redirect, url_for, render_template, jsonif
 from flask_login import login_required
 from datetime import datetime
 from app.utils.data import *
-from app.models import Product, User, Order, OrderItem, AdminConfig, ProductAllocation, Shipment
+from app.models import Product, User, Order, OrderItem, AdminConfig, \
+    ProductAllocation, Shipment, Invoice
 from app.extensions import db
 from app.utils.order_items import extract_order_items, compare_order_items, create_order_item
 from app.utils.checks import check_customer_order_limit
 from app.utils.admin_decorator import admin_required
 from pprint import pprint
+from app.endpoints.shipments import create_shipment
 
 # create the order entry form blueprint
 orders = Blueprint('orders', __name__)
@@ -27,6 +29,9 @@ def orders_home():
 
     # fetch all products from the database
     products = Product.query.filter_by(deleted_at=None).all()
+
+    # filter only the products with a status of 'actual'
+    actual_products = [product for product in products if product.status == 'actual']
 
     # fetch all customers from the database
     customers = User.query.all()
@@ -54,6 +59,7 @@ def orders_home():
     # dictionary of items to pass to the template
     jinja_vars = {
         'unique_flavors': list(set([product.flavor for product in products])),
+        'actual_unique_flavors': list(set([product.flavor for product in actual_products])),
         'orders': orders_dict,
         'customers': customers_dict,
         'shipping_types': shipping_types.value.split(',') if shipping_types else None,
@@ -110,8 +116,8 @@ def orders_update_order():
                 order_status = order_status_hidden
 
             # ensure all fields are filled
-            if not all([ order_id, order_status, shipping_type, shipping_cost, desired_receipt_date, 
-                    billing_address, total_cost ]):
+            if not all([ order_id, order_status, shipping_type, shipping_cost, 
+                         desired_receipt_date, billing_address, total_cost ]):
                 return redirect(url_for('orders.orders_home', msg="Missing fields"))
             
             # if the payment date is not empty, convert it to a datetime object
@@ -122,8 +128,7 @@ def orders_update_order():
             user = User.query.get(user_id)
             if user:
                 customer_limit = check_customer_order_limit(user.status)
-                print(f"Customer limit: {customer_limit}")
-                if customer_limit < float(total_cost):
+                if customer_limit and (customer_limit < float(total_cost)):
                     msg = (f"Order exceeds customer limit (${customer_limit})")
                     return redirect(url_for('orders.orders_home', msg=msg))
             else:
@@ -149,8 +154,6 @@ def orders_update_order():
             else:
                 msg = "No changes made"
                 msg_type = "info"
-
-            # TODO: update the product allocation status
             
             # update the order object
             order.status = order_status
@@ -208,7 +211,8 @@ def orders_update_order():
 
                 # check if the order items are the same
                 relevant_features = ['flavor', 'container_size', 'quantity', 'line_item_cost']
-                if not compare_order_items(order_item_request, order_item_db, relevant_features):
+                if (not compare_order_items(order_item_request, order_item_db, relevant_features)
+                    or order_status == 'shipped'):
                     print("Order items do not match")
 
                     # fetch the order item from the database
@@ -233,6 +237,12 @@ def orders_update_order():
                             # update the product/allocation quantity & committed quantity
                             quantity_diff = order_item_request['quantity'] - order_item_db['quantity']
                             product_allocation.adjust_quantity(quantity_diff)
+
+                            # update the product allocation attributes
+                            if order_status == 'shipped':
+                                product_allocation.disposition = 'shipped'
+                                product_allocation.shipment_id = order.shipment.id
+                                product_allocation.order_id = order.id
 
                             print("Order item updated")
                             msg = "Order item updated"
@@ -347,7 +357,7 @@ def orders_add_order():
         
         # check if the user has exceeded their order limit
         customer_limit = check_customer_order_limit(customer_status)
-        if customer_limit < total_cost:
+        if customer_limit and (customer_limit < total_cost):
             msg = (f"Order exceeds customer limit (${customer_limit})")
             return redirect(url_for('orders.orders_home', msg=msg))
 
@@ -371,46 +381,67 @@ def orders_add_order():
 
         order_id = new_order.id
 
-    # add order items
-    for item_data in order_items_data:
-        flavor = item_data.get('flavor')
-        container_size = item_data.get('container-size')
-        quantity = int(item_data.get('quantity'))
-        line_item_cost = float(item_data.get('line-item-cost'))
+        # create a new shipment for the order
+        shipment = create_shipment(order_id)
 
-        # retrieve the product
-        product = Product.query.filter_by(flavor=flavor, container_size=container_size, deleted_at=None).first()
-        if not product:
-            msg = (f"Product with flavor {flavor} and container size {container_size} not found")
-            return redirect(url_for('orders.orders_home', msg))
+        print(f"Shipment ID: {shipment.id}")
 
-        # check if the quantity is available
-        if product.quantity < quantity:
-            msg = (f"Not enough stock for product {product.name} ({product.container_size})")
-            return redirect(url_for('orders.orders_home', msg))
+        if not shipment or shipment.id is None:
+            return redirect(url_for('orders.orders_home', msg="Error creating shipment"))
+        
+        # create an invoice for the order TODO: move this to a separate file
+        new_invoice = Invoice(
+            order_id=order_id,
+            shipment_id=shipment.id,
+            user_id=user_id,
+            invoice_date=datetime.now(),
+            total_cost=total_cost,
+            due_date=desired_receipt_date
+        )
 
-        # create the order item
-        order_item_dict = {
-            "flavor": flavor,
-            "container_size": container_size,
-            "quantity": quantity,
-            "line_item_cost": line_item_cost
-        }
-        inner_msg = create_order_item(order_item_dict, order_id)
+        # add the invoice to the database
+        db.session.add(new_invoice)
 
-        # return with error message if received
-        if inner_msg:
-            return redirect(url_for('orders.orders_home', msg=inner_msg))
-        else:
-            print("New Item Created")
+        # add order items
+        for item_data in order_items_data:
+            flavor = item_data.get('flavor')
+            container_size = item_data.get('container-size')
+            quantity = int(item_data.get('quantity'))
+            line_item_cost = float(item_data.get('line-item-cost'))
 
-    # commit the transaction
-    db.session.commit()
+            # retrieve the product
+            product = Product.query.filter_by(flavor=flavor, container_size=container_size, deleted_at=None).first()
+            if not product:
+                msg = (f"Product with flavor {flavor} and container size {container_size} not found")
+                return redirect(url_for('orders.orders_home', msg))
 
-    msg = "Order added successfully"
+            # check if the quantity is available
+            if product.quantity < quantity:
+                msg = (f"Not enough stock for product {product.name} ({product.container_size})")
+                return redirect(url_for('orders.orders_home', msg))
 
-    # redirect back to the order form
-    return redirect(url_for('orders.orders_home', msg=msg, msg_type='success'))
+            # create the order item
+            order_item_dict = {
+                "flavor": flavor,
+                "container_size": container_size,
+                "quantity": quantity,
+                "line_item_cost": line_item_cost
+            }
+            inner_msg = create_order_item(order_item_dict, order_id)
+
+            # return with error message if received
+            if inner_msg:
+                return redirect(url_for('orders.orders_home', msg=inner_msg))
+            else:
+                print("New Item Created")
+
+        # commit the transaction
+        db.session.commit()
+
+        msg = "Order added successfully"
+
+        # redirect back to the order form
+        return redirect(url_for('orders.orders_home', msg=msg, msg_type='success'))
 
 
 # orders delete endpoint
@@ -441,6 +472,12 @@ def orders_delete_order():
                         # fetch the order items from the database
                         order_items = OrderItem.query.filter_by(order_id=order_id).all()
 
+                        # fetch the shipment from the database
+                        shipment = Shipment.query.filter_by(order_id=order_id).first()
+
+                        # fetch the order invoice from the database
+                        invoice = Invoice.query.filter_by(order_id=order_id).first()
+
                         # iterate through the order items
                         for order_item in order_items:
 
@@ -460,14 +497,41 @@ def orders_delete_order():
                                 else:
                                     print("Product allocation not found")
                                     return redirect(url_for('orders.orders_home', msg="Product allocation not found"))
-        
+                                
+                            # delete the order item from the database
+                            if order_item:
+                                db.session.delete(order_item)
+                            else:
+                                msg = "WARNING: Order item not found while deleting order"
+                                msg_type = "warning"
+                                print(f"{msg}")
+
+                            # delete the shipment from the database
+                            if shipment:
+                                db.session.delete(shipment)
+                            else:
+                                msg = "WARNING: Shipment not found while deleting order"
+                                msg_type = "warning"
+                                print(f"{msg}")
+
+                            # delete the invoice from the database
+                            if invoice:
+                                db.session.delete(invoice)
+                            else:
+                                msg = "WARNING: Invoice not found while deleting order"
+                                msg_type = "warning"
+                                print(f"{msg}")
+
                         # delete the order from the database
                         db.session.delete(order)
                         db.session.commit()
         
-                        # redirect back to the order form
-                        msg = "Order deleted successfully"
-                        return redirect(url_for('orders.orders_home', msg=msg, msg_type='success'))
+                        # redirect back to the order form with a message
+                        if not msg and not msg_type:
+                            msg = "Order deleted successfully"
+                            msg_type = 'success'
+
+                        return redirect(url_for('orders.orders_home', msg=msg, msg_type=msg_type))
         
                     else:
                         msg = "Order not found"
@@ -532,8 +596,20 @@ def orders_cancel_order():
                         db.session.delete(product_allocation)
 
                     else:
-                        print("Product allocation not found")
-                        return redirect(url_for('orders.orders_home', msg="Product allocation not found"))
+                        msg = "Product allocation not found"
+                        print(msg)
+                        return redirect(url_for('orders.orders_home', msg=msg))
+                    
+                # fetch invoice
+                invoice = Invoice.query.filter_by(order_id=order_id).first()
+
+                # set total cost to only the shipping cost TODO: test
+                if invoice:
+                    invoice.total_cost = invoice.order.shipping_cost
+                else:
+                    msg = "Invoice not found"
+                    print(msg)
+                    return redirect(url_for('orders.orders_home', msg=msg))
 
                 # update the order status
                 order.status = 'cancelled'
@@ -600,7 +676,11 @@ def orders_fetch_stock():
 
     # check if the product exists
     if product:
-        return jsonify({"stock": product.quantity})
+        return jsonify({
+            "stock": product.quantity,
+            "status": product.status,
+            "dock_date": product.dock_date.strftime("%m/%d/%Y") if product.dock_date else None
+        })
 
     print(f"Product not found: {flavor}, {container_size}") # TODO: handle this
     return jsonify({"stock": 0})
@@ -699,12 +779,6 @@ def orders_fetch_order_info():
         # special format for payment date (YYYY-MM-DD)
         if order_dict['payment_date']:
             order_dict['payment_date'] = order_dict['payment_date'].strftime("%Y-%m-%d")
-
-        # get the associated shipment from the database
-        shipment = Shipment.query.filter_by(order_id=order_id).first()
-
-        if shipment:
-            order_dict['shipment_id'] = shipment.id
 
         return jsonify(order_dict)
     else:

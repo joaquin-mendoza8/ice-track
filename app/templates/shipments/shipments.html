@@ -11,20 +11,29 @@
 
     {% include 'shipments/modals/shipment_update_modal.html' %}
 
-    <div class="container-md">
+    <div class="container-md">  
+        
+        {% set status_report_btn %}
+            <a 
+                class="btn btn-outline-secondary"
+                href="{{ url_for('shipments.status_report') }}">
+                View Status Report
+            </a>
+        {% endset %}
 
-        {{ macros.section_header("Shipments") }}
-
+        {{ macros.section_header("Shipments", extra_html=status_report_btn | safe) }}
+        
         <!-- Message Display Container -->
         {% if msg %}
-            {{ macros.message(msg, msg_type or "danger", "/shipment") }}
+            {{ macros.message(msg, msg_type or "danger", "/shipments") }}
         {% endif %}
 
         {% if shipments %}
-        {% set hidden_attributes = ['id', 'partial_delivery', 'order'] %}
+        {% set hidden_attributes = ['id', 'partial_delivery', 'order', 'user_id'] %}
         <table class="table table-hover table-borderless table-striped">
             <thead class="table-dark">
                 <tr>
+                    <th scope="col">Customer</th>
                     <!-- Dynamically generate table headers from the shipment dictionary keys -->
                     {% for key in shipments[0].keys() %}
                         {% if key not in hidden_attributes %}
@@ -41,27 +50,36 @@
                 <!-- Dynamically generate table rows for each shipment -->
                 {% for shipment in shipments %}
 
-                    {# Set the table row color based on the order status #}
-                    {% set tr_map = '' %}
-                    {% if shipment.order.status == 'pending' %}
-                        {% set tr_map = 'table-warning' %}
-                    {% elif shipment.order.status == 'cancelled' %}
-                        {% set tr_map = 'table-danger' %}
-                    {% elif shipment.order.status == 'shipped' %}
-                        {% set tr_map = 'table-info' %}
-                    {% elif shipment.order.status == 'delivered' %}
-                        {% set tr_map = 'table-success' %}
+                    {% if (shipment.user_id == current_user.id) or current_user.is_admin %}
+
+                        {# Set the table row color based on the order status #}
+                        {% set tr_map = '' %}
+                        {% if shipment.order.status == 'pending' %}
+                            {% set tr_map = 'table-warning' %}
+                        {% elif shipment.order.status == 'cancelled' %}
+                            {% set tr_map = 'table-danger' %}
+                        {% elif shipment.order.status == 'shipped' %}
+                            {% set tr_map = 'table-info' %}
+                        {% elif shipment.order.status == 'delivered' %}
+                            {% set tr_map = 'table-success' %}
+                        {% endif %}
+
+                        <tr onclick="openShipmentUpdateModal({{ shipment.id }})" id="order-{{ shipment.order.id }}"
+                            class="{% if tr_map %}{{ tr_map }}{% endif %}" style="cursor: pointer;">
+                            <td>{{ shipment.order.user.first_name }} {{ shipment.order.user.last_name }}</td>
+                            {% for key, value in shipment.items() %}
+                                {% if key not in hidden_attributes %}
+                                    {% if 'date' in key %}
+                                        <td>{{ (value | date) if value else '-' }}</td>
+                                    {% else %}
+                                        <td>{{ value | title }}</td>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+
                     {% endif %}
-                    <tr onclick="openShipmentUpdateModal({{ shipment.id }})" id="order-{{ shipment.order.id }}"
-                        class="{% if tr_map %}{{ tr_map }}{% endif %}" style="cursor: pointer;">
-                        {% for key, value in shipment.items() %}
-                            {% if key not in hidden_attributes %}
-                                <td>
-                                    {{ value | title }}
-                                </td>
-                            {% endif %}
-                        {% endfor %}
-                    </tr>
+
                 {% endfor %}
             </tbody>
         </table>
