@@ -211,19 +211,23 @@ def orders_update_order():
 
                 # check if the order items are the same
                 relevant_features = ['flavor', 'container_size', 'quantity', 'line_item_cost']
-                if (not compare_order_items(order_item_request, order_item_db, relevant_features)
-                    or order_status == 'shipped'):
+                if (not compare_order_items(order_item_request, order_item_db, relevant_features)):
                     print("Order items do not match")
 
                     # fetch the order item from the database
                     order_item = OrderItem.query.get(order_item_db['id'])
 
-                    # fetch the product & product allocation from the database
+                    # fetch the product from the database
                     product = Product.query.filter_by(
                         flavor=order_item_request['flavor'], 
                         container_size=order_item_request['container_size'], 
                         deleted_at=None).first()
-                    product_allocation = ProductAllocation.query.get(product.allocation.id)
+                    
+                    # fetch the product allocation from the database
+                    try:
+                        product_allocation = ProductAllocation.query.get(product.allocation.id)
+                    except AttributeError as e:
+                        raise AttributeError("Product allocation not found")
 
                     if product_allocation:
 
