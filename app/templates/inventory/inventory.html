@@ -241,7 +241,7 @@
                                 </tr>
                             {% endif %}
                         {% endfor %}
-                        {% if is_table_empty %}
+                        {% if not is_table_empty %}
                             <tr>
                                 <td colspan="{{ allocations[0] | length }}">
                                     No allocations found. Create an order/ticket to view allocations.

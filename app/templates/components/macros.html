@@ -107,3 +107,12 @@
     <label for="{{ id }}">{{ label }}</label>
 </div>
 {% endmacro %}
+
+<!-- Nav element -->
+{% macro nav_element(link, label, icon='') %}
+<li class="nav-item pb-md-2 pb-lg-3">
+    <a class="sidebar-nav-link nav-link" href="{{ url_for(link) }}">
+        {% if icon %}<i class="bi {{ icon }}"></i>{% endif %}&nbsp;&nbsp;{{ label }}
+    </a>
+</li>
+{% endmacro %}

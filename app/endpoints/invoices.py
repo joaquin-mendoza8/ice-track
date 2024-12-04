@@ -7,30 +7,6 @@ from app.extensions import db
 # create the home blueprint
 invoices = Blueprint('invoices', __name__)
 
-# TODO: create invoices
-
-invoices_data = [
-    {
-        "id": 12345,
-        "customer_name": "John Doe",
-        "order_items": [
-            {"name": "Vanilla Ice Cream", "quantity": 2, "unit_price": 10, "total": 20},
-            {"name": "Chocolate Ice Cream", "quantity": 1, "unit_price": 12, "total": 12},
-        ],
-        "total": 32,
-        "due_date": "2024-11-10",
-    },
-    {
-        "id": 67890,
-        "customer_name": "Jane Smith",
-        "order_items": [
-            {"name": "Strawberry Ice Cream", "quantity": 3, "unit_price": 15, "total": 45},
-        ],
-        "total": 45,
-        "due_date": "2024-11-15",
-    },
-]
-
 # create the home endpoint
 @invoices.route('/invoices')
 @login_required
