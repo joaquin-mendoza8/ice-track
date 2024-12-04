@@ -45,6 +45,7 @@
                                 id='customer-name',
                                 name='customer-name',
                                 tooltip='Enter the customer name to search for tickets.',
+                                is_required=false,
                             ) }}
                         </div>
                 
@@ -56,6 +57,7 @@
                                 id='problem-type',
                                 name='problem-type',
                                 tooltip='Enter the type of problem to search for tickets.',
+                                is_required=false,
                             ) }}
 
                         </div>
@@ -73,6 +75,7 @@
                                 name='problem-status',
                                 options=options,
                                 tooltip='Select the status of the problem to search for tickets.',
+                                is_required=false,
                             ) }}
 
                         </div>
@@ -92,6 +95,7 @@
                                     name='date-reported-start',
                                     type='date',
                                     tooltip='Enter the start date the problem was reported.',
+                                    is_required=false,
                                 ) }}
 
                                 {{ macros.input_group_floating(
@@ -100,6 +104,7 @@
                                     name='date-reported-end',
                                     type='date',
                                     tooltip='Enter the end date the problem was reported.',
+                                    is_required=false,
                                 ) }}
 
                             </div>
@@ -117,6 +122,7 @@
                                     name='date-resolved-start',
                                     type='date',
                                     tooltip='Enter the start date the problem was resolved.',
+                                    is_required=false,
                                 ) }}
 
                                 {{ macros.input_group_floating(
@@ -125,6 +131,7 @@
                                     name='date-resolved-end',
                                     type='date',
                                     tooltip='Enter the end date the problem was resolved.',
+                                    is_required=false,
                                 ) }}
                             
                             </div>
@@ -132,7 +139,7 @@
                         </div>
                 
                         <!-- Submit Button -->
-                        <div class="col-md-2 ">
+                        <div class="col-md-2">
                             <button type="submit" class="btn btn-primary w-100">Search</button>
                         </div>
 
