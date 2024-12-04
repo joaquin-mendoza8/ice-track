@@ -1,0 +1,113 @@
+<div class="modal" id="addAllocationModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+
+                {% set add_allocation_popover %}
+                    {{ macros.info_popover('Add Allocation', 'Add a new allocation. Planned products may not be allocated.') }}
+                {% endset %}
+
+                <h5 class="modal-title">Add Allocation {{ add_allocation_popover | safe }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <!-- Form to allow user to add a new inventory item -->
+                <form action="{{ url_for('inventory.inventory_add_product') }}" method="POST" id="addAllocationForm">
+                    
+                    <!-- User ID (HIDDEN) -->
+                    <input type="hidden" 
+                           id="allocation-user-id-hidden" 
+                           name="allocation-user-id-hidden" 
+                           value="{{ current_user.id }}">
+
+                    <div class="modal-body">
+
+                        <div class="row mb-3">
+
+                            <!-- Allocation Flavor -->
+                            <div class="col-md-3">
+
+                                {% set options = [] %}
+                                {% for flavor in supported_flavors %}
+                                    {% set _ = options.append((flavor, flavor)) %}
+                                {% endfor %}
+
+                                {{ macros.select_group_floating(
+                                    label='Flavor',
+                                    id='allocation-flavor-add',
+                                    name='allocation-flavor-add',
+                                    options=options,
+                                    tooltip='Select the flavor of the product.'
+                                ) }}
+                            
+                            </div>
+
+                            <!-- Allocation Container Size -->
+                            <div class="col-md-3">
+
+                                {% set options = [] %}
+                                {% for size in supported_container_sizes %}
+                                    {% set _ = options.append((size, size)) %}
+                                {% endfor %}
+
+                                {{ macros.select_group_floating(
+                                    label='Container Size',
+                                    id='allocation-container-size-add',
+                                    name='allocation-container-size-add',
+                                    classes='allocation-container-size',
+                                    options=options,
+                                    tooltip='Select the container size of the product.'
+                                ) }}
+
+                            </div>
+
+                            <!-- Allocation Quantity -->
+                            <div class="col-md-3">
+
+                                {{ macros.input_group_floating(
+                                    label='Quantity',
+                                    id='allocation-quantity-add',
+                                    name='allocation-quantity-add',
+                                    type='number',
+                                    min=1,
+                                    is_required=true,
+                                    classes='allocation-quantity',
+                                    tooltip='Enter the quantity of the product to allocate.'
+                                ) }}
+
+                            </div>
+
+                            <div class="col-md-3">
+
+                                <!-- Allocation Disposition -->
+                                {% set options = [('committed', 'Committed'), 
+                                                    ('defective', 'Defective'),
+                                                    ('spoiled', 'Spoiled')] %}
+                                {{ macros.select_group_floating(
+                                    label='Disposition',
+                                    id='allocation-disposition-add',
+                                    name='allocation-disposition-add',
+                                    options=options,
+                                    tooltip='Select the disposition of the product.'
+                                ) }}
+    
+                            </div>
+
+                        </div>
+
+                        <div class="row mb-3">
+
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Allocation</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

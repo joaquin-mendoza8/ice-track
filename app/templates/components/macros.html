@@ -1,8 +1,109 @@
-{% macro metrics_card(title, text) %}
-    <div class="metrics-card card flex-grow-1 mx-1">
-        <div class="card-body">
-        <h5 class="card-title">{{ title }}</h5>
-        <p class="card-text">{{ text }}</p>
+<!-- Section Header -->
+{% macro section_header(title, popover, subtitle='', extra_html='', size='h1') %}
+    <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <div>
+            <{{ size | safe }}>{{ title }}{% if popover %} {{ popover | safe }}{% endif %}</{{ size | safe }}>
+            {% if subtitle %}
+                <p>{{ subtitle }}</p>
+            {% endif %}
+        </div>
+        <div class="ms-auto">
+            {{ extra_html | safe }}
         </div>
     </div>
+{% endmacro %}
+
+
+<!-- Metrics Card -->
+{% macro metrics_card(title, text, tooltip='') %}
+    <div class="metrics-card card flex-grow-1 mx-1" style="max-width: 300px;" {% if tooltip %} data-bs-toggle="tooltip" title="{{ tooltip }}" {% endif %}>
+        <div class="card-body">
+            <h5 class="card-title">{{ title }}</h5>
+            <h2 class="card-text">{{ text }}</h2>
+        </div>
+    </div>
+{% endmacro %}
+
+<!-- Info Popover -->
+{% macro info_popover(title, content, placement) %}
+    <button 
+        type="button" 
+        class="btn" 
+        data-bs-toggle="popover" 
+        title="{{ title }}" 
+        data-bs-content="{{ content }}" 
+        {% if placement %}data-bs-placement="{{ placement }}"{% endif %}>
+        <i class="bi bi-info-circle"></i>
+    </button>
+{% endmacro %}
+
+<!-- Message (Default timeout is 15 seconds) -->
+{% macro message(text, type, redirect, tooltip='', timeout=5) %}
+    <!-- define the accepted message types -->
+    {% set valid_types = ["success", "info", "warning", "danger"] %}
+    {% set selected_type = "" %}
+
+    <!-- set the selected message type or default ("info") -->
+    {% if type in valid_types %}
+        {% set selected_type = type %}
+    {% else %}
+        {% set selected_type = "info" %}
+    {% endif %}
+
+    <!-- apply the message type, display the message -->
+    <div class="alert alert-{{ selected_type }} alert-dismissible fade show" 
+         role="alert" data-timeout="{{ timeout }}" {% if tooltip %} data-bs-toggle="tooltip" title="{{ tooltip }}" {% endif %}>
+        {{ text }}
+
+        <!-- if a redirect is passed, navigate to it to clear the URL parameters -->
+        {% if redirect %}
+            <a href="{{ redirect }}" class="btn-close"></a>
+        {% else %}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+<!-- Floating Input -->
+{% macro input_group_floating(label, id, name, value='', min=None, max=None, type='text', unit='', pattern='', extra='', classes='',
+                              oninput='', placeholder='', plaintext=false, is_required=true, is_readonly=false, tooltip='') %}
+<div class="{% if unit %}input-group {% endif %}form-floating" {% if tooltip %} data-bs-toggle="tooltip" title="{{ tooltip }}" {% endif %}>
+    <input type="{{ type }}" 
+           class="form-control{% if plaintext %}-plaintext{% endif %} {{ classes }}"
+           id="{{ id }}"
+           name="{{ name }}" 
+           {% if min is not none %} min={{ min }} {% endif %}
+           {% if max is not none %} max={{ max }} {% endif %}
+           {% if value %}value="{{ value | safe }}"{% endif %}
+            {% if is_required %}required{% endif %}
+            {% if is_readonly %}readonly{% endif %}
+            {% if pattern %}pattern="{{ pattern }}"{% endif %}
+            {% if placeholder %}placeholder="{{ placeholder }}"{%endif%}
+            {% if extra %}{{ extra }}{% endif %}
+            {% if oninput %}oninput="{{ oninput }}"{% endif %}>
+    <label for="{{ id }}">{{ label }}</label>
+    {% if unit %}
+    <span class="input-group-text" id="basic-addon2">{{ unit }}</span>
+    {% endif %}
+</div>
+{% endmacro %}
+
+<!-- Select Input with Floating Label -->
+{% macro select_group_floating(label, id, name, options, extra_data, selected='', classes='', 
+                               is_disabled=False, is_required=True, tooltip='') %}
+<div class="form-floating" {% if tooltip %} data-bs-toggle="tooltip" title="{{ tooltip }}" {% endif %}>
+    <select class="form-control {{ classes }}" id="{{ id }}" name="{{ name }}"
+        {% if is_required %}required{% endif %}
+        {% if is_disabled %}disabled{% endif %}>
+        {% if not selected %}<option value="" selected>Choose...</option>{% endif %}
+        {% for value, text in options %}
+            <option value="{{ value }}"
+                {% if extra_data %}data-{{ extra_data[loop.index0][0] }}="{{ extra_data[loop.index0][1] }}"{% endif %}
+                {% if value == selected %}selected{% endif %}>
+                {{ text | title }}
+            </option>
+        {% endfor %}
+    </select>
+    <label for="{{ id }}">{{ label }}</label>
+</div>
 {% endmacro %}

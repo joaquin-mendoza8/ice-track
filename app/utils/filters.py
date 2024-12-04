@@ -7,9 +7,17 @@ def format_currency(value):
     """Format value as currency."""
     return "${:,.2f}".format(value)
 
+def format_currency_list(value):
+    """Format comma-separated list of strings as currency."""
+    return ",".join(format_currency(float(v)) for v in value.split(","))
+
 def format_date(value):
     """Format date as <Mon DD, YYYY>."""
     return value.strftime("%b %d, %Y").replace(" 0", " ")
+
+def format_datetime(value):
+    """Format datetime as <Mon DD, YYYY HH:MM>."""
+    return value.strftime("%b %d, %Y %H:%M").replace(" 0", " ")
 
 def format_attribute(value):
     """Format SQL attribute as space-delimited titled phrase."""
@@ -34,3 +42,7 @@ def format_address(value):
 
     # rejoin the parts
     return " ".join(parsed.values())
+
+def format_id(value):
+    """Format ID attribute names in the format 'Order ID'."""
+    return format_attribute(value).replace("Id", " ID")

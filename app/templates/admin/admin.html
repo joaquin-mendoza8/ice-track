@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+{% import 'components/macros.html' as macros %}
+
+{% block title %}Admin{% endblock %}
+
+{% block content %}
+
+    {% include 'admin/modals/admin_delete_modal.html' %}
+
+    <!-- Main content container -->
+    <div class="container-md">
+
+        <!-- Offcanvas sidebar -->
+        {% include 'components/navbar.html' %}
+
+        <!-- Main content -->
+        <main class="ms-sm-auto px-md-4 pt-md-3">
+            <div class="align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <!-- Banner header -->
+                <h1>Admin Dashboard</h1>
+            </div>
+
+            <!-- Admin-level Configurations Form -->
+            <form method="post" action="/admin/update_configs">
+
+                <div class="row justify-content-left mb-5">
+
+                    <div class="col-md-3">
+
+                        <!-- Auto Signoff Time Interval -->
+                        {{ macros.input_group_floating(
+                            label='Auto-Signoff Interval', 
+                            id='auto-signoff-interval', 
+                            name='auto-signoff-interval', 
+                            value=auto_signoff_interval or 60,
+                            min=1, 
+                            max=180, 
+                            type='number', 
+                            unit='minutes',
+                            tooltip='Set the interval (in minutes) after which users will be automatically signed off.'
+                        ) }}
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <!-- Supported Container Sizes List -->
+                        {{ macros.input_group_floating(
+                            label='Supported Container Sizes', 
+                            id='container-sizes', 
+                            name='container-sizes',  
+                            value=supported_container_sizes or '',
+                            min='', 
+                            max='', 
+                            type='text',
+                            unit='',
+                            tooltip='Enter a comma-separated list of supported container sizes.') 
+                        }}
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <!-- Supported Flavors List -->
+                        {{ macros.input_group_floating(
+                            label='Supported Flavors', 
+                            id='flavors', 
+                            name='flavors', 
+                            value=supported_flavors or '',
+                            min='', 
+                            max='', 
+                            type='text',
+                            unit='',
+                            tooltip='Enter a comma-separated list of supported flavors.') 
+                        }}
+
+                    </div>
+                
+                </div>
+
+                <div class="row justify-content-left mb-5">
+
+                    <div class="col-md-3">
+
+                        <!-- Shipping Types -->
+                        {{ macros.input_group_floating(
+                            label='Shipping Types', 
+                            id='shipping-types', 
+                            name='shipping-types', 
+                            value=supported_shipping_types or '',
+                            min='', 
+                            max='', 
+                            type='text',
+                            unit='',
+                            tooltip='Enter a comma-separated list of shipping types.') 
+                        }}
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <!-- Shipping Costs -->
+                        {{ macros.input_group_floating(
+                            label='Shipping Costs ($)', 
+                            id='shipping-costs', 
+                            name='shipping-costs', 
+                            value=supported_shipping_costs or '',
+                            min='', 
+                            max='', 
+                            type='text',
+                            unit='',
+                            tooltip='Enter a comma-separated list of shipping costs corresponding to the shipping types.') 
+                        }}
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <!-- Dropdown for elevating non-admin users to admins -->
+                        {% set options = [] %}
+                        {% for user in users %}
+                            {% set _ = options.append((user.id, user.name)) %}
+                        {% endfor %}
+                        {{ macros.select_group_floating(
+                            label='Elevate User',
+                            id='user-select',
+                            name='user-select',
+                            options=options,
+                            is_required=false,
+                            tooltip='Select a user to elevate to admin status.'
+                        ) }}
+
+                    </div>
+
+                    <!-- Save button (submit form) -->
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary">Save Settings</button>
+                    </div>
+
+                </div>
+            </form>
+
+            <!-- Message Display Container -->
+            {% if msg %}
+                {{ macros.message(msg, msg_type or "danger", "/admin") }}
+            {% endif %}
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Setting</th>
+                        <th>Value</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if configs %}
+                        {% for config in configs %}
+                            {% if config.key != 'supported_shipping_costs' %}
+                            <tr>
+                                <td>{{ config.key | attribute }}</td>
+                                <td>
+                                    {% if config.key == 'supported_shipping_types' %}
+                                        <ul>
+                                            {% set shipping_types = config.value.split(',') %}
+                                            {% set formatted_shipping_costs = supported_shipping_costs | currency_list %}
+                                            {% set shipping_costs = formatted_shipping_costs.split(',') %}
+                                            {% for i in range(shipping_types | length) %}
+                                                <li>{{ shipping_types[i] }}: {{ shipping_costs[i] }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% elif config.key == 'auto_signoff_interval' %}
+                                        {{ config.value }} min
+                                    {% else %}
+                                        {{ config.value }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <!-- delete config trigger endpoint 'delete_config' -->
+                                    <button 
+                                        type="button" 
+                                        class="btn btn-danger delete-config" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteModal" 
+                                        data-config-id="{{ config.id }}">
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="3">No settings found</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </main>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}

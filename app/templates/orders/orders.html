@@ -9,8 +9,9 @@
 
 {% block content %}
 
-    {% include 'customers/modals/customers_add_modal.html' %}
+    {% include 'orders/modals/customers_update_modal.html' %}
     {% include 'orders/modals/orders_add_modal.html' %}
+    {% include 'orders/modals/orders_update_modal.html' %}
 
     <!-- Main content container -->
     <div class="container-md">
@@ -20,71 +21,115 @@
 
         <!-- Main content -->
         <main class="ms-sm-auto px-md-4 pt-md-3">
-            <div class="align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <!-- Banner header -->
-                <h1>Orders and Customer Status</h1>
-            </div>
+
+            {% set customer_btns %}
+                <a type="button" class="btn btn-outline-secondary modal-btn" 
+                    href="{{ url_for('auth.register') }}">
+                    + New
+                </a>
+            {% endset %}
             
-            <div class="mt-5">
-                <!-- inline container for title and modal button -->
-                <div class="d-flex justify-content-between">
-                    <h1>Customers</h1>
-                    <button type="button" class="btn modal-btn" data-bs-toggle="modal" data-bs-target="#customerModal">+ New</button>
-                </div>
-                <table class="table table-hover table-borderless">
-                    {% if customers %}
-                    <thead>
-                        {% for key in customers[0].keys() %}
-                            {% if key not in ['id'] %}
-                                <th scope="col">{{ key | attribute }}</th>
-                            {% endif %}
-                        {% endfor %}
-                    </thead>
-                    <tbody>
-                        {% for customer in customers %}
-                            {% set outer_index = loop.index - 1 %}
-                            <tr onclick="openModal({{ customer }}, {{ customer['id'] }})" id="row-{{ outer_index }}">
-                                <td>{{ customer.name }}</td>
-                                <td>{{ customer.status }}</td>
-                                <td>{{ customer.shipping_address | address }}</td>
-                                <td>{{ customer.billing_address | address }}</td>
+            <!-- TODO: ability to delete/edit/search users, change user billing/shipping addresses -->
+
+            {{ macros.section_header("Customers", extra_html=customer_btns | safe) }}
+
+            <table class="table table-hover table-borderless table-striped">
+                {% if customers %}
+                <thead class="table-dark">
+                    {% for key in customers[0].keys() %}
+                        {% if key not in ['id'] %}
+                            <th scope="col">{{ key | attribute }}</th>
+                        {% endif %}
+                    {% endfor %}
+                </thead>
+                <tbody>
+                    {% for customer in customers %}
+                        {% if (customer.id == current_user.id) or current_user.is_admin %}
+                            <tr onclick="openModal({{ customer }}, {{ customer['id'] }})" 
+                                id="row-{{ loop.index - 1 }}">
+                                {% for key, value in customer.items() %}
+                                    {% if key not in ['id'] %}
+                                        {% if key in ['shipping_address', 'billing_address'] %}
+                                            <td>{{ value | address }}</td>
+                                        {% else %}
+                                            <td>{{ value | title }}</td>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                    {% else %}
-                        No customers found.
-                    {% endif %}
-                </table>
-            </div>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+                {% else %}
+                    No customers found.
+                {% endif %}
+            </table>
+
+            {% set order_btns %}
+                <button 
+                    type="button" 
+                    class="btn btn-outline-secondary modal-btn" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#ordersModal">
+                    + New
+                </button>
+            {% endset %}
+
 
             <!-- Orders Table -->
-            <div class="mt-5">
-                <!-- inline container for title and modal button -->
-                <div class="d-flex justify-content-between">
-                    <h1>Orders</h1>
-                    <button type="button" class="btn modal-btn" data-bs-toggle="modal" data-bs-target="#ordersModal">+ New</button>
-                </div>
-                <table class="table table-hover table-borderless">
+            <div class="my-5">
+
+                {{ macros.section_header("Orders", extra_html=order_btns | safe) }}
+
+                <!-- Message Display Container -->
+                {% if msg %}
+                    {{ macros.message(msg, msg_type or "danger", "/orders") }}
+                {% endif %}
+
+                <table class="table table-hover table-borderless table-striped" id="orders-table">
                     {% if orders %}
-                    <thead>
+                    {% set excluded_attribs = ['order_creation_date', 'line_item_costs', 
+                                               'line_items', 'desired_receipt_date', 'billing_address',
+                                               'shipping_cost', 'shipment_id', 'user_id'] 
+                    %}
+                    <thead class="table-dark">
                         {% for key in orders[0].keys() %}
-                            {% if key not in ['id'] %}
-                                <th scope="col">{{ key.capitalize() }}</th>
+                            {% if key not in excluded_attribs %}
+                                <th scope="col">{{ key | id }}</th>
                             {% endif %}
                         {% endfor %}
                     </thead>
                     <tbody>
                         {% for order in orders %}
-                            {% set outer_index = loop.index - 1 %}
-                            <tr onclick="openModal({{ product }}, {{ product['id'] }})" id="row-{{ outer_index }}">
-                                <td>{{ order.flavor }}</td>
-                                <td>{{ order.container_size }}</td>
-                                <td>{{ order.quantity }}</td>
-                                <td>{{ order.cost }}</td>
-                                <td>{{ order.shipping_type }}</td>
-                                <td>{{ order.shipping_date }}</td>
-                                <td>{{ order.shipping_cost }}</td>
-                            </tr>
+
+                            {% if (order.user_id == current_user.id) or current_user.is_admin %}
+                        
+                                {# Set the table row color based on the order status #}
+                                {% set tr_map = '' %}
+                                {% if order.status == 'pending' %}
+                                    {% set tr_map = 'table-warning' %}
+                                {% elif order.status == 'cancelled' %}
+                                    {% set tr_map = 'table-danger' %}
+                                {% elif order.status == 'shipped' %}
+                                    {% set tr_map = 'table-info' %}
+                                {% elif order.status == 'delivered' %}
+                                    {% set tr_map = 'table-success' %}
+                                {% endif %}
+                                <tr onclick="openOrderUpdateModal({{ order.id }})" id="shipment-{{ order.shipment_id }}"
+                                    class="{% if tr_map %}{{ tr_map }}{% endif %}" style="cursor: pointer;">
+                                    {% for key, value in order.items() %}
+                                        {% if key not in excluded_attribs %}
+                                            {% if key == 'expected_shipping_date' %}
+                                                <td>{{ value | date }}</td>
+                                            {% elif key in ['total_cost', 'shipping_cost'] %}
+                                                <td>{{ value | currency }}</td>
+                                            {% else %}
+                                                <td>{{ value | title }}</td>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </tr>
+                            {% endif %}
                         {% endfor %}
                     </tbody>
                     {% else %}
