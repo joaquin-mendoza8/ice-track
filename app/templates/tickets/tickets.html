@@ -12,19 +12,25 @@
     <!-- include here for modal -->
     {% include 'tickets/modals/tickets_add_modal.html' %}
     {% include 'tickets/modals/tickets_update_modal.html' %}
+    {% include 'tickets/modals/tickets_summary_modal.html' %}
 
     <!-- Main content container -->
     <div class="container-md">
-
         <!-- Offcanvas sidebar -->
         {% include 'components/navbar.html' %}
 
         <!-- Main content -->
         <main class="ms-sm-auto px-md-4 pt-md-3">
+            <!-- inline container for title and modal button -->
+            <div class="d-flex justify-content-between border-bottom ">
+                <h1>Ticket History</h1>
+                <div>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tickets-add-modal">Create New Ticket</button>
+                    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#tickets-summary-modal" >Ticket Summary</button>
+                </div>
+            </div>
 
-            {{ macros.section_header("Customer Support") }}
-
-            <!-- Query Search Bar -->
+            <!-- Query Search Bar-->
             <div class="query-container mt-4">
 
                 <!-- Query Search Form -->
@@ -80,19 +86,20 @@
                             tooltip='Enter the date the problem was reported to search for tickets.',
                         ) }}
 
+                        <input type="date" class="form-control" name="date-reported-start">
+                        <input type="date" class="form-control" name="date-reported-end">
+                        <label for="date-reported"><small>Date Reported (Start - End)</small></label>
                     </div>
+
+                    <!-- div class="col-md-1 text-center">
+                        <h5> to </h5>
+                    </div --> 
             
                     <!-- Date Resolved -->
                     <div class="col-md-2">
-
-                        {{ macros.input_group_floating(
-                            label='Date Resolved',
-                            id='date-resolved',
-                            name='date-resolved',
-                            type='date',
-                            tooltip='Enter the date the problem was resolved to search for tickets.',
-                        ) }}
-
+                        <input type="date" class="form-control" name="date-resolved-start">
+                        <input type="date" class="form-control" name="date-resolved-end">
+                        <label for="date-resolved" class="text-center"><small>Date Resolved (Start - End)</small></label>
                     </div>
             
                     <!-- Submit Button -->
@@ -101,52 +108,44 @@
                     </div>
                 </form>
             </div>
-
-            <!-- Tickets Table -->
-            <div class="mt-5">
-                <!-- inline container for title and modal button -->
-
-                {% set new_btn %}
-                    <button type="button" class="btn btn-outline-secondary modal-btn" data-bs-toggle="modal" data-bs-target="#tickets-add-modal">+ New</button>
-                {% endset %}
-
-                {{ macros.section_header("Ticket History", extra_html=new_btn | safe) }}
-
-                <table class="table table-hover table-borderless">
-                    {% if tickets %}
-                        <thead>
-                            <tr>
-                                {% for key in tickets[0].keys() %}
+                
+            <table class="table table-hover table-borderless">
+                {% if tickets %}
+                    <thead>
+                        <tr>
+                            {% for key in tickets[0].keys() %}
+                                {% if key not in ['id'] %}
+                                    <th scope="col">{{ key.replace('_', ' ').capitalize() }}</th>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ticket in tickets %}
+                            <tr onclick="openModal({{ ticket }}, {{ ticket['id'] }})">
+                                {% for key, value in ticket.items() %}
                                     {% if key not in ['id'] %}
-                                        <th scope="col">{{ key | attribute }}</th>
+                                        <td>{{ value }}</td>
                                     {% endif %}
                                 {% endfor %}
+                                <td>
+                                    <!-- Only surface update ticket button if the current user is an admin -->
+                                    {% if current_user.is_admin %}
+                                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" 
+                                        data-bs-target="#tickets-update-modal" ticket-id={{ticket['id']}}>
+                                                Update Ticket
+                                        </button>
+                                        <!-- Hiding this delete button for now 
+                                        <form method="POST" action="{{ url_for('tickets.tickets_delete_ticket') }}">
+                                            <input type="hidden" name="ticket-id" value="{{ ticket['id'] }}">
+                                            <button type="submit" class="btn btn-sm btn-danger">Delete Ticket</button>
+                                        </form>
+                                        -->
+                                    {% endif %}
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {% for ticket in tickets %}
-                                <tr onclick="openModal({{ ticket }}, {{ ticket['id'] }})">
-                                    {% for key, value in ticket.items() %}
-                                        {% if key not in ['id'] %}
-                                            <td>{{ value }}</td>
-                                        {% endif %}
-                                    {% endfor %}
-                                    <td>
-                                        <!-- Only surface update ticket button if the current user is an admin -->
-                                        {% if current_user.is_admin %}
-                                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" 
-                                            data-bs-target="#tickets-update-modal" ticket-id={{ ticket['id'] }}>
-                                                    Update Ticket
-                                            </button>
-                                            <form method="POST" action="{{ url_for('tickets.tickets_delete_ticket') }}">
-                                                <input type="hidden" name="ticket-id" value="{{ ticket['id'] }}">
-                                                <button type="submit" class="btn btn-sm btn-danger">Delete Ticket</button>
-                                            </form>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
+                        {% endfor %}
+                    </tbody>
                     {% else %}
                         No Outstanding Tickets.
                     {% endif %}

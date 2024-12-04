@@ -1,0 +1,71 @@
+<div class="modal" id="tickets-summary-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Summary of Displayed Tickets</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Form to allow user to generate a summary of trouble tickets -->
+                <form>
+                    <div class="colums">
+                        <div class="column">
+                            <!-- Surface total tickets for all users (admin) or for single user -->
+                            <div class="mb-3">
+                                {% if current_user.is_admin%}
+                                    Number of Total Tickets for All Users:
+                                {% else %}
+                                    Number of Total Tickets for {{current_user.first_name + " " + current_user.last_name}}:
+                                {% endif %}
+                                {{tickets | length}}
+                            </div>
+
+                            <div class="mb-3">
+                                Average time to close tickets (days): {{statistics.average_time_to_close}}
+                            </div>
+
+                            <div class="mb-3">
+                                Average number of open problems per day: {{statistics.average_open_problems_per_day}}
+                            </div>
+
+                            <div class="mb-3">
+                                Average number of problems being worked on per day: {{statistics.average_problems_worked_per_day}}
+                            </div>
+                            
+                            <!-- Table for Ticket Summary -->
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <h5>All Open Tickets</h5>
+                                    <thead>
+                                        <tr>
+                                            <th>Problem Type</th>
+                                            <th>Date Reported</th>
+                                            <th>Date Closed</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Shows all open tickets -->
+                                        {% for ticket in tickets %}
+                                            {% if ticket.problem_status == 'open' %}
+                                                <tr>
+                                                    <td>{{ ticket.problem_type }}</td>
+                                                    <td>{{ ticket.date_reported }}</td>
+                                                    <td>{{ ticket.date_closed if ticket.date_closed else 'Ticket has not been resolved yet' }}</td>
+                                                </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class='d-flex justify-content-around'>
+                                <button class='btn btn-primary'> Export Summary to Excel Sheet </button>
+                                <button class='btn btn-secondary'> Export Summary to PDF </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

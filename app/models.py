@@ -274,5 +274,5 @@ class Ticket(db.Model):
         self.problem_description = problem_description
 
     def __repr__(self):
-        return f"<Ticket {self.id} - {self.problem_type} - Status: {self.status}>"
+        return f"<Ticket {self.id} - {self.problem_type} - Status: {self.problem_status}>"
         
