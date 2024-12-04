@@ -14,8 +14,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // update the hidden input and the confirm-delete button
         var hiddenInput = deleteModal.querySelector('#config-id-delete');
 
-        console.log(hiddenInput);
-
         if (hiddenInput) {
             hiddenInput.value = parseInt(configId);
         }

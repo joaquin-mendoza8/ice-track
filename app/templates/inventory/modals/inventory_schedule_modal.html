@@ -1,0 +1,27 @@
+<div class="modal" id="scheduleModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered model-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Inventory Schedule</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {% if schedule %}
+                    <div class="list-group">
+                        {% for item in schedule %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ item.flavor | capitalize }} ({{ item.container_size | capitalize }})</h5>
+                                    <small>Planned: {{ item.dock_date | date }}</small>
+                                </div>
+                                <small>Units: {{ item.quantity }}</small>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>No items are scheduled.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>``

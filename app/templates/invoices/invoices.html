@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% import 'components/macros.html' as macros %}
+
+{% block title %}Invoices{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/inventory.css') }}" type="text/css">
+{% endblock %}
+
+{% block content %}
+
+    {% include 'inventory/modals/inventory_update_modal.html' %}
+
+    <!-- Main content container -->
+    <div class="container-md">
+
+        <!-- Offcanvas sidebar -->
+        {% include 'components/navbar.html' %}
+
+        <!-- Main content -->
+        <main class="ms-sm-auto px-md-4 pt-md-3">
+
+            {% set btns %}
+            <div class="btn-group">
+                <!-- print -->
+                <button 
+                    type="button"
+                    class="btn btn-outline-secondary d-print-none"
+                    onclick="window.print()">
+                    Print Invoice
+                </button>
+                <a 
+                    type="button" 
+                    href="{{ url_for('orders.orders_home') }}" 
+                    class="btn btn-secondary d-print-none">
+                    Go to Orders
+                </a>
+            </div>
+            {% endset %}
+
+            {{ macros.section_header('Invoices', extra_html=btns | safe) }}
+
+            <!-- Message Display Container -->
+            {% if msg %}
+                {{ macros.message(msg, msg_type or "danger", "/invoices") }}
+            {% endif %}
+
+            <!-- Invoices Table -->
+            <div class="mt-5">
+
+                <!-- Dropdown for 'Filter By' functionality -->
+                <!-- <div class="dropdown mt-3">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                        Filter By
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+
+                        {% if invoices %}
+                            {% set hidden_attributes = ['id'] %}
+                            {% for key in invoices[0].keys() %}
+                                {% if key not in hidden_attributes %}
+                                    <li><a class="dropdown-item" href="/inventory?filter={{ key }}">{{ key | attribute }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+
+                    </ul>
+                </div> -->
+
+                <!-- Table for invoices -->
+                <table class="table table-hover table-borderless table-striped">
+                    {% if invoices %}
+                    {% set hidden_attributes = ['user_id'] %}
+                    <thead class="table-dark">
+                        <tr>
+                            {% for key in invoices[0].keys() %}
+                                {% if key not in hidden_attributes %}
+                                    <th scope="col">{{ key | id }}</th>
+                                {% endif %}
+                            {% endfor %}
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for invoice in invoices %}
+                            <tr id="row-{{ loop.index - 1 }}">
+                                {% for key, value in invoice.items() %}
+                                    {% if key not in hidden_attributes %}
+                                        {% if key == 'total_cost' %}
+                                            <td>{{ value | currency }}</td>
+                                        {% elif 'date' in key %}
+                                            <td>{{ value | date }}</td>
+                                        {% elif key == 'overdue' %}
+                                            <td>{{ value if value > 0 else '-' }}</td>
+                                        {% else %}
+                                            <td>{{ value | title }}</td>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                                <td>
+                                    <a href="{{ url_for('invoices.current_invoice', invoice_id=invoice.id) }}" class="btn btn-primary btn-sm">View Invoice</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    
+                    {% else %}
+                        No invoices found.
+                    {% endif %}
+                </table>
+            </div>
+        </main>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='js/inventory.js') }}"></script>
+{% endblock %}

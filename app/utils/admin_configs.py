@@ -44,7 +44,14 @@ def update_supported_container_sizes(request_supported_container_sizes):
 
         # compare the current container sizes to the ones passed in the request
         if set(current_container_sizes) != set(supported_container_sizes_list):
-            container_sizes_in_use = check_container_sizes_in_use(supported_container_sizes_list)
+
+            container_sizes_to_remove = set(current_container_sizes) - set(supported_container_sizes_list)
+            if container_sizes_to_remove:
+                container_sizes_in_use = check_container_sizes_in_use(list(container_sizes_to_remove))
+                if container_sizes_in_use:
+                    msg = (f"Cannot complete action. Container sizes in use: <{', '.join(container_sizes_in_use)}>. "
+                            "Please remove these container sizes from the list before updating.")
+                    return msg
 
             # if any container sizes are in use, redirect back to the admin dashboard w/ an error message
             if container_sizes_in_use:
@@ -199,4 +206,24 @@ def process_pre_delete_flavors(config):
         flavors_in_use_str = ', '.join(flavors_in_use)
         return (f"Cannot complete action. Flavors in use: <{flavors_in_use_str}>. "
                 "Please remove these flavors from the list before updating.")
+    return None
+
+def process_pre_delete_shipping_types(config):
+    """
+    Process the pre-deletion logic of supported shipping types.
+
+    Returns an error message if any of the shipping types are in use.
+    """
+
+    # get the supported shipping types from the database
+    supported_shipping_types_list = config.value.split(',')
+
+    # get the shipping types that are in use
+    shipping_types_in_use = check_shipping_types_in_use(supported_shipping_types_list)
+
+    # if any shipping types are in use, return an error message
+    if shipping_types_in_use:
+        shipping_types_in_use_str = ', '.join(shipping_types_in_use)
+        return (f"Cannot complete action. Shipping types in use: <{shipping_types_in_use_str}>. "
+                "Please remove these shipping types from the list before updating.")
     return None

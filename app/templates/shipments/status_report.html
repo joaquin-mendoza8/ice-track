@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% import 'components/macros.html' as macros %}
+
+{% block title %}Status Report{% endblock %}
+
+{% block content %}
+<div class="container-md">
+
+    {% set return_btn %}
+        <div class="btn-group d-print-none">
+            <a type="button" href="{{ url_for('shipments.shipments_home') }}" class="btn btn-outline-secondary">Return to Shipments</a>
+        </div>
+    {% endset %}
+
+    {{ macros.section_header("Status Report", extra_html=return_btn | safe) }}
+
+    <!-- Display general shipment metrics -->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 gap-4">
+        {% set total_shipments = shipments | length %}
+        {{ macros.metrics_card('Total Shipments', total_shipments | string) }}
+
+        {% set total_delivered = shipments | map(attribute='order') | list | selectattr('status', 'equalto', 'delivered') | list | length %}
+        {{ macros.metrics_card('Delivered', total_delivered | string) }}
+
+        {% set total_pending = shipments | map(attribute='order') | list | selectattr('status', 'equalto', 'pending') | list | length %}
+        {{ macros.metrics_card('Pending', total_pending | string) }}
+
+    </div>
+
+
+
+    <!-- Table for displaying shipment status report -->
+    <table class="table table-hover table-borderless table-striped">
+        {% if shipments %}
+            {% set hidden_attributes = ['id', 'user_id', 'order_id', 'order'] %}
+            <thead class="table-dark">
+                <tr>
+                    {% for key in shipments[0].keys() %}
+                        {% if key not in hidden_attributes %}
+                            <th scope="col">{{ key | attribute }}</th>
+                        {% endif %}
+                    {% endfor %}
+                    <th scope="col">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for shipment in shipments %}
+
+                    {# Set the table row color based on the order status #}
+                    {% set tr_map = '' %}
+                    {% if shipment.order.status == 'pending' %}
+                        {% set tr_map = 'table-warning' %}
+                    {% elif shipment.order.status == 'shipped' %}
+                        {% set tr_map = 'table-info' %}
+                    {% elif shipment.order.status == 'delivered' %}
+                        {% set tr_map = 'table-success' %}
+                    {% elif shipment.order.status in ['lost', 'damaged'] %}
+                        {% set tr_map = 'table-danger' %}
+                    {% endif %}
+
+                    <tr class="{% if tr_map %}{{ tr_map }}{% endif %}">
+                    {% for key, value in shipment.items() %}
+                        {% if key not in hidden_attributes %}
+                            {% if key == 'partial_delivery' %}
+                                <td>{{ "Yes" if value else "No" }}</td>
+                            {% elif 'date' in key %}
+                                <td>{{ (value | date) if value else '-' }}</td>
+                            {% else %}
+                                <td>{{ value | title }}</td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    <td>{{ shipment.order.status | title }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        {% else %}
+            <tr>
+                <td colspan="6">No shipments found.</td>
+            </tr>
+        {% endif %}
+    </table>
+
+    <button 
+        type="button" 
+        class="btn btn-outline-secondary d-print-none" 
+        onclick="window.print()">
+        Print Status Report
+    </button>
+</div>
+{% endblock %}

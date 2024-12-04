@@ -11,6 +11,12 @@
 
     {% include 'inventory/modals/inventory_update_modal.html' %}
 
+    {% include 'inventory/modals/inventory_log_modal.html' %}
+
+    {% include 'inventory/modals/inventory_schedule_modal.html' %}
+
+    {% include 'inventory/modals/inventory_add_allocation_modal.html' %}
+
     <!-- Main content container -->
     <div class="container-md">
 
@@ -19,19 +25,35 @@
 
         <!-- Main content -->
         <main class="ms-sm-auto px-md-4 pt-md-3">
-            <div class="align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <!-- Banner header -->
-                <h1>Inventory</h1>
-            </div>
+
+            {% set schedule_btn %}
+                <div class="btn-group">
+                    <button 
+                        type="button" 
+                        class='btn btn-outline-secondary modal-btn' 
+                        data-bs-toggle='modal' 
+                        data-bs-target='#scheduleModal'>Schedule
+                    </button>
+                </div>
+            {% endset %}
+
+            {{ macros.section_header('Inventory', extra_html=schedule_btn | safe) }}
 
             <!-- Key Metrics Cards -->
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 gap-4">
+
+                <!-- Total units in inventory -->
                 {% set total_quantity = products | map(attribute='quantity') | sum %}
                 {{ macros.metrics_card('Total Units', total_quantity | string) }}
 
-                {{ macros.metrics_card('Total Products', products | length) }}
+                <!-- Total actual units in inventory -->
+                {% set total_actual = products | selectattr('status', 'equalto', 'actual') | map(attribute='quantity') | sum %}
+                {{ macros.metrics_card('Total Actual Units', total_actual) }}
 
-                {{ macros.metrics_card('Metric 3', 'Metric value') }}
+                <!-- Total planned units in inventory -->
+                {% set total_planned = products | selectattr('status', 'equalto', 'planned') | map(attribute='quantity') | sum %}
+                {{ macros.metrics_card('Total Planned Units', total_planned) }}
+
             </div>
 
             <!-- Inventory Add Modal -->
@@ -39,58 +61,196 @@
 
             <!-- Inventory Table -->
             <div class="mt-5">
-                <!-- inline container for title and modal button -->
-                <div class="d-flex justify-content-between">
-                    <h1>Products</h1>
 
+                <!-- inline button -->
+                {% set buttons %}
                     <!-- only displays the add button if user is an admin -->
                     {% if current_user.is_admin %}
-                        <button type="button" class="btn modal-btn" data-bs-toggle="modal" data-bs-target="#addModal">+ New</button>
+                        <div class="btn-group">
+                            <button type='button' class='btn btn-outline-secondary modal-btn' data-bs-toggle='modal' data-bs-target='#logModal'>Log</button>
+                            <button type='button' class='btn btn-outline-secondary modal-btn' data-bs-toggle='modal' data-bs-target='#addModal'>+ New</button>
+                        </div>
                     {% endif %}
-                </div>
+                {% endset %}
 
-                <!-- Dropdown for 'Filter By' functionality -->
-                <div class="dropdown mt-3">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                        Filter By
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <!-- Info Popover -->
+                {% set popover_msg = "Click on a row to update the product." if current_user.is_admin
+                                  else "View all planned and available products." %}
+                {% set product_popover %}
+                    {{ macros.info_popover('Products', popover_msg) }}
+                {% endset %}
 
-                        {% if products %}
-                            {% for key in products[0].keys() %}
-                                {% if key not in ['id', 'disposition', 'deleted_at'] %}
-                                    <li><a class="dropdown-item" href="/inventory?filter={{ key }}">{{ key | attribute }}</a></li>
-                                {% endif %}
-                            {% endfor %}
-                        {% endif %}
+                <!-- Header -->
+                {{ macros.section_header("Products", popover=product_popover | safe, extra_html=buttons | safe) }}
 
-                    </ul>
-                </div>
+                <!-- Message Display Container -->
+                {% if msg %}
+                    {{ macros.message(msg, msg_type or "danger", "/inventory") }}
+                {% endif %}
 
-                <!-- Table for inventory products -->
-                <table class="table table-hover table-borderless">
+                <!-- Products section -->
+                <table class="table table-hover table-borderless table-striped mb-5">
                     {% if products %}
-                    <thead>
+                    {% set hidden_attributes = ['id', 'dock_date'] %}
+                    <thead class="table-dark">
                         {% for key in products[0].keys() %}
-                            {% if key not in ['id', 'disposition', 'deleted_at'] %}
-                                <th scope="col">{{ key | attribute }}</th>
+                            {% if key not in hidden_attributes %}
+                                <th class="inventory-header" scope="col">
+                                    <a class="table-header-link" href="/inventory?filter={{ key }}">
+                                        {% if key == 'dock_date_display' %}
+                                            {{ key | attribute | replace('Display', '') }}
+                                        {% else %}
+                                            {{ key | attribute }}
+                                        {% endif %}
+                                    </a>
+                                </th>
                             {% endif %}
                         {% endfor %}
                     </thead>
                     <tbody>
                         {% for product in products %}
-                            {% set outer_index = loop.index - 1 %}
-                            <tr onclick="openModal({{ product }}, {{ product['id'] }}, {{ current_user.is_admin | tojson | safe }})" id="row-{{ outer_index }}">
-                                <td>{{ product.flavor }}</td>
-                                <td>{{ product.container_size }}</td>
-                                <td>{{ product.price | currency}}</td>
-                                <td>{{ product.quantity }}</td>
-                                <td>{{ product.status }}</td>
+
+                            {# Set the table row color based on the order status #}
+                            {% set tr_map = '' %}
+                            {% if product.status == 'planned' %}
+                                {% set tr_map = 'table-warning' %}
+                            {% elif product.status == 'actual' %}
+                                {% set tr_map = 'table-success' %}
+                            {% endif %}
+
+                            <tr onclick="openModal({{ product }}, {{ product['id'] }}, {{ current_user.is_admin | tojson | safe }})" 
+                                class="{% if tr_map %}{{ tr_map }}{% endif %}" id="row-{{ loop.index - 1 }}"
+                                style="cursor: pointer;">
+                                {% for key, value in product.items() %}
+                                    {% if key not in hidden_attributes %}
+                                        {% if key == 'price' %}
+                                            <td>{{ value | currency }}</td>
+                                        {% elif key == 'dock_date' %}
+                                            <td>{{ value | date }}</td>
+                                        {% else %}
+                                            <td>{{ value | capitalize }}</td>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
                             </tr>
                         {% endfor %}
                     </tbody>
                     {% else %}
                         No products found.
+                    {% endif %}
+                </table>
+
+                <!-- Allocations section -->
+                {% set tooltip_msg = "View and add committed, shipped, defective, and spoiled allocations."
+                                      if current_user.is_admin else "View your allocations (reservations of a product)." %}
+                {% set allocations_popover %}
+                    {{ macros.info_popover('Allocations', tooltip_msg) }}
+                {% endset %}
+
+                {% set new_allocation_btn %}
+                    {% if current_user.is_admin %}
+                        <div class="btn-group">
+                            <button 
+                                type="button" 
+                                class='btn btn-outline-secondary modal-btn' 
+                                data-bs-toggle='modal' 
+                                data-bs-target='#addAllocationModal'>
+                                + New
+                            </button>
+                        </div>
+                    {% endif %}
+                {% endset %}
+
+                <!-- Inventory Allocations Header -->
+                {{ macros.section_header('Allocations', popover=allocations_popover | safe, extra_html=new_allocation_btn | safe) }}
+
+                <!-- Table for product allocations -->
+                <table class="table table-hover table-borderless table-striped mb-5">
+                    {% if allocations %}
+                    {% set hidden_attributes = ['id', 'product', 'order_item', 'product_id', 
+                                                'order_item_id', 'shipment_id'] %}
+                    <thead class="table-dark">
+                        {% for key in allocations[0].keys() %}
+                            {% if key not in hidden_attributes %}
+                                
+                                <th class="inventory-header" scope="col">
+                                    <a class="table-header-link" href="/inventory?filter={{ key }}">
+                                        {% if key == 'order_id' %}
+                                            {{ key | id }}
+                                        {% else %}
+                                            {{ key | attribute }}
+                                        {% endif %}
+                                    </a>
+                                </th>
+                            {% endif %}
+                        {% endfor %}
+                    </thead>
+                    <tbody>
+                        {% set is_table_empty = true %}
+                        {% for allocation in allocations %}
+
+                            {% if allocation.user_id == current_user.id or current_user.is_admin %}
+                                {% set is_table_empty = false %}
+
+                                {# Set the table row color based on the order status #}
+                                {% set tr_map = '' %}
+                                {% if allocation.disposition == 'committed' %}
+                                    {% set tr_map = 'table-info' %}
+                                {% elif allocation.disposition == 'shipped' %}
+                                    {% set tr_map = 'table-success' %}
+                                {% elif allocation.disposition == 'defective' %}
+                                    {% set tr_map = 'table-warning' %}
+                                {% elif allocation.disposition == 'spoiled' %}
+                                    {% set tr_map = 'table-danger' %}
+                                {% endif %}
+
+                                {% set options = ('committed', 'Committed'),
+                                                ('shipped', 'Shipped'),
+                                                ('defective', 'Defective'),
+                                                ('spoiled', 'Spoiled') %}
+
+                                <tr onclick="openModal({{ allocation }}, {{ allocation['id'] }})" 
+                                    class="{% if tr_map %}{{ tr_map }}{% endif %}" id="row-{{ loop.index - 1 }}">
+                                    {% for key, value in allocation.items() %}
+                                        {% if key not in hidden_attributes %}
+                                            {% if key == 'disposition' %}
+                                                {% set input_id = 'disposition-' ~ allocation.id %}
+                                                <td>
+                                                    {% set tooltip_msg = "Update disposition for this allocation item."
+                                                        if current_user.is_admin else "Only admins can update dispositions." %}
+                                                    {{ macros.select_group_floating(
+                                                        label='Current',
+                                                        id=input_id,
+                                                        name=input_id,
+                                                        options=options,
+                                                        classes='disposition-input',
+                                                        selected=value,
+                                                        is_disabled=not current_user.is_admin,
+                                                        tooltip=tooltip_msg
+                                                    ) }}
+                                                </td>
+                                            {% elif key == 'price' %}
+                                                <td>{{ value | currency }}</td>
+                                            {% elif 'date' in key or key == 'allocated_at' %}
+                                                <td>{{ value | date }}</td>
+                                            {% else %}
+                                                <td>{{ value | capitalize }}</td>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                        {% if not is_table_empty %}
+                            <tr>
+                                <td colspan="{{ allocations[0] | length }}">
+                                    No allocations found. Create an order/ticket to view allocations.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                    {% else %}
+                        No allocations found.
                     {% endif %}
                 </table>
             </div>

@@ -1,3 +1,5 @@
+# TODO: Stress testing with pytest-benchmark pytest
+
 # test the inventory home endpoint
 def test_inventory_home(client):
 
@@ -6,15 +8,19 @@ def test_inventory_home(client):
     assert response.status_code == 200
 
 # test the inventory add endpoint (POST request)
-def test_inventory_add(client, app_instance):
+def test_inventory_add(client, app_instance, captured_templates):
     response = client.post('/inventory_add', data={
-        "product-flavor": 'test',
-        "product-container-size": 'small',
-        "product-price": 1.00,
-        "product-quantity": 10,
-        "product-status": 'planned',
+        "product-flavor-add": 'test',
+        "product-container-size-add": 'small',
+        "product-price-add": 1.00,
+        "product-quantity-add": 10,
+        "product-status-add": 'planned',
+        "product-dock-date-add": '2026-01-01',
         "user-id": 999
     }, follow_redirects=True)
+    template, context = captured_templates[0]
+    assert template.name == 'inventory/inventory.html'
+    assert context['msg'] == "Added product successfully"
     assert response.status_code == 200
     
     # check if the product was added to the database
@@ -38,10 +44,11 @@ def test_inventory_update(client, app_instance):
     response = client.post('/inventory_update', data={
         "product-id": product_id,
         "product-flavor": 'test',
-        "product-container-size": 'medium',
+        "product-container-size": 'small',
         "product-price": 1.10,
         "product-quantity": 1,
-        "product-status":'actual'
+        "product-status": 'planned',
+        "product-dock-date": '2026-01-01',
     }, follow_redirects=True)
 
     # check if the product was updated
