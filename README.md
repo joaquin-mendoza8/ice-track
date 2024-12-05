@@ -1,4 +1,75 @@
-# Quickstart
+# FROZEN ASSETS : AN ICE CREAM SHIPPING COMPANY
+
+A complete solution to manage orders, shipping, inventory, and customer issues for your ice cream business. 
+
+# Table of Content
+1. Overview
+2. Features
+3. Quickstart/Installation
+4. Usage
+5. Tools for Development
+6. Tools/Libs for General Requirements
+
+# 1. Overview
+
+## 1.1 Introduction
+
+Frozen Assets is designed to streamline operations for ice cream businesses that need a robust system to sell ice cream. This software aims to automate key processes
+by providing the following subsystems.
+- Order Entry : Simplifies and automate the order-taking process.
+- Inventory Management : Tracks inventory levels and updates in real time.
+- Shipment Tracking : Monitors shipment status and handles logistics.
+- Trouble Ticket Management : Manages customer and internal issues.
+
+## 1.2 Client Requirements
+These are features that the client have requested and have been fulfilled by us. These are the requirements the client has requested
+https://github.com/joaquin-mendoza8/ice-track/blob/main/docs/ice-track.pdf
+
+
+# 2. Features
+
+## 2.1 General Features
+- GUI : Intuitive window-based interface with response times under 5 seconds for transactions.
+- Role Privileges/Security Access : Role-based access with password protection and detailed user logs.
+- Error Handling : Validation of inputs, process blocking, modification consistency checks, restoration of previous data.
+- Online Help Function : Context-sensitive help with detailed field descriptions.
+
+## 2.2 Subsystem Features
+
+This software has 4 subsystems that are integrated to provide a robust system with many features that our client has requested. A more detailed
+explanation on how to navigate the subsystems will be in chapter 4.
+
+### 2.2.1 Order Entry 
+- Maintains customer data, including status(preferred, ok, shaky).
+- Supports multi-line order forms with detailed product and shipping information.
+- Automatically checks inventory availability and reserves stock.
+- Allow user to enter the date payments were recieved.
+- Generates printable invoices and reports on outstanding payments.
+
+### 2.2.2 Inventory Management
+- Tracks stock by flavor, package size, price, and availability.
+- Allow users to manage stock with add/delete features.
+- Manages committed inventory to unfulfilled orders.
+- Manages planned and actual inventory schedules.
+- Logs inventory history with user accountability.
+- Generates reports on inventory status and product disposition.
+
+### 2.2.3 Shipment Tracking
+- Monitors shipments, including status, dates, and delivery method.
+- Maintains a list of shipping vendors with ratings and costs.
+- Handles canceled shipments and billing for partialed shipments.
+- Handles lost or damaged shipments and supports reshipments.
+- Generates shipment reports and logs.
+
+### 2.2.4 Trouble Ticket Management
+- Records and categorizes customer and internal issues.
+- Supports automated problem reports from other subsystems.
+- Allow users to input information to the ttms.
+- Generates detailed reports on problem resolution times and trends.
+- Exporets data for further analysis.
+
+
+# 3. Quickstart Installation
 
 - Clone the repo onto your machine
   ```
@@ -26,7 +97,63 @@
   python run.py
   ```
 
-# Tools for Development
+
+# 4. Usage
+
+This section will provide a guide to use this software for our clients and their users.
+
+
+## 4.1 Registration.
+
+### 4.1.1 Admin
+- Create a user ID and password and set your user role to admin to access special privileges.
+
+### 4.1.2 Customer 
+- Create a user ID and password and provide your personal information to be able to start your order and transaction.
+
+
+## 4.2 Order Entry
+- Navigate to the **Orders** section using the blue tab on the top right.
+  
+### 4.2.1 Admin
+- Navigate to the **Admin Dashboard** section using the blue tab on the top right.
+- Set the customer's status (preferred, ok, shaky)
+- Access the **Orders** section to manage customer orders
+
+### 4.2.2 Customer
+- Access the order entry form by pressing the **+New** button next to Orders.
+- Choose your method of preferred shipping.
+- Choose the products you want to purchase by setting your preferred flavor, size, and quantity.
+- Press the **+** button below to add more products you want to purchase.
+
+
+## 4.3 Inventory
+- Navigate to the **Inventory** section.
+
+### 4.3.1 Admin
+- To add item into inventory use the **+New** button next to Products.
+- Set the flavor, size, price, quantity, and inventory status.
+- To manually adjust products in inventory, click on the product you want to adjust listed on the page and press **Save Changes**.
+- To delete a product, you can click on the product listed and press the red "Delete" button and press **Save Changes**.
+
+### 4.3.2 Customer
+- Navigate to the **Inventory** section.
+- This is where you will see an up-to-date on stock levels of our ice cream inventory.
+
+
+## 4.4 Shipment Tracking
+- Navigate to the shipments tab in the top right.
+
+### 4.4.1 Admin
+- Use the 
+### 4.4.2 Customer
+
+## 4.5 Trouble Ticket Managemnt
+### 4.5.1 Admin
+### 4.5.2 Customer
+  
+
+# 5. Tools for Development
 
 - **_Back-end_** - Flask
   
@@ -40,7 +167,7 @@
 
 
 
-# Tools/Libs for General Requirements
+# 6. Tools/Libs for General Requirements
 
 - **_GUI_** - Vue.js, Bootstrap
 
