@@ -43,7 +43,7 @@ explanation on how to navigate the subsystems will be in chapter 4.
 - Maintains customer data, including status(preferred, ok, shaky).
 - Supports multi-line order forms with detailed product and shipping information.
 - Automatically checks inventory availability and reserves stock.
-- Allow user to enter the date payments were recieved.
+- Allow user to enter the date payments were received.
 - Generates printable invoices and reports on outstanding payments.
 
 ### 2.2.2 Inventory Management
@@ -57,16 +57,16 @@ explanation on how to navigate the subsystems will be in chapter 4.
 ### 2.2.3 Shipment Tracking
 - Monitors shipments, including status, dates, and delivery method.
 - Maintains a list of shipping vendors with ratings and costs.
-- Handles canceled shipments and billing for partialed shipments.
+- Handles canceled shipments with updated costs.
 - Handles lost or damaged shipments and supports reshipments.
 - Generates shipment reports and logs.
 
 ### 2.2.4 Trouble Ticket Management
 - Records and categorizes customer and internal issues.
 - Supports automated problem reports from other subsystems.
-- Allow users to input information to the ttms.
+- Allow users to input information to the trouble ticket management system.
 - Generates detailed reports on problem resolution times and trends.
-- Exporets data for further analysis.
+- Exports data for further analysis.
 
 
 # 3. Quickstart Installation
@@ -106,18 +106,19 @@ This section will provide a guide to use this software for our clients and their
 ## 4.1 Registration.
 
 ### 4.1.1 Admin
-- Create a user ID and password and set your user role to admin to access special privileges.
+- Create a user ID and password and ask an admin to provide you with admin privileges
+- If you are an admin go to **Admin Dashboard** and choose a user in the **Elevate User** tab.
 
 ### 4.1.2 Customer 
 - Create a user ID and password and provide your personal information to be able to start your order and transaction.
 
 
 ## 4.2 Order Entry
-- Navigate to the **Orders** section using the blue tab on the top right.
+- Navigate to the **Orders** section using the tab on the top right.
   
 ### 4.2.1 Admin
 - Navigate to the **Admin Dashboard** section using the blue tab on the top right.
-- Set the customer's status (preferred, ok, shaky)
+- Set the customer's status (preferred, ok, shaky) (Coming Soon)
 - Access the **Orders** section to manage customer orders
 
 ### 4.2.2 Customer
@@ -125,45 +126,71 @@ This section will provide a guide to use this software for our clients and their
 - Choose your method of preferred shipping.
 - Choose the products you want to purchase by setting your preferred flavor, size, and quantity.
 - Press the **+** button below to add more products you want to purchase.
+- Use the **+Register** button to register another account if needed.
 
 
 ## 4.3 Inventory
-- Navigate to the **Inventory** section.
+- Navigate to the **Inventory** section using the tab in the top right.
 
 ### 4.3.1 Admin
 - To add item into inventory use the **+New** button next to Products.
 - Set the flavor, size, price, quantity, and inventory status.
 - To manually adjust products in inventory, click on the product you want to adjust listed on the page and press **Save Changes**.
 - To delete a product, you can click on the product listed and press the red "Delete" button and press **Save Changes**.
+- Press the **info popover** button to show field description and help.
+- In the allocation if you navigate to the **+new** button you can reserve a product depending on their status (committed/defective/spoiled)
 
 ### 4.3.2 Customer
 - Navigate to the **Inventory** section.
 - This is where you will see an up-to-date on stock levels of our ice cream inventory.
+- Navigate to the **Schedule** button to see future incoming products.
+- Clicking on different fields in the inventory table will sort through the listing.
+- Press the **info popover** button to show field description and help.
 
 
 ## 4.4 Shipment Tracking
-- Navigate to the shipments tab in the top right.
+- Navigate to the **Shipments** using the tab in the top right.
 
 ### 4.4.1 Admin
-- Use the 
+- Click on the orders in the table to see detailed information about the shipment
+- In the new tab click the update/edit button information to edit what you need.
+- **Order** button will open the order and you may change the status of shipment.
+- **Cancel** button will cancel the order and prevent the item from shipping.
+- **Delete Order** is an admin only privilege and will delete the order entirely.
+- **Invoice** will show all fulfilled orders and can be printed.
+- **Status Report** button shows statistical analysis of all shipped products.
+
 ### 4.4.2 Customer
+- **Cancel** button will allow you to cancel your order but will still be charged with shipping costs.
+- **Invoice** will show your fullfilled orders and can be printed
+- **Order** button will allow you to edit billing address, payment date, and other information you need changes on.
+
 
 ## 4.5 Trouble Ticket Managemnt
+- Navigate to the **Trouble Ticket** using the tab in the top right.
+
 ### 4.5.1 Admin
+- **+edit** will allow you to access trouble tickets and add/delete input to them.
+- **Search** functionality implementation may be used by using customer name by typing in the name, type of problem, and problem status
+- **Summary** button of all the tickets key metrics opened per day/addressed
 ### 4.5.2 Customer
+- **+new ticket** will allow you make a ticket for any issues you are having.
+- Write your name
+- Choose type of problem
+- Write a description of your issue.
   
 
 # 5. Tools for Development
 
 - **_Back-end_** - Flask
   
-- **_Front-end_** - Vue.js, HTML/CSS, Bootstrap
+- **_Front-end_** - HTML/CSS, Bootstrap
   
-- **_Data_** - mySQL, PostGREs
+- **_Data_** - SQLlite, PostGREs
 
-- **_DevOps_** - Git, Docker, K8s?, GitHub Actions
+- **_DevOps_** - Git, GitHub Actions
 
-- **_Project Management_** - Asana, GitHub
+- **_Project Management_** - GitHub
 
 
 
