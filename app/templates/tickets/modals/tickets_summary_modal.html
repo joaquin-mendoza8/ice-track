@@ -6,93 +6,72 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <!-- Form to allow user to generate a summary of trouble tickets -->
-                <form>
-                    <div class="colums">
-                        <div class="column">
-                            <!-- Surface total tickets for all users (admin) or for single user -->
-                            <!-- <div class="mb-3">
-                                {% if current_user.is_admin%}
-                                    Number of Total Tickets for All Users:
-                                {% else %}
-                                    Number of Total Tickets for {{current_user.first_name + " " + current_user.last_name}}:
-                                {% endif %}
-                                {{tickets | length}}
-                            </div>
-
-                            <div class="mb-3">
-                                Average time to close tickets (days): {{statistics.average_time_to_close}}
-                            </div>
-
-                            <div class="mb-3">
-                                Average number of open problems per day: {{statistics.average_open_problems_per_day}}
-                            </div>
-
-                            <div class="mb-3">
-                                Average number of problems being worked on per day: {{statistics.average_problems_worked_per_day}}
-                            </div> -->
-
-                            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 gap-4">
+                <div class="colums">
+                    <div class="column">
+                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 gap-4">
 
 
-                                {% set current_user_name = current_user.first_name + " " + current_user.last_name %}
-                                {% set total_tickets_subtitle = "(All Users)" if current_user.is_admin 
-                                                                 else '(' ~ current_user_name ~ ')' %}
-                                {{ macros.metrics_card("Total Tickets", subtitle=total_tickets_subtitle, text=tickets | length) }}
+                            {% set current_user_name = current_user.first_name + " " + current_user.last_name %}
+                            {% set total_tickets_subtitle = "(All Users)" if current_user.is_admin 
+                                                                else '(' ~ current_user_name ~ ')' %}
+                            {{ macros.metrics_card("Total Tickets", subtitle=total_tickets_subtitle, text=tickets | length) }}
 
-                                {{ macros.metrics_card("Avg. Time to Close", subtitle="(Days)", 
-                                                        text=statistics.average_time_to_close) }}
+                            {{ macros.metrics_card("Avg. Time to Close", subtitle="(Days)", 
+                                                    text=statistics.average_time_to_close) }}
 
-                                {{ macros.metrics_card("Avg. Opened Problems", subtitle="(Per Day)", text=statistics.average_opened_problems_per_day) }}
+                            {{ macros.metrics_card("Avg. Opened Problems", subtitle="(Per Day)", text=statistics.average_opened_problems_per_day) }}
 
-                                {{ macros.metrics_card("Avg. Problems Worked", subtitle="(Per Day)", text=statistics.average_problems_worked_per_day) }}
+                            {{ macros.metrics_card("Avg. Problems Worked", subtitle="(Per Day)", text=statistics.average_problems_worked_per_day) }}
 
-                            </div>
-                            <!-- Table for Ticket Summary -->
-                            <div class="table-responsive mt-5">
-                                <table class="table table-striped">
+                        </div>
+                        <!-- Table for Ticket Summary -->
+                        <div class="table-responsive mt-5">
+                            <table class="table table-striped">
 
-                                    {% set export_btns %}
-                                        <div class="input-group">
-                                            <div class="input-group-text" id="btnGroupAddon2">Export to</div>
-                                            <div class="btn-group">
-                                                <button class='btn btn-outline-secondary'>Excel</button>
-                                                <button class='btn btn-outline-secondary'>PDF</button>
-                                            </div>
+                                {% set export_btns %}
+                                    <div class="input-group">
+                                        <div class="input-group-text" id="btnGroupAddon2">Export to</div>
+                                        <div class="btn-group">
+                                            <form method="POST" action="{{url_for('tickets.tickets_export_statistics')}}">
+                                                <input type="hidden" name="tickets" value="{{ tickets }}">
+                                                <input type="hidden" name="statistics" value="{{ statistics }}"> 
+                                                <button type="submit" class='btn btn-outline-secondary'>Excel</button>
+                                            </form>
+                                            <!-- button class='btn btn-outline-secondary'>PDF</button -->
                                         </div>
-                                    {% endset %}
+                                    </div>
+                                {% endset %}
 
-                                    {{ macros.section_header(
-                                        title='All Open Tickets', 
-                                        subtitle='Shows all open tickets', 
-                                        size='h5',
-                                        extra_html=export_btns | safe
-                                    ) }}
-                                    <h5>All Open Tickets</h5>
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th>Problem Type</th>
-                                            <th>Date Reported</th>
-                                            <th>Date Closed</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- Shows all open tickets -->
-                                        {% for ticket in tickets %}
-                                            {% if ticket.problem_status == 'open' %}
-                                                <tr>
-                                                    <td>{{ ticket.problem_type }}</td>
-                                                    <td>{{ ticket.date_reported }}</td>
-                                                    <td>{{ ticket.date_closed if ticket.date_closed else 'Ticket has not been resolved yet' }}</td>
-                                                </tr>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
+                                {{ macros.section_header(
+                                    title='All Open Tickets', 
+                                    subtitle='Shows all open tickets', 
+                                    size='h5',
+                                    extra_html=export_btns | safe
+                                ) }}
+                                <h5>All Open Tickets</h5>
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Problem Type</th>
+                                        <th>Date Reported</th>
+                                        <th>Date Closed</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Shows all open tickets -->
+                                    {% for ticket in tickets %}
+                                        {% if ticket.problem_status == 'open' %}
+                                            <tr>
+                                                <td>{{ ticket.problem_type }}</td>
+                                                <td>{{ ticket.date_reported }}</td>
+                                                <td>{{ ticket.date_closed if ticket.date_closed else 'Ticket has not been resolved yet' }}</td>
+                                            </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>

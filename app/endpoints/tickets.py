@@ -1,9 +1,13 @@
-from flask import Blueprint, request, redirect, url_for, render_template
+from flask import Blueprint, Response, request, redirect, url_for, render_template
 from flask_login import login_required, current_user
 from app.utils.data import *
 from app.models import Product, User, Ticket
 from app.extensions import db
 from datetime import datetime, date, timezone, timedelta
+
+import pandas as pd
+import json, io, re
+import openpyxl
 
 # create the trouble tickets blueprint
 tickets = Blueprint('tickets', __name__)
@@ -183,6 +187,56 @@ def tickets_query_tickets():
 def tickets_summary():
     return None
 
+@tickets.route('/tickets_export_statistics', methods=['POST'])
+def tickets_export_statistics():
+    # Retrieve the string data from the form
+    tickets = request.form.get('tickets')
+    
+    # replace single quotes with double quotes
+    tickets = tickets.replace("'", '"')
+    
+    # transform datetime objects into serializable json
+    tickets = re.sub(r'datetime\.date\((\d{4}), (\d{1,2}), (\d{1,2})\)', r'"\1-\2-\3"', tickets)
+    
+    # replace None with null
+    tickets = tickets.replace("None", "null")
+    
+    # ensure all keys and strings are properly quoted 
+    tickets = re.sub(r"'([^']*)'", r'"\1"', tickets)
+    
+    # transform tickets into dictionary
+    tickets = json.loads(tickets)
+    
+    statistics = request.form.get('statistics')
+    print(statistics)
+    statistics = statistics.replace("'", '"')
+    statistics = json.loads(statistics)
+
+    statistics_data = {
+        "Metric": ["Total Amount of Tickets", "Avg. Time to Close (Days)", "Avg. Opened Problems Per Day", "Avg. Problems Worked on Per Day"],
+        "Value": [
+            len(tickets),
+            statistics.get("average_time_to_close", "0.0"),
+            statistics.get("average_opened_problems_per_day", "0.0"),
+            statistics.get("average_problems_worked_per_day", "0.0")
+        ]
+    }
+    
+    # Transform tickets and statistics data into a DataFrame
+    tickets_df = pd.DataFrame(tickets)
+    statistics_df = pd.DataFrame(statistics_data)
+
+    # Write the DataFrame to an Excel file in memory
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        tickets_df.to_excel(writer, index=False, sheet_name="Tickets")
+        statistics_df.to_excel(writer, index=False, sheet_name="Statistics")
+
+    # Create a response with the Excel file
+    response = Response(output.getvalue(), mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response.headers["Content-Disposition"] = "attachment; filename=ticket_statistics.xlsx"
+    return response
+
 def create_ticket_statistics(tickets, start_date: date = None, end_date: date = None) -> dict:
     statistics = {
         'average_time_to_close': '-',
@@ -224,7 +278,7 @@ def create_ticket_statistics(tickets, start_date: date = None, end_date: date = 
         current_date += timedelta(days=1)
 
     if open_ticket_counts_per_day:
-        statistics['average_open_problems_per_day'] = round(sum(open_ticket_counts_per_day) / len(open_ticket_counts_per_day), 2)
+        statistics['average_opened_problems_per_day'] = round(sum(open_ticket_counts_per_day) / len(open_ticket_counts_per_day), 2)
         
     # Average Number of Problems Being Worked On/Day
     current_date = min_date
@@ -243,3 +297,4 @@ def create_ticket_statistics(tickets, start_date: date = None, end_date: date = 
         statistics['average_problems_worked_per_day'] = round(sum(in_progress_tickets_per_day) / len(in_progress_tickets_per_day), 2)
     
     return statistics
+
