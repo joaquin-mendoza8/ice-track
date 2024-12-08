@@ -211,6 +211,7 @@ def inventory_add_product():
                 # log the error
                 print("Missing fields")
                 msg = "Missing fields"
+                return redirect(url_for('inventory.inventory_home', msg=msg))
 
             # convert the types of price, quantity and dock date
             try:

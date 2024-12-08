@@ -1,5 +1,23 @@
 document.addEventListener('DOMContentLoaded', function() {
 
+    // Enable auto signoff after a certain time (default is 30 minutes)
+    // var signoffTimeout;
+    // var logoutUrl;
+    // console.log(signoffTimeout, typeof signoffTimeout, logoutUrl);
+    // var signoffTimeout;
+    // function resetTimeout() {   // reset the timeout
+    //     clearTimeout(signoffTimeout);
+    //     signoffTimeout = setTimeout(logout, autoSignoffInterval * 1000);
+    // }
+    // function logout() {  // logout the user
+    //     window.location.href = "/logout";
+    // }
+    // document.addEventListener('mousemove', resetTimeout);    // reset timeout on user interactions
+    // document.addEventListener('keypress', resetTimeout);
+    // document.addEventListener('click', resetTimeout);
+    // document.addEventListener('scroll', resetTimeout);
+    // resetTimeout();    // init the timeout
+
     // Enable Bootstrap popovers
     const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
     const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));

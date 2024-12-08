@@ -162,7 +162,7 @@
                             <tr>
                                 <td>{{ config.key | attribute }}</td>
                                 <td>
-                                    {% if config.key == 'supported_shipping_types' %}
+                                    {% if config.key == 'supported_shipping_types' and config.value %}
                                         <ul>
                                             {% set shipping_types = config.value.split(',') %}
                                             {% set formatted_shipping_costs = supported_shipping_costs | currency_list %}

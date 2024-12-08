@@ -1,6 +1,8 @@
 from flask import Flask
 from app.extensions import db, migrate, login_manager, flask_session
 from config.config import Config, DevelopmentConfig, TestConfig, ProductionConfig
+from app.models import AdminConfig
+from datetime import timedelta
 
 
 def create_app(config_class=Config):
@@ -61,6 +63,11 @@ def create_app(config_class=Config):
     # create the database tables
     with app.app_context():
         db.create_all()
+
+        # specify the auto signoff interval (in minutes)
+        auto_signoff_interval_obj = AdminConfig.query.filter_by(key='auto_signoff_interval').first()
+        auto_signoff_interval = timedelta(minutes=int(auto_signoff_interval_obj.value)) if auto_signoff_interval_obj else timedelta(minutes=10)
+        app.config['PERMANENT_SESSION_LIFETIME'] = auto_signoff_interval
 
     # user loader for login manager (required by flask-login)
     from app.models import User

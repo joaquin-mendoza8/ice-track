@@ -180,7 +180,7 @@
                                     <th scope="col">{{ key | attribute }}</th>
                                 {% endif %}
                             {% endfor %}
-                            <th scope="col">Action</th>
+                            {% if current_user.is_admin %}<th scope="col">Action</th>{% endif %}
                         </tr>
                     </thead>
                     <tbody>
@@ -206,12 +206,6 @@
                                         data-bs-target="#tickets-update-modal" ticket-id={{ticket['id']}}>
                                             <i class="bi bi-pencil-square"></i>
                                         </button>
-                                        <!-- Hiding this delete button for now 
-                                        <form method="POST" action="{{ url_for('tickets.tickets_delete_ticket') }}">
-                                            <input type="hidden" name="ticket-id" value="{{ ticket['id'] }}">
-                                            <button type="submit" class="btn btn-sm btn-danger">Delete Ticket</button>
-                                        </form>
-                                        -->
                                     {% endif %}
                                 </td>
                             </tr>

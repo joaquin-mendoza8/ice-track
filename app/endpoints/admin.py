@@ -87,6 +87,8 @@ def admin_home():
 @admin.route('/admin/update_configs', methods=['POST'])
 def update_admin_config():
 
+    msg, msg_type = '', ''
+
     try:
 
         # get the request form data
@@ -223,7 +225,7 @@ def delete_admin_config():
     except Exception as e:
         # log the error
         print(f"Error deleting configuration: {e}")
-        msg = "An error occurred. Please contact support."
+        msg = "An error occurred. Please submit a trouble ticket."
         db.session.rollback()
 
     return redirect(url_for('admin.admin_home', msg=msg, msg_type=msg_type))

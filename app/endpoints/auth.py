@@ -37,12 +37,12 @@ def login():
         else:
 
             # invalid credentials
-            return render_template('auth/login.html', msg="Invalid credentials provided."), 400
+            return render_template('auth/login.html', msg="Invalid credentials provided.")
         
     else:
 
         # render the login page (GET request)
-        return render_template('auth/login.html', msg=msg, msg_type=msg_type), 200
+        return render_template('auth/login.html', msg=msg, msg_type=msg_type, auto_signoff_interval=1), 200
     
 
 # create the logout endpoint

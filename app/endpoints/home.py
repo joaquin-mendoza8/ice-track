@@ -14,7 +14,8 @@ def home_home():
     if not current_user.is_authenticated:
         return redirect(url_for('auth.login'))
 
-    return redirect(url_for('inventory.inventory_home')) # TODO: change to home page
+    return redirect(url_for('inventory.inventory_home'))
+
 
 # create the favicon endpoint
 @home.route('/favicon.ico')

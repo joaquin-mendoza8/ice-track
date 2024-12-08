@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
     const shipment_id = urlParams.get('shipment_id');
     if (shipment_id) {
-        console.log('shipment_id:', shipment_id);
+        // console.log('shipment_id:', shipment_id);
         document.getElementById(`shipment-${shipment_id}`).click();
     }
 
@@ -117,8 +117,6 @@ function addLineItem(isUpdateModal) {
     const lineItemCount = document.querySelectorAll(isUpdateModal ? '.update-line-item' : '.line-item').length;
     const firstLineItem = document.getElementById(isUpdateModal ? "update-first-line-item" : "first-line-item");
 
-    console.log("begin", document.querySelectorAll(isUpdateModal ? '.update-line-item' : '.line-item'));
-
     // replace all instances of the number 0 with the current line item count
     lineItem.innerHTML = firstLineItem.innerHTML.replace(/(id|name|for)="([^"]*?)0([^"]*?)"/g, function(match, p1, p2, p3) {
         return `${p1}="${p2}${lineItemCount}${p3}"`;
@@ -147,7 +145,6 @@ function addLineItem(isUpdateModal) {
     handleMaxQuantity(newFlavorSelect);
     handleCost(newFlavorSelect);
 
-    console.log(lineItemCount);
 }
 
 
@@ -157,24 +154,22 @@ function deleteMostRecentLineItem(isUpdateModal) {
     // get all line items and the delete line item button
     const lineItems = document.querySelectorAll(isUpdateModal ? '.update-line-item' : '.line-item');
     const deleteLineItemButton = document.getElementById(isUpdateModal ? 'update-delete-line-item' : 'delete-line-item');
-    const lineItemCount = lineItems.length;
+    let lineItemCount = lineItems.length;
 
     // remove the most recent line item
     if (lineItems.length > 1) { // Ensure at least one line item remains
         const mostRecentLineItem = lineItems[lineItems.length - 1];
         mostRecentLineItem.remove();
+        lineItemCount--;
 
         // trigger the cost display update
         updateTotalCost(isUpdateModal);
     } 
     
     // if only one line item remains, hide the "Delete Line Item" button
-    // TODO: investigate whether this works
     if (lineItemCount === 1) {
         deleteLineItemButton.hidden = true;
     }
-
-    console.log(lineItemCount);
 }
 
 
@@ -230,7 +225,7 @@ function updateMaxQuantity(flavorSelect, sizeSelect, quantityInput, quantityLabe
         fetch(`/orders/fetch_stock?flavor=${encodeURIComponent(selectedFlavor)}&container-size=${encodeURIComponent(selectedSize)}`)
             .then(response => response.json())
             .then(data => {
-                console.log(data);
+                // console.log(data);
 
                 // Display and set the max quantity for the selected flavor and size
                 if (data.status === 'planned') {
@@ -370,7 +365,7 @@ function openOrderUpdateModal(order_id) {
             // update the invoice details navigation button
             const navInvoiceBtn = document.getElementById('nav-invoice-btn');
             navInvoiceBtn.href = `/current-invoice/${data['invoice_id']}`;
-            console.log(data);
+            // console.log(data);
 
             if ('error' in orderContent) {
                 alert(`Failed to load order. ${orderContent}. Please contact support.`);
@@ -405,6 +400,7 @@ function openOrderUpdateModal(order_id) {
 
             // set the order status
             const orderStatusSelect = document.getElementById('order-status-update');
+            const cancelOrderButton = document.getElementById('cancel-order-btn');
             if (orderContent.status === 'cancelled') {
                 const cancelledOption = document.createElement('option');
                 cancelledOption.value = 'cancelled';
@@ -420,9 +416,13 @@ function openOrderUpdateModal(order_id) {
                 });
 
                 // disable the cancel order button
-                const cancelOrderButton = document.getElementById('cancel-order-btn');
                 cancelOrderButton.disabled = true;
+
             } else {
+
+                // enable the cancel order button
+                cancelOrderButton.disabled = false;
+
                 const orderStatusOption = Array.from(orderStatusSelect.options).find(option => option.value === orderContent.status);
                 if (orderStatusOption) {
                     orderStatusSelect.value = orderStatusOption.value;
@@ -491,7 +491,7 @@ function openOrderUpdateModal(order_id) {
                     // replace the payment date input
                     const paymentDateInput = document.getElementById('payment-date-update');
                     paymentDateInput.value = orderContent.payment_date;
-                    console.log(orderContent);
+                    // console.log(orderContent);
 
                     // event listener to clear line item inputs when flavor is changed
                     flavorSelect.addEventListener('change', () => {
@@ -576,7 +576,7 @@ function toggleEdit(toEditMode) {
         // get all inputs in the update-line-items-container
         const lineItemInputs = updateModal.querySelectorAll('.update-line-item input');
         const lineItemSelects = updateModal.querySelectorAll('.update-line-item select');
-        console.log(lineItemInputs, lineItemSelects);
+        // console.log(lineItemInputs, lineItemSelects);
         lineItemInputs.forEach(input => {
             inputsFixedReadOnly.push(input.id);
         });
