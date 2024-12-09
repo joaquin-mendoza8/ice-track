@@ -145,8 +145,8 @@ def create_shipment(order_id):
             print(f"Order ID {order_id} does not exist")
             return None
 
-        total_products = sum(item.quantity for item in order.order_items)
-        shipment_boxes = (total_products + 4) // 5
+        # set shipment boxes to 1 for now
+        shipment_boxes = 1
 
         # set estimated delivery date to 5 days from order.expected_shipping_date
         estimated_delivery_date = order.expected_shipping_date + timedelta(days=5)

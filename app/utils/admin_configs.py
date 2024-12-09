@@ -36,6 +36,7 @@ def update_supported_container_sizes(request_supported_container_sizes):
     supported_container_sizes_list = [size.strip().lower() for size in request_supported_container_sizes.split(',')]
     supported_container_sizes_str = ','.join(supported_container_sizes_list)
     supported_container_sizes_config = AdminConfig.query.filter_by(key='supported_container_sizes').first()
+    container_sizes_in_use = None
 
     # check if the container sizes are different
     if supported_container_sizes_config:

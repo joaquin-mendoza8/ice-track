@@ -52,6 +52,8 @@ def current_invoice(invoice_id):
     # get the invoice from the database
     invoice = Invoice.query.get(invoice_id)
 
+    print(invoice, invoice_id)
+
     # calculate the subtotal (line items total)
     subtotal = sum([item.line_item_cost for item in invoice.order.order_items])
 
@@ -61,6 +63,6 @@ def current_invoice(invoice_id):
     }
 
     if not invoice:
-        return "Invoice not found", 404
+        return redirect(url_for('invoices.invoices_home', msg='Invoice not found'))
 
     return render_template('invoices/current_invoice.html', **jinja_vars)

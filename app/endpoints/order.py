@@ -96,7 +96,7 @@ def orders_update_order():
         # wrap in try-except block to catch any errors
         try:
 
-            pprint(request.form)
+            # pprint(request.form)
 
             # extract form data
             user_id = request.form.get("order-user-id-update-hidden")
@@ -225,9 +225,14 @@ def orders_update_order():
                     
                     # fetch the product allocation from the database
                     try:
-                        product_allocation = ProductAllocation.query.get(product.allocation.id)
+                        product_allocation = None
+                        for allocation in product.allocations:
+                            if (allocation.order_item_id == order_item.id and
+                                allocation.product_id == product.id
+                            ):
+                                product_allocation = allocation
                     except AttributeError as e:
-                        raise AttributeError("Product allocation not found")
+                        raise AttributeError(f"Product allocation not found: {e}")
 
                     if product_allocation:
 
@@ -285,7 +290,7 @@ def orders_update_order():
 
                             db.session.delete(order_item)
 
-                            msg = "Order update successfully"
+                            msg = "Order updated successfully"
                             msg_type = "success"
 
             # commit the changes to the database
@@ -390,24 +395,8 @@ def orders_add_order():
 
         # create a new shipment for the order
         shipment = create_shipment(order_id)
-
-        print(f"Shipment ID: {shipment.id}")
-
         if not shipment or shipment.id is None:
             return redirect(url_for('orders.orders_home', msg="Error creating shipment"))
-        
-        # create an invoice for the order TODO: move this to a separate file
-        new_invoice = Invoice(
-            order_id=order_id,
-            shipment_id=shipment.id,
-            user_id=user_id,
-            invoice_date=datetime.now(),
-            total_cost=total_cost,
-            due_date=desired_receipt_date
-        )
-
-        # add the invoice to the database
-        db.session.add(new_invoice)
 
         # add order items
         for item_data in order_items_data:
@@ -442,13 +431,27 @@ def orders_add_order():
             else:
                 print("New Item Created")
 
+        # set num of shipment boxes based on total products
+        total_products = sum([item.quantity for item in new_order.order_items])
+        shipment_boxes = max(1, (total_products + 4) // 5)
+        shipment.shipment_boxes = shipment_boxes
+        
+        # create an invoice for the order
+        new_invoice = Invoice(
+            order_id=order_id,
+            shipment_id=shipment.id,
+            user_id=user_id,
+            invoice_date=datetime.now(),
+            total_cost=total_cost,
+            due_date=desired_receipt_date
+        )
+        db.session.add(new_invoice)
+
         # commit the transaction
         db.session.commit()
 
-        msg = "Order added successfully"
-
         # redirect back to the order form
-        return redirect(url_for('orders.orders_home', msg=msg, msg_type='success'))
+        return redirect(url_for('orders.orders_home', msg="Order added successfully", msg_type='success'))
 
 
 # orders delete endpoint
@@ -583,12 +586,14 @@ def orders_cancel_order():
                 order.status = 'cancelled'
 
                 # fetch the order items from the database
-                order_items = OrderItem.query.filter_by(order_id=order_id).all()
+                # order_items = OrderItem.query.filter_by(order_id=order_id).all()
+                print("Order items: ", order.order_items)
 
                 # iterate through the order items
-                for order_item in order_items:
+                for order_item in order.order_items:
 
                     # fetch the product allocation from the database
+                    print("Order item allocation: ", order_item.allocation)
                     product_allocation = ProductAllocation.query.get(order_item.allocation[0].id)
 
                     if product_allocation:

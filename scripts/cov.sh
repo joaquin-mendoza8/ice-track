@@ -1,3 +1,3 @@
 #! /bin/bash
 
-pytest --cov=app --cov-report=html
+pytest --cov=app/endpoints --cov-report=html

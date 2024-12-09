@@ -56,19 +56,31 @@ function openShipmentUpdateModal(shipment_id) {
 
             const shipmentContent = data;
 
-            console.log('shipmentContent:', shipmentContent);
+            // console.log('shipmentContent:', shipmentContent);
 
             // check if there is an error
             if ('error' in shipmentContent) {
-                alert(`Failed to load shipment info. ${shipmentContent.error}. Please contact support.`);
+                alert(`Failed to load shipment info. ${shipmentContent.error}. Please submit a trouble ticket.`);
                 return;
+            }
+
+            // if the order is cancelled, set the shipment's order status
+            if (shipmentContent.order_status === 'cancelled') {
+                // create a new option element
+                const option = document.createElement('option');
+                option.value = 'cancelled';
+                option.text = 'Cancelled';
+                option.selected = true;
+
+                // append the option to the select element
+                const orderStatusSelect = document.getElementById('order-status-update');
+                orderStatusSelect.innerHTML = '';
+                orderStatusSelect.appendChild(option);
             }
 
             // dynamically set the shipment details in the form
             Object.keys(shipmentContent).forEach(key => {
                 const fieldId = `#${key.replace(/_/g, '-')}-update`;
-
-                console.log('fieldId:', fieldId, 'value:', shipmentContent[key]);
 
                 // check if the field exists
                 if ($(fieldId).length) {
@@ -88,7 +100,6 @@ function openShipmentUpdateModal(shipment_id) {
 
                         // set the value of the field
                         $(fieldId).val(shipmentContent[key]);
-                        // console.log('fieldId:', fieldId, 'value:', shipmentContent[key]);
                     }
                 }
             });
