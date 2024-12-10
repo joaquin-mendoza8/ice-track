@@ -69,14 +69,17 @@ def client(app_instance, seed_database):
     """Return a test client with a pre-logged-in user session."""
     client = app_instance.test_client()
     
-    # Fetch the test user and simulate login
+    # fetch the test user from environment vars and simulate login
     with app_instance.app_context():
         user = User.query.filter_by(username=os.getenv('TEST_USER')).first()
         
         if not user:
-            raise ValueError("Test user not found in the database. Ensure seed_database runs successfully.")
+            raise ValueError(
+                "Test user not found in the database." \
+                "Ensure seed_database runs successfully."
+            )
 
-    # Log in the user by setting the session user ID
+    # log in the user by setting the session user ID
     with client.session_transaction() as session:
         session['_user_id'] = user.id  # Flask-Login uses this to track logged-in users
 

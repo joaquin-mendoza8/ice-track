@@ -1,5 +1,6 @@
 # TODO: Stress testing with pytest-benchmark pytest
 import pytest
+from app.models import Product
 
 # test the inventory home endpoint
 def test_inventory_home(client):
@@ -9,14 +10,20 @@ def test_inventory_home(client):
     assert response.status_code == 200
 
 
-# test the inventory add endpoint (POST request)
 @pytest.mark.parametrize("flavor, container_size, price, quantity, status, dock_date, msg", [
     (None, 'small', 1.00, 10, 'planned', '2026-01-01', "Missing fields"),
     ('test', 'small', 1.00, 10, 'planned', '2026-01-01', "Added product successfully"),
-    ('test', 'small', 1.00, 10, 'actual', '2020-01-01', "Added product successfully"), # for testing the summation of products in later tests
+    ('test', 'small', 1.00, 10, 'actual', '2020-01-01', "Added product successfully"),
     ('test', 'small', 1.00, 10, 'planned', '2026-01-01', "Product already exists"),
 ])
-def test_inventory_add(client, app_instance, captured_templates, flavor, container_size, price, quantity, status, dock_date, msg):
+def test_inventory_add(client, app_instance, captured_templates, flavor, \
+                       container_size, price, quantity, status, dock_date, msg):
+    """
+    Test the inventory add endpoint with different 
+    parameters and check the response message.
+    """
+
+    # add a product using test client fixture
     response = client.post('/inventory_add', data={
         "product-flavor-add": flavor,
         "product-container-size-add": container_size,
@@ -26,6 +33,8 @@ def test_inventory_add(client, app_instance, captured_templates, flavor, contain
         "product-dock-date-add": dock_date,
         "user-id": 999
     }, follow_redirects=True)
+
+    # check if the message and response is correct
     template, context = captured_templates[0]
     assert template.name == 'inventory/inventory.html'
     assert context['msg'] == msg
@@ -34,12 +43,10 @@ def test_inventory_add(client, app_instance, captured_templates, flavor, contain
     # check if the product was added to the database
     if msg == "Added product successfully":
         with app_instance.app_context():
-            from app.models import Product
-            product = Product.query.filter_by(flavor=flavor).first()
+            product = Product.query.filter_by(flavor=flavor, status=status).first()
             assert product is not None
 
 
-# test the inventory update endpoint (POST request)
 @pytest.mark.parametrize("flavor, container_size, price, quantity, status, dock_date, msg", [
     ('test', 'small', 1.00, 10, 'planned', '2026-01-01', "No changes detected"),
     ('test', 'small', 0, 1, 'actual', '2026-01-01', "Price and quantity must be greater than zero"),
@@ -52,6 +59,7 @@ def test_inventory_add(client, app_instance, captured_templates, flavor, contain
     ('test', 'small', 1.00, 10, 'actual', '2020-01-01', "Planned product(s) added to existing product successfully"),
 ])
 def test_inventory_update(client, app_instance, captured_templates, flavor, container_size, price, quantity, status, dock_date, msg):
+    """Test the inventory update endpoint with different parameters and check the response message."""
 
     # get the product id from the database
     with app_instance.app_context():
@@ -61,7 +69,7 @@ def test_inventory_update(client, app_instance, captured_templates, flavor, cont
     # check if the product was added
     assert product_id is not None
 
-    # update the product using test client
+    # update the product using test client fixture
     response = client.post('/inventory_update', data={
         "product-id": product_id,
         "product-flavor": flavor,
@@ -72,7 +80,7 @@ def test_inventory_update(client, app_instance, captured_templates, flavor, cont
         "product-dock-date": dock_date,
     }, follow_redirects=True)
 
-    # check if the product was updated
+    # check if the request was successful
     assert response.status_code == 200
 
     # check if the message is correct
